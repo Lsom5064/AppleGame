@@ -27,41 +27,16 @@
   font-size: 0.84rem;
 }
 
-.topBar {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: #57493c;
+  font-size: 0.9rem;
 }
 
-.metric {
-  padding: 8px 10px;
-  border-radius: 4px;
-  background: #fffdf6;
-  border: 1px solid #d8cfbc;
-}
-
-.metricLabel {
-  display: block;
-  margin-bottom: 3px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #7b6957;
-}
-
-.metricValue {
+.stat {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #2d241c;
-}
-
-.panel {
-  padding: 10px;
-  border-radius: 4px;
-  background: #fffdf6;
-  border: 1px solid #d8cfbc;
 }
 
 .footer {
@@ -74,7 +49,7 @@
 
 .footerInfo {
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .toggle {
@@ -117,10 +92,4 @@
   color: #8b2715;
   font-weight: 800;
   font-size: 0.88rem;
-}
-
-@media (max-width: 860px) {
-  .topBar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }

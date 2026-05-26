@@ -57,8 +57,7 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr;
 }
 
 .panel {
@@ -72,6 +71,10 @@
   margin: 0 0 8px;
   font-size: 0.96rem;
   color: #2a1d14;
+}
+
+.panelTitle + .settings {
+  margin-top: 12px;
 }
 
 .list {
@@ -115,10 +118,4 @@
   color: #6a5a49;
   font-size: 0.86rem;
   line-height: 1.4;
-}
-
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
 }

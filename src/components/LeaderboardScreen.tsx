@@ -72,6 +72,7 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
             ))}
           </tbody>
         </table>
+        <p className={styles.note}>모든 참가자는 같은 배치에서 동시에 플레이했습니다.</p>
       </div>
     </div>
   );

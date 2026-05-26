@@ -40,14 +40,12 @@
   font-weight: 800;
   font-size: 1rem;
   transform: translate(-50%, -50%);
-  box-shadow:
-    inset -6px -8px 10px rgba(112, 26, 8, 0.3),
-    0 4px 8px rgba(122, 40, 19, 0.18);
+  box-shadow: inset -4px -5px 8px rgba(112, 26, 8, 0.22);
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,
     filter 120ms ease,
-  opacity 120ms ease;
+    opacity 120ms ease;
 }
 
 .lightColors .apple {

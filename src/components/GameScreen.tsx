@@ -180,35 +180,27 @@ export function GameScreen({
         </button>
       </div>
 
-      <div className={styles.topBar}>
-        <div className={styles.metric}>
-          <span className={styles.metricLabel}>Time</span>
-          <p className={styles.metricValue}>{displayedSeconds}s</p>
-        </div>
-        <div className={styles.metric}>
-          <span className={styles.metricLabel}>Score</span>
-          <p className={styles.metricValue}>{score}</p>
-        </div>
+      <div className={styles.statusRow}>
+        <p className={styles.stat}>Time: {displayedSeconds}s</p>
+        <p className={styles.stat}>Score: {score}</p>
+        {clearTimeMs !== null ? (
+          <p className={styles.stat}>Clear: {(clearTimeMs / 1000).toFixed(1)}s</p>
+        ) : null}
       </div>
 
-      <section className={styles.panel}>
-        <GameBoard
-          apples={apples}
-          locked={locked}
-          lightColors={lightColors}
-          selectionRect={selectionRect}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-        />
-      </section>
+      <GameBoard
+        apples={apples}
+        locked={locked}
+        lightColors={lightColors}
+        selectionRect={selectionRect}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+      />
 
       <div className={styles.footer}>
         <div className={styles.footerInfo}>
           <p className={styles.hint}>사과의 숫자 합이 10이 되도록 드래그하세요.</p>
-          {clearTimeMs !== null ? (
-            <p className={styles.result}>클리어 시간 {`${(clearTimeMs / 1000).toFixed(1)}초`}</p>
-          ) : null}
         </div>
         <label className={styles.toggle}>
           <input

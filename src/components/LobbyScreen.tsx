@@ -44,9 +44,7 @@ export function LobbyScreen({ room, player, onLeaveRoom, onStartGame }: LobbyScr
               </div>
             ))}
           </div>
-        </section>
 
-        <section className={styles.panel}>
           <h2 className={styles.panelTitle}>게임 규칙</h2>
           <div className={styles.settings}>
             <p className={styles.rule}>제한시간은 120초입니다.</p>
