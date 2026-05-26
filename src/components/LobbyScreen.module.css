@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .header {
@@ -18,14 +18,14 @@
 
 .title {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 1rem;
   color: #2e241b;
 }
 
 .description {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
 }
 
 .buttonRow {
@@ -36,7 +36,7 @@
 
 .button,
 .ghostButton {
-  padding: 7px 10px;
+  padding: 6px 8px;
   border-radius: 4px;
   font: inherit;
   font-weight: 700;
@@ -90,7 +90,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 5px 0;
+  padding: 4px 0;
   border-bottom: 1px solid #ece4d4;
 }
 
@@ -105,7 +105,7 @@
 
 .settings {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .rule {

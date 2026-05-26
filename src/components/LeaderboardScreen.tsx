@@ -23,8 +23,8 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
     <div className={styles.layout}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>결과</h1>
-          <p className={styles.description}>Room {room.code}</p>
+          <h1 className={styles.title}>Room {room.code}</h1>
+          <p className={styles.description}>결과</p>
         </div>
         <button className={styles.button} type="button" onClick={onLeaveRoom}>
           홈으로 나가기

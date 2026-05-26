@@ -16,10 +16,8 @@ export function LobbyScreen({ room, player, onLeaveRoom, onStartGame }: LobbyScr
     <div className={styles.layout}>
       <div className={styles.header}>
         <div className={styles.headerCopy}>
-          <h1 className={styles.title}>게임 시작 대기 중</h1>
-          <p className={styles.description}>
-            Room {room.code} / 참가자 {players.length}명
-          </p>
+          <h1 className={styles.title}>Room {room.code}</h1>
+          <p className={styles.description}>참가자 {players.length}명</p>
         </div>
         <div className={styles.buttonRow}>
           <button className={styles.ghostButton} type="button" onClick={onLeaveRoom}>
@@ -50,11 +48,7 @@ export function LobbyScreen({ room, player, onLeaveRoom, onStartGame }: LobbyScr
             <p className={styles.rule}>제한시간은 120초입니다.</p>
             <p className={styles.rule}>드래그한 범위의 숫자 합이 10이면 사과가 제거됩니다.</p>
             <p className={styles.rule}>사과 1개당 1점이며, 모두 제거하면 클리어 시간이 기록됩니다.</p>
-            <p className={styles.hint}>
-              {isHost
-                ? "시작 버튼을 누르면 모든 참가자가 같은 배치로 동시에 시작합니다."
-                : "방장이 시작하면 같은 배치로 동시에 게임이 시작됩니다."}
-            </p>
+            <p className={styles.hint}>{isHost ? "방장이 시작합니다." : "방장이 시작할 때까지 대기합니다."}</p>
           </div>
         </section>
       </div>
