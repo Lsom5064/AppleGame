@@ -26,12 +26,12 @@
 
 .button {
   padding: 6px 8px;
-  border-radius: 4px;
-  border: 1px solid #b9b0a0;
-  background: #f0ead9;
-  color: #3d2419;
+  border-radius: 0;
+  border: 1px solid #999;
+  background: #efefef;
+  color: #222;
   font: inherit;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
 }
 

@@ -40,10 +40,10 @@
 
 .button {
   padding: 4px 8px;
-  border-radius: 3px;
-  border: 1px solid #b9b0a0;
-  background: #f7f1e4;
-  color: #3d2419;
+  border-radius: 0;
+  border: 1px solid #999;
+  background: #efefef;
+  color: #222;
   font: inherit;
   font-weight: 400;
   cursor: pointer;
