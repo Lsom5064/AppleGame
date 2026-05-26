@@ -2,7 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
 import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
-import { generateApples, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
+import {
+  generateApples,
+  getSelectionStats,
+  isAppleInsideRect,
+  normalizeSelectionRect
+} from "../utils/gameBoard";
 import { calculateSelectionScore } from "../utils/scoring";
 import { GameBoard } from "./GameBoard";
 import styles from "./GameScreen.module.css";
@@ -40,23 +45,17 @@ export function GameScreen({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null);
   const [timeLeftMs, setTimeLeftMs] = useState(room.settings.roundDurationSec * 1000);
+  const [lightColors, setLightColors] = useState(false);
   const progressRequestedRef = useRef(false);
 
   const remainingApples = useMemo(
     () => apples.filter((apple) => !apple.removed).length,
     [apples]
   );
-  const selectedAppleIds = useMemo(() => {
-    if (!selectionRect) {
-      return new Set<string>();
-    }
-
-    return new Set(
-      apples
-        .filter((apple) => !apple.removed && isAppleInsideRect(apple, selectionRect))
-        .map((apple) => apple.id)
-    );
-  }, [apples, selectionRect]);
+  const selectionStats = useMemo(
+    () => getSelectionStats(apples, selectionRect),
+    [apples, selectionRect]
+  );
 
   useEffect(() => {
     setApples(generateApples(roundSeed));
@@ -191,8 +190,11 @@ export function GameScreen({
         <GameBoard
           apples={apples}
           locked={locked}
+          lightColors={lightColors}
           selectionRect={selectionRect}
-          selectedAppleIds={selectedAppleIds}
+          selectedAppleIds={selectionStats.selectedAppleIds}
+          selectionSum={selectionStats.selectedSum}
+          validSelection={selectionStats.selectedSum === 10 && selectionStats.selectedCount > 0}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -201,8 +203,17 @@ export function GameScreen({
 
       <div className={styles.footer}>
         <p className={styles.hint}>
-          드래그한 범위 안의 사과 숫자 합이 정확히 10이면 제거됩니다. 현재 남은 사과: {remainingApples}
+          드래그한 범위 안의 사과 숫자 합이 정확히 10이면 제거됩니다. 현재 선택 합계:{" "}
+          {selectionStats.selectedSum} / 남은 사과: {remainingApples}
         </p>
+        <label className={styles.toggle}>
+          <input
+            checked={lightColors}
+            type="checkbox"
+            onChange={(event) => setLightColors(event.target.checked)}
+          />
+          Light Colors
+        </label>
         <button className={styles.button} type="button" onClick={onLeaveRoom}>
           나가기
         </button>

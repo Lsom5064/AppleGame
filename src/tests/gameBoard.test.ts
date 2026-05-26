@@ -7,7 +7,7 @@ import {
   BOARD_HEIGHT,
   BOARD_WIDTH
 } from "../constants";
-import { generateApples } from "../utils/gameBoard";
+import { generateApples, getSelectionStats } from "../utils/gameBoard";
 
 describe("generateApples", () => {
   it("returns a deterministic board for the same seed", () => {
@@ -58,5 +58,26 @@ describe("generateApples", () => {
       expect(normalizedColumn).toBeCloseTo(Math.round(normalizedColumn), 6);
       expect(normalizedRow).toBeCloseTo(Math.round(normalizedRow), 6);
     }
+  });
+
+  it("calculates the current drag selection sum and ids", () => {
+    const apples = [
+      { id: "a", x: 100, y: 100, value: 4, removed: false },
+      { id: "b", x: 140, y: 100, value: 6, removed: false },
+      { id: "c", x: 240, y: 160, value: 3, removed: false },
+      { id: "d", x: 120, y: 120, value: 5, removed: true }
+    ];
+    const selection = {
+      left: 90,
+      top: 90,
+      width: 70,
+      height: 30
+    };
+
+    const stats = getSelectionStats(apples, selection);
+
+    expect(stats.selectedSum).toBe(10);
+    expect(stats.selectedCount).toBe(2);
+    expect(Array.from(stats.selectedAppleIds).sort()).toEqual(["a", "b"]);
   });
 });

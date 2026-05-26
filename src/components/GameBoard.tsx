@@ -7,8 +7,11 @@ import styles from "./GameBoard.module.css";
 interface GameBoardProps {
   apples: Apple[];
   locked: boolean;
+  lightColors: boolean;
   selectionRect: SelectionRect | null;
   selectedAppleIds: Set<string>;
+  selectionSum: number;
+  validSelection: boolean;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -17,8 +20,11 @@ interface GameBoardProps {
 export function GameBoard({
   apples,
   locked,
+  lightColors,
   selectionRect,
   selectedAppleIds,
+  selectionSum,
+  validSelection,
   onPointerDown,
   onPointerMove,
   onPointerUp
@@ -32,7 +38,7 @@ export function GameBoard({
 
   return (
     <div
-      className={styles.shell}
+      className={`${styles.shell} ${lightColors ? styles.lightColors : ""}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -54,14 +60,16 @@ export function GameBoard({
 
       {selectionRect ? (
         <div
-          className={styles.selection}
+          className={`${styles.selection} ${validSelection ? styles.selectionValid : ""}`}
           style={{
             left: selectionRect.left,
             top: selectionRect.top,
             width: selectionRect.width,
             height: selectionRect.height
           }}
-        />
+        >
+          <span className={styles.selectionBadge}>{selectionSum}</span>
+        </div>
       ) : null}
 
       {locked ? <div className={styles.locked}>다른 참가자를 기다리는 중</div> : null}
