@@ -36,14 +36,14 @@ export function LobbyScreen({ room, player, onLeaveRoom, onStartGame }: LobbyScr
       <div className={styles.grid}>
         <section className={styles.panel}>
           <h2 className={styles.panelTitle}>참가자</h2>
-          <div className={styles.list}>
+          <ul className={styles.list}>
             {players.map((member) => (
-              <div key={member.id} className={styles.playerRow}>
+              <li key={member.id} className={styles.playerRow}>
                 <span>{member.nickname}</span>
                 {member.isHost ? <span className={styles.badge}>방장</span> : null}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
 
           <h2 className={styles.panelTitle}>게임 규칙</h2>
           <div className={styles.settings}>

@@ -20,9 +20,9 @@ export function HomeScreen({
   return (
     <div className={styles.shell}>
       <section className={styles.hero}>
-        <span className={styles.eyebrow}>Fruit Box Multiplayer</span>
-        <h1 className={styles.title}>숫자 합이 10이 되도록 사과를 드래그하세요</h1>
-        <p className={styles.description}>방을 만들거나 방 코드로 입장해 같은 배치에서 동시에 플레이합니다.</p>
+        <h1 className={styles.title}>Fruit Box Multiplayer</h1>
+        <p className={styles.description}>숫자 합이 10이 되도록 사과를 드래그하세요.</p>
+        <p className={styles.note}>방을 만들거나 방 코드로 입장해 같은 배치에서 동시에 플레이합니다.</p>
       </section>
 
       <div className={styles.grid}>
@@ -62,6 +62,12 @@ export function HomeScreen({
           </button>
         </section>
       </div>
+
+      <section className={styles.rules}>
+        <p>제한시간은 120초입니다.</p>
+        <p>사과 1개당 1점입니다.</p>
+        <p>모든 참가자는 같은 배치에서 동시에 플레이합니다.</p>
+      </section>
     </div>
   );
 }

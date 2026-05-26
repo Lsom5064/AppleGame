@@ -6,57 +6,52 @@
 
 .hero {
   display: grid;
-  gap: 6px;
-}
-
-.eyebrow {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #5f4635;
+  gap: 4px;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(1.55rem, 3vw, 2.1rem);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  line-height: 1.25;
   color: #2a2018;
 }
 
 .description {
   margin: 0;
-  max-width: 34rem;
-  font-size: 0.92rem;
-  line-height: 1.45;
+  font-size: 0.9rem;
   color: #5f5145;
+}
+
+.note {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #6a5a49;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
 }
 
 .panel {
-  padding: 16px;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 4px;
   background: #fffdf6;
   border: 1px solid #d8cfbc;
 }
 
 .panelTitle {
   margin: 0 0 8px;
-  font-size: 1.08rem;
+  font-size: 0.98rem;
   color: #2f241b;
 }
 
 .panelText {
-  margin: 0 0 12px;
+  margin: 0 0 10px;
   color: #64584e;
   line-height: 1.4;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
 }
 
 .label {
@@ -69,7 +64,7 @@
 
 .input {
   width: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 4px;
   border: 1px solid #b9b0a0;
   background: white;
@@ -78,7 +73,7 @@
 
 .button {
   width: 100%;
-  padding: 10px 14px;
+  padding: 8px 10px;
   border: 1px solid #7f8f6b;
   border-radius: 4px;
   background: #dcebbd;
@@ -90,7 +85,7 @@
 
 .secondaryButton {
   width: 100%;
-  padding: 10px 14px;
+  padding: 8px 10px;
   border: 1px solid #8d8373;
   border-radius: 4px;
   background: #f0ead9;
@@ -98,4 +93,15 @@
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+
+.rules {
+  display: grid;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: #67584b;
+}
+
+.rules p {
+  margin: 0;
 }

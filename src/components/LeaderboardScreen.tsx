@@ -24,7 +24,7 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>결과</h1>
-          <p className={styles.description}>점수와 클리어 시간을 확인하세요.</p>
+          <p className={styles.description}>Room {room.code}</p>
         </div>
         <button className={styles.button} type="button" onClick={onLeaveRoom}>
           홈으로 나가기
@@ -72,7 +72,6 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
             ))}
           </tbody>
         </table>
-        <p className={styles.note}>모든 참가자는 같은 배치에서 동시에 플레이했습니다.</p>
       </div>
     </div>
   );
