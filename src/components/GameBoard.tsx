@@ -1,5 +1,7 @@
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { APPLE_PADDING } from "../constants";
 import type { Apple, SelectionRect } from "../types";
+import { getBoardGridMetrics } from "../utils/gameBoard";
 import styles from "./GameBoard.module.css";
 
 interface GameBoardProps {
@@ -19,6 +21,13 @@ export function GameBoard({
   onPointerMove,
   onPointerUp
 }: GameBoardProps) {
+  const { cellWidth, cellHeight } = getBoardGridMetrics();
+  const gridStyle = {
+    "--grid-inset": `${APPLE_PADDING}px`,
+    "--grid-cell-width": `${cellWidth}px`,
+    "--grid-cell-height": `${cellHeight}px`
+  } as CSSProperties;
+
   return (
     <div
       className={styles.shell}
@@ -27,7 +36,7 @@ export function GameBoard({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <div className={styles.grid} />
+      <div className={styles.grid} style={gridStyle} />
 
       {apples.map((apple) => (
         <div

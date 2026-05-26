@@ -112,7 +112,7 @@ VITE_FIREBASE_APP_ID
 
 4. `main` 브랜치에 push하면 [.github/workflows/deploy-pages.yml](/Users/hai/Desktop/AppleGame/.github/workflows/deploy-pages.yml:1)이 자동으로 빌드 후 배포합니다.
 
-정적 자산 경로는 GitHub Pages에서 안전하게 동작하도록 [vite.config.ts](/Users/hai/Desktop/AppleGame/vite.config.ts:1)에서 `base: "./"`로 설정했습니다.
+프로젝트 페이지 URL은 기본적으로 `https://<GitHub 사용자명>.github.io/AppleGame/` 형식입니다. 이 저장소는 [vite.config.ts](/Users/hai/Desktop/AppleGame/vite.config.ts:1)에서 GitHub Actions 실행 시 자동으로 `/<repo>/` base를 사용하도록 맞춰두었습니다.
 
 ### 수동 빌드 확인
 

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { APPLE_COUNT, APPLE_PADDING, BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
+import {
+  APPLE_COUNT,
+  APPLE_PADDING,
+  BOARD_GRID_COLUMNS,
+  BOARD_GRID_ROWS,
+  BOARD_HEIGHT,
+  BOARD_WIDTH
+} from "../constants";
 import { generateApples } from "../utils/gameBoard";
 
 describe("generateApples", () => {
@@ -30,6 +37,20 @@ describe("generateApples", () => {
       expect(apple.y).toBeGreaterThanOrEqual(APPLE_PADDING);
       expect(apple.y).toBeLessThanOrEqual(BOARD_HEIGHT - APPLE_PADDING);
       expect(apple.removed).toBe(false);
+    }
+  });
+
+  it("aligns apples to the fixed grid slots", () => {
+    const apples = generateApples("room-seed:3");
+    const cellWidth = (BOARD_WIDTH - APPLE_PADDING * 2) / BOARD_GRID_COLUMNS;
+    const cellHeight = (BOARD_HEIGHT - APPLE_PADDING * 2) / BOARD_GRID_ROWS;
+
+    for (const apple of apples) {
+      const normalizedColumn = (apple.x - APPLE_PADDING) / cellWidth - 0.5;
+      const normalizedRow = (apple.y - APPLE_PADDING) / cellHeight - 0.5;
+
+      expect(normalizedColumn).toBeCloseTo(Math.round(normalizedColumn), 6);
+      expect(normalizedRow).toBeCloseTo(Math.round(normalizedRow), 6);
     }
   });
 });

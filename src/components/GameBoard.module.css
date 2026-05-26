@@ -17,12 +17,14 @@
 
 .grid {
   position: absolute;
-  inset: 0;
+  inset: var(--grid-inset);
+  border: 4px solid #e4eb72;
+  background-color: #c9ffc9;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
-  background-size: 48px 48px;
-  opacity: 0.7;
+    linear-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+  background-size: var(--grid-cell-width) var(--grid-cell-height);
+  box-shadow: inset 0 0 0 2px rgba(145, 180, 85, 0.18);
 }
 
 .apple {
@@ -37,7 +39,7 @@
   color: white;
   font-weight: 800;
   font-size: 1rem;
-  transform: translate(-50%, -50%) rotate(-8deg);
+  transform: translate(-50%, -50%);
   box-shadow:
     inset -6px -8px 10px rgba(112, 26, 8, 0.34),
     0 10px 18px rgba(122, 40, 19, 0.18);
