@@ -6,16 +6,16 @@
 .meta {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
 }
 
 .statusRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: #57493c;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
 }
 
 .stat {
@@ -25,14 +25,13 @@
 .toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: 4px;
-  background: #fffdf6;
-  border: 1px solid #d8cfbc;
+  gap: 4px;
+  padding: 0;
+  background: transparent;
+  border: 0;
   color: #4e3427;
-  font-weight: 700;
-  font-size: 0.86rem;
+  font-weight: 400;
+  font-size: 0.82rem;
 }
 
 .toggle input {
@@ -40,13 +39,13 @@
 }
 
 .button {
-  padding: 7px 10px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 3px;
   border: 1px solid #b9b0a0;
-  background: #f0ead9;
+  background: #f7f1e4;
   color: #3d2419;
   font: inherit;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
 }
 
@@ -54,5 +53,5 @@
   margin: 0;
   color: #635548;
   line-height: 1.35;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
 }
