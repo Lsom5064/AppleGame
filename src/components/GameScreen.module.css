@@ -49,6 +49,11 @@
   flex-wrap: wrap;
 }
 
+.footerInfo {
+  display: grid;
+  gap: 6px;
+}
+
 .toggle {
   display: inline-flex;
   align-items: center;
@@ -79,6 +84,12 @@
 .hint {
   margin: 0;
   color: #6a4f45;
+}
+
+.result {
+  margin: 0;
+  color: #8b2715;
+  font-weight: 800;
 }
 
 @media (max-width: 860px) {

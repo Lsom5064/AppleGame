@@ -55,6 +55,16 @@
   white-space: nowrap;
 }
 
+.roundCell {
+  display: grid;
+  gap: 4px;
+}
+
+.roundCell span {
+  font-size: 0.84rem;
+  color: #6a4f45;
+}
+
 .winner {
   font-weight: 800;
   color: #9f340f;

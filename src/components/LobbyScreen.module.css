@@ -99,19 +99,9 @@
   gap: 14px;
 }
 
-.field {
-  display: grid;
-  gap: 8px;
+.rule {
+  margin: 0;
   color: #4b2e23;
-}
-
-.select {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(80, 46, 32, 0.15);
-  background: #fffdf9;
-  font: inherit;
 }
 
 .hint {

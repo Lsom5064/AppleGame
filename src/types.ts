@@ -10,6 +10,7 @@ export interface GameSettings {
 export interface RoundSubmission {
   score: number;
   finishedAt: number;
+  clearTimeMs: number | null;
 }
 
 export interface PlayerState {
@@ -43,6 +44,7 @@ export interface LeaderboardEntry {
   nickname: string;
   isHost: boolean;
   roundScores: number[];
+  clearTimes: Array<number | null>;
   finalScore: number;
   joinedAt: number;
 }

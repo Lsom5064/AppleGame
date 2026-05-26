@@ -216,20 +216,6 @@ export default function App() {
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
-            onUpdateRoundCount={(roundCount) =>
-              void runWithBusy(() =>
-                realtimeService.updateSettings(room.code, player.id, {
-                  roundCount
-                })
-              )
-            }
-            onUpdateLeaderboardMode={(leaderboardMode) =>
-              void runWithBusy(() =>
-                realtimeService.updateSettings(room.code, player.id, {
-                  leaderboardMode
-                })
-              )
-            }
             onStartGame={() => void runWithBusy(() => realtimeService.startGame(room.code, player.id))}
           />
         ) : room && player && room.phase === "playing" ? (
@@ -237,8 +223,8 @@ export default function App() {
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
-            onSubmitRound={(roundIndex, score) =>
-              realtimeService.submitRoundScore(room.code, player.id, roundIndex, score)
+            onSubmitRound={(roundIndex, score, clearTimeMs) =>
+              realtimeService.submitRoundScore(room.code, player.id, roundIndex, score, clearTimeMs)
             }
             onForceProgress={() => realtimeService.forceRoundProgress(room.code)}
           />

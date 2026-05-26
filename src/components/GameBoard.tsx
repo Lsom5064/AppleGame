@@ -9,9 +9,6 @@ interface GameBoardProps {
   locked: boolean;
   lightColors: boolean;
   selectionRect: SelectionRect | null;
-  selectedAppleIds: Set<string>;
-  selectionSum: number;
-  validSelection: boolean;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -22,9 +19,6 @@ export function GameBoard({
   locked,
   lightColors,
   selectionRect,
-  selectedAppleIds,
-  selectionSum,
-  validSelection,
   onPointerDown,
   onPointerMove,
   onPointerUp
@@ -49,9 +43,7 @@ export function GameBoard({
       {apples.map((apple) => (
         <div
           key={apple.id}
-          className={`${styles.apple} ${apple.removed ? styles.removed : ""} ${
-            selectedAppleIds.has(apple.id) ? styles.selected : ""
-          }`}
+          className={`${styles.apple} ${apple.removed ? styles.removed : ""}`}
           style={{ left: apple.x, top: apple.y }}
         >
           {apple.value}
@@ -60,16 +52,14 @@ export function GameBoard({
 
       {selectionRect ? (
         <div
-          className={`${styles.selection} ${validSelection ? styles.selectionValid : ""}`}
+          className={styles.selection}
           style={{
             left: selectionRect.left,
             top: selectionRect.top,
             width: selectionRect.width,
             height: selectionRect.height
           }}
-        >
-          <span className={styles.selectionBadge}>{selectionSum}</span>
-        </div>
+        />
       ) : null}
 
       {locked ? <div className={styles.locked}>다른 참가자를 기다리는 중</div> : null}

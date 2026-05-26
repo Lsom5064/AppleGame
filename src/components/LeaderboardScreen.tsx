@@ -7,6 +7,14 @@ interface LeaderboardScreenProps {
   onLeaveRoom: () => void;
 }
 
+function formatClearTime(clearTimeMs: number | null): string {
+  if (clearTimeMs === null) {
+    return "-";
+  }
+
+  return `${(clearTimeMs / 1000).toFixed(1)}s`;
+}
+
 export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps) {
   const leaderboard = buildLeaderboard(room);
 
@@ -14,9 +22,9 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
     <div className={styles.layout}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>최종 리더보드</h1>
+          <h1 className={styles.title}>결과</h1>
           <p className={styles.description}>
-            정렬 기준: {room.settings.leaderboardMode === "sum" ? "모든 라운드 합계" : "최고 점수 1개"}
+            점수는 획득한 사과 수 기준입니다. 모든 사과를 제거한 경우 클리어 시간도 함께 표시됩니다.
           </p>
         </div>
         <button className={styles.button} type="button" onClick={onLeaveRoom}>
@@ -45,7 +53,12 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
                   {entry.isHost ? " (Host)" : ""}
                 </td>
                 {entry.roundScores.map((score, roundIndex) => (
-                  <td key={roundIndex}>{score}</td>
+                  <td key={roundIndex}>
+                    <div className={styles.roundCell}>
+                      <strong>{score}</strong>
+                      <span>{formatClearTime(entry.clearTimes[roundIndex])}</span>
+                    </div>
+                  </td>
                 ))}
                 <td>{entry.finalScore}</td>
               </tr>

@@ -2,12 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
 import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
-import {
-  generateApples,
-  getSelectionStats,
-  isAppleInsideRect,
-  normalizeSelectionRect
-} from "../utils/gameBoard";
+import { generateApples, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
 import { calculateSelectionScore } from "../utils/scoring";
 import { GameBoard } from "./GameBoard";
 import styles from "./GameScreen.module.css";
@@ -16,7 +11,7 @@ interface GameScreenProps {
   room: RoomState;
   player: PlayerState;
   onLeaveRoom: () => void;
-  onSubmitRound: (roundIndex: number, score: number) => Promise<void>;
+  onSubmitRound: (roundIndex: number, score: number, clearTimeMs: number | null) => Promise<void>;
   onForceProgress: () => Promise<void>;
 }
 
@@ -46,20 +41,17 @@ export function GameScreen({
   const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null);
   const [timeLeftMs, setTimeLeftMs] = useState(room.settings.roundDurationSec * 1000);
   const [lightColors, setLightColors] = useState(false);
+  const [clearTimeMs, setClearTimeMs] = useState<number | null>(null);
   const progressRequestedRef = useRef(false);
 
   const remainingApples = useMemo(
     () => apples.filter((apple) => !apple.removed).length,
     [apples]
   );
-  const selectionStats = useMemo(
-    () => getSelectionStats(apples, selectionRect),
-    [apples, selectionRect]
-  );
-
   useEffect(() => {
     setApples(generateApples(roundSeed));
     setScore(room.submissions[roundKey]?.[player.id]?.score ?? 0);
+    setClearTimeMs(room.submissions[roundKey]?.[player.id]?.clearTimeMs ?? null);
     setDragState(null);
     setSelectionRect(null);
     setTimeLeftMs(room.settings.roundDurationSec * 1000);
@@ -84,8 +76,8 @@ export function GameScreen({
       return;
     }
 
-    void onSubmitRound(room.currentRoundIndex, score);
-  }, [locked, onSubmitRound, remainingApples, room.currentRoundIndex, score]);
+    void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
+  }, [clearTimeMs, locked, onSubmitRound, remainingApples, room.currentRoundIndex, score]);
 
   useEffect(() => {
     if (timeLeftMs > 0 || progressRequestedRef.current) {
@@ -99,8 +91,16 @@ export function GameScreen({
       return;
     }
 
-    void onSubmitRound(room.currentRoundIndex, score);
-  }, [locked, onForceProgress, onSubmitRound, room.currentRoundIndex, score, timeLeftMs]);
+    void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
+  }, [clearTimeMs, locked, onForceProgress, onSubmitRound, room.currentRoundIndex, score, timeLeftMs]);
+
+  function getElapsedRoundMs(): number | null {
+    if (room.roundStartedAt === null) {
+      return null;
+    }
+
+    return Math.max(0, Date.now() - room.roundStartedAt);
+  }
 
   function getBoardPoint(event: ReactPointerEvent<HTMLDivElement>): { x: number; y: number } {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -154,6 +154,9 @@ export function GameScreen({
         )
       );
       setScore((current) => current + calculateSelectionScore(selected.length));
+      if (selected.length === remainingApples) {
+        setClearTimeMs(getElapsedRoundMs());
+      }
     }
 
     event.currentTarget.releasePointerCapture(event.pointerId);
@@ -192,9 +195,6 @@ export function GameScreen({
           locked={locked}
           lightColors={lightColors}
           selectionRect={selectionRect}
-          selectedAppleIds={selectionStats.selectedAppleIds}
-          selectionSum={selectionStats.selectedSum}
-          validSelection={selectionStats.selectedSum === 10 && selectionStats.selectedCount > 0}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -202,10 +202,14 @@ export function GameScreen({
       </section>
 
       <div className={styles.footer}>
-        <p className={styles.hint}>
-          드래그한 범위 안의 사과 숫자 합이 정확히 10이면 제거됩니다. 현재 선택 합계:{" "}
-          {selectionStats.selectedSum} / 남은 사과: {remainingApples}
-        </p>
+        <div className={styles.footerInfo}>
+          <p className={styles.hint}>
+            드래그해서 숫자 합이 10이 되도록 사과를 감싸세요. 사과 1개당 1점이며 제한시간은 120초입니다.
+          </p>
+          {clearTimeMs !== null ? (
+            <p className={styles.result}>클리어 시간 {`${(clearTimeMs / 1000).toFixed(1)}초`}</p>
+          ) : null}
+        </div>
         <label className={styles.toggle}>
           <input
             checked={lightColors}

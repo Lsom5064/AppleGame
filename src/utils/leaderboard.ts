@@ -18,12 +18,17 @@ export function buildLeaderboard(room: RoomState): LeaderboardEntry[] {
     const roundScores = Array.from({ length: roundCount }, (_, roundIndex) =>
       getRoundScore(player, roundIndex)
     );
+    const clearTimes = Array.from({ length: roundCount }, (_, roundIndex) => {
+      const roundKey = String(roundIndex);
+      return room.submissions[roundKey]?.[player.id]?.clearTimeMs ?? null;
+    });
 
     const baseEntry: LeaderboardEntry = {
       id: player.id,
       nickname: player.nickname,
       isHost: player.isHost,
       roundScores,
+      clearTimes,
       finalScore: 0,
       joinedAt: player.joinedAt
     };

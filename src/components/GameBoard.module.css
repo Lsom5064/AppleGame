@@ -90,50 +90,12 @@
   opacity: 0.12;
 }
 
-.selected {
-  filter: saturate(1.15) brightness(1.08);
-  box-shadow:
-    0 0 0 4px rgba(255, 239, 160, 0.9),
-    inset -6px -8px 10px rgba(112, 26, 8, 0.24),
-    0 12px 22px rgba(122, 40, 19, 0.24);
-  transform: translate(-50%, -50%) scale(1.06);
-}
-
 .selection {
   position: absolute;
   border: 2px solid rgba(49, 118, 54, 0.95);
   background: rgba(121, 193, 106, 0.18);
   border-radius: 10px;
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
-}
-
-.selectionValid {
-  border-color: rgba(207, 47, 47, 0.95);
-  background: rgba(255, 113, 113, 0.2);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.55),
-    0 0 0 4px rgba(255, 116, 116, 0.12);
-}
-
-.selectionBadge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  min-width: 28px;
-  height: 28px;
-  padding: 0 8px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(40, 65, 25, 0.85);
-  color: white;
-  font-size: 0.92rem;
-  font-weight: 800;
-  line-height: 1;
-}
-
-.selectionValid .selectionBadge {
-  background: rgba(176, 23, 23, 0.92);
 }
 
 .locked {

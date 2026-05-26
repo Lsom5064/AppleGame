@@ -17,7 +17,7 @@ export function normalizeRoomState(room: RoomState): RoomState {
   return {
     ...room,
     settings: {
-      roundCount: room.settings?.roundCount ?? 3,
+      roundCount: room.settings?.roundCount ?? 1,
       leaderboardMode: room.settings?.leaderboardMode ?? "sum",
       roundDurationSec: room.settings?.roundDurationSec ?? ROUND_DURATION_DEFAULT
     },
@@ -33,7 +33,10 @@ export function normalizeRoomState(room: RoomState): RoomState {
         Object.fromEntries(
           Object.entries(roundEntries ?? {}).map(([playerId, submission]) => [
             playerId,
-            { ...(submission as RoundSubmission) }
+            {
+              ...(submission as RoundSubmission),
+              clearTimeMs: (submission as Partial<RoundSubmission>)?.clearTimeMs ?? null
+            }
           ])
         )
       ])
@@ -69,7 +72,7 @@ function cloneRoom(room: RoomState): RoomState {
 
 export function createInitialRoom(code: string, hostId: string, nickname: string, now: number): RoomState {
   const settings: GameSettings = {
-    roundCount: 3,
+    roundCount: 1,
     leaderboardMode: "sum",
     roundDurationSec: ROUND_DURATION_DEFAULT
   };
@@ -215,7 +218,8 @@ export function forceRoomProgress(room: RoomState, now: number): RoomState {
 
     roundSubmissions[player.id] = {
       score: 0,
-      finishedAt: now
+      finishedAt: now,
+      clearTimeMs: null
     };
     player.roundScores[roundKey] = 0;
   }
@@ -240,6 +244,7 @@ export function submitRoundScore(
   playerId: string,
   roundIndex: number,
   score: number,
+  clearTimeMs: number | null,
   now: number
 ): RoomState {
   const normalizedRoom = normalizeRoomState(room);
@@ -266,7 +271,8 @@ export function submitRoundScore(
 
   nextRoom.submissions[roundKey][playerId] = {
     score,
-    finishedAt: now
+    finishedAt: now,
+    clearTimeMs
   };
   nextRoom.players[playerId].roundScores[roundKey] = score;
 

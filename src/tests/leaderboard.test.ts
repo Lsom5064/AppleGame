@@ -15,7 +15,18 @@ const room: RoomState = {
   },
   currentRoundIndex: 2,
   roundStartedAt: 0,
-  submissions: {},
+  submissions: {
+    "0": {
+      host: { score: 3, finishedAt: 1, clearTimeMs: null },
+      guest: { score: 9, finishedAt: 2, clearTimeMs: 18400 }
+    },
+    "1": {
+      host: { score: 4, finishedAt: 3, clearTimeMs: 52600 }
+    },
+    "2": {
+      host: { score: 5, finishedAt: 4, clearTimeMs: 70400 }
+    }
+  },
   players: {
     host: {
       id: "host",
@@ -39,6 +50,7 @@ describe("buildLeaderboard", () => {
     const leaderboard = buildLeaderboard(room);
     expect(leaderboard[0].nickname).toBe("Host");
     expect(leaderboard[0].finalScore).toBe(12);
+    expect(leaderboard[0].clearTimes).toEqual([null, 52600, 70400]);
   });
 
   it("sorts by best mode", () => {

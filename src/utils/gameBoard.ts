@@ -9,12 +9,6 @@ import {
 import type { Apple, SelectionRect } from "../types";
 import { createSeededRandom } from "./random";
 
-export interface SelectionStats {
-  selectedAppleIds: Set<string>;
-  selectedCount: number;
-  selectedSum: number;
-}
-
 export function getBoardGridMetrics(): {
   innerWidth: number;
   innerHeight: number;
@@ -91,24 +85,4 @@ export function isAppleInsideRect(apple: Apple, rect: SelectionRect): boolean {
     apple.y >= rect.top &&
     apple.y <= rect.top + rect.height
   );
-}
-
-export function getSelectionStats(apples: Apple[], rect: SelectionRect | null): SelectionStats {
-  if (!rect) {
-    return {
-      selectedAppleIds: new Set<string>(),
-      selectedCount: 0,
-      selectedSum: 0
-    };
-  }
-
-  const selectedApples = apples.filter(
-    (apple) => !apple.removed && isAppleInsideRect(apple, rect)
-  );
-
-  return {
-    selectedAppleIds: new Set(selectedApples.map((apple) => apple.id)),
-    selectedCount: selectedApples.length,
-    selectedSum: selectedApples.reduce((total, apple) => total + apple.value, 0)
-  };
 }

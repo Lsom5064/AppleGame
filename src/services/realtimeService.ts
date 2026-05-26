@@ -24,7 +24,13 @@ interface RealtimeService {
     settings: Partial<Pick<RoomState["settings"], "roundCount" | "leaderboardMode">>
   ): Promise<void>;
   startGame(roomCode: string, playerId: string): Promise<void>;
-  submitRoundScore(roomCode: string, playerId: string, roundIndex: number, score: number): Promise<void>;
+  submitRoundScore(
+    roomCode: string,
+    playerId: string,
+    roundIndex: number,
+    score: number,
+    clearTimeMs: number | null
+  ): Promise<void>;
   forceRoundProgress(roomCode: string): Promise<void>;
   leaveRoom(roomCode: string, playerId: string): Promise<void>;
 }
@@ -88,11 +94,11 @@ function createFirebaseService(): RealtimeService {
         return startRoomGame(requireRoom(room), playerId, Date.now());
       });
     },
-    async submitRoundScore(roomCode, playerId, roundIndex, score) {
+    async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
       const roomRef = ref(database, getRoomPath(roomCode));
       await runTransaction(roomRef, (current) => {
         const room = current as RoomState | null;
-        return submitRoundScore(requireRoom(room), playerId, roundIndex, score, Date.now());
+        return submitRoundScore(requireRoom(room), playerId, roundIndex, score, clearTimeMs, Date.now());
       });
     },
     async forceRoundProgress(roomCode) {
@@ -200,8 +206,10 @@ function createLocalService(): RealtimeService {
     async startGame(roomCode, playerId) {
       withRoom(roomCode, (room) => startRoomGame(requireRoom(room), playerId, Date.now()));
     },
-    async submitRoundScore(roomCode, playerId, roundIndex, score) {
-      withRoom(roomCode, (room) => submitRoundScore(requireRoom(room), playerId, roundIndex, score, Date.now()));
+    async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
+      withRoom(roomCode, (room) =>
+        submitRoundScore(requireRoom(room), playerId, roundIndex, score, clearTimeMs, Date.now())
+      );
     },
     async forceRoundProgress(roomCode) {
       withRoom(roomCode, (room) => forceRoomProgress(requireRoom(room), Date.now()));

@@ -14,7 +14,10 @@ import {
 function createStartedRoom(): RoomState {
   const created = createInitialRoom("ROOM12", "host", "Host", 1000);
   const joined = joinRoom(created, "guest", "Guest", 1500);
-  return startRoomGame(joined, "host", 2000);
+  const configured = updateRoomSettings(joined, "host", {
+    roundCount: 3
+  });
+  return startRoomGame(configured, "host", 2000);
 }
 
 describe("roomMutations", () => {
@@ -40,14 +43,15 @@ describe("roomMutations", () => {
 
   it("advances to the next round after every player submits", () => {
     const started = createStartedRoom();
-    const afterHost = submitRoundScore(started, "host", 0, 6, 3000);
-    const afterGuest = submitRoundScore(afterHost, "guest", 0, 4, 3500);
+    const afterHost = submitRoundScore(started, "host", 0, 6, 11000, 3000);
+    const afterGuest = submitRoundScore(afterHost, "guest", 0, 4, null, 3500);
 
     expect(afterGuest.phase).toBe("playing");
     expect(afterGuest.currentRoundIndex).toBe(1);
     expect(afterGuest.players.host.roundScores["0"]).toBe(6);
     expect(afterGuest.players.guest.roundScores["0"]).toBe(4);
     expect(afterGuest.roundStartedAt).toBe(3500);
+    expect(afterGuest.submissions["0"].host.clearTimeMs).toBe(11000);
   });
 
   it("fills missing submissions with zero after timeout and finishes the last round", () => {
@@ -57,13 +61,14 @@ describe("roomMutations", () => {
       roundCount: 1
     });
     const started = startRoomGame(configured, "host", 2000);
-    const afterHost = submitRoundScore(started, "host", 0, 8, 2100);
+    const afterHost = submitRoundScore(started, "host", 0, 8, null, 2100);
     const resolved = forceRoomProgress(afterHost, 2000 + started.settings.roundDurationSec * 1000 + 2000);
 
     expect(resolved.phase).toBe("finished");
     expect(resolved.players.host.roundScores["0"]).toBe(8);
     expect(resolved.players.guest.roundScores["0"]).toBe(0);
     expect(resolved.submissions["0"].guest.score).toBe(0);
+    expect(resolved.submissions["0"].guest.clearTimeMs).toBeNull();
   });
 
   it("transfers host ownership to the earliest remaining player when the host leaves", () => {

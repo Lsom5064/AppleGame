@@ -5,19 +5,10 @@ interface LobbyScreenProps {
   room: RoomState;
   player: PlayerState;
   onLeaveRoom: () => void;
-  onUpdateRoundCount: (value: RoomState["settings"]["roundCount"]) => void;
-  onUpdateLeaderboardMode: (value: RoomState["settings"]["leaderboardMode"]) => void;
   onStartGame: () => void;
 }
 
-export function LobbyScreen({
-  room,
-  player,
-  onLeaveRoom,
-  onUpdateRoundCount,
-  onUpdateLeaderboardMode,
-  onStartGame
-}: LobbyScreenProps) {
+export function LobbyScreen({ room, player, onLeaveRoom, onStartGame }: LobbyScreenProps) {
   const isHost = room.hostId === player.id;
 
   return (
@@ -54,45 +45,15 @@ export function LobbyScreen({
         </section>
 
         <section className={styles.panel}>
-          <h2 className={styles.panelTitle}>게임 설정</h2>
+          <h2 className={styles.panelTitle}>게임 규칙</h2>
           <div className={styles.settings}>
-            <label className={styles.field}>
-              총 라운드
-              <select
-                className={styles.select}
-                disabled={!isHost}
-                value={room.settings.roundCount}
-                onChange={(event) =>
-                  onUpdateRoundCount(Number(event.target.value) as RoomState["settings"]["roundCount"])
-                }
-              >
-                <option value={1}>1판</option>
-                <option value={3}>3판</option>
-                <option value={5}>5판</option>
-              </select>
-            </label>
-
-            <label className={styles.field}>
-              리더보드 방식
-              <select
-                className={styles.select}
-                disabled={!isHost}
-                value={room.settings.leaderboardMode}
-                onChange={(event) =>
-                  onUpdateLeaderboardMode(
-                    event.target.value as RoomState["settings"]["leaderboardMode"]
-                  )
-                }
-              >
-                <option value="sum">sum: 모든 판 점수 합계</option>
-                <option value="best">best: 최고 점수 1개</option>
-              </select>
-            </label>
-
+            <p className={styles.rule}>제한시간은 120초입니다.</p>
+            <p className={styles.rule}>드래그한 범위의 숫자 합이 10이면 사과가 제거됩니다.</p>
+            <p className={styles.rule}>사과 1개당 1점이며, 모두 제거하면 클리어 시간이 기록됩니다.</p>
             <p className={styles.hint}>
               {isHost
-                ? "설정을 바꾼 뒤 시작 버튼을 누르면 전원이 같은 시드로 게임을 시작합니다."
-                : "방장이 설정을 조정하면 이 화면에 실시간으로 반영됩니다."}
+                ? "시작 버튼을 누르면 모든 참가자가 같은 배치로 동시에 시작합니다."
+                : "방장이 시작하면 같은 배치로 동시에 게임이 시작됩니다."}
             </p>
           </div>
         </section>
