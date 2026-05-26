@@ -170,7 +170,7 @@ export function GameScreen({
     <div className={styles.layout}>
       <div className={styles.header}>
         <div className={styles.headerCopy}>
-          <h1 className={styles.title}>Fruit Box Multiplayer</h1>
+          <h1 className={styles.title}>Fruit Box</h1>
           <p className={styles.meta}>
             Room {room.code} / Player {player.nickname}
           </p>
@@ -205,9 +205,7 @@ export function GameScreen({
 
       <div className={styles.footer}>
         <div className={styles.footerInfo}>
-          <p className={styles.hint}>
-            드래그해서 숫자 합이 10이 되도록 사과를 감싸세요. 사과 1개당 1점이며 제한시간은 120초입니다.
-          </p>
+          <p className={styles.hint}>사과의 숫자 합이 10이 되도록 드래그하세요.</p>
           {clearTimeMs !== null ? (
             <p className={styles.result}>클리어 시간 {`${(clearTimeMs / 1000).toFixed(1)}초`}</p>
           ) : null}

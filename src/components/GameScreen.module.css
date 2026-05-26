@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .header {
@@ -12,29 +12,29 @@
 
 .headerCopy {
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .title {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   color: #2e241b;
 }
 
 .meta {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
 }
 
 .topBar {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .metric {
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 4px;
   background: #fffdf6;
   border: 1px solid #d8cfbc;
@@ -42,8 +42,8 @@
 
 .metricLabel {
   display: block;
-  margin-bottom: 4px;
-  font-size: 0.74rem;
+  margin-bottom: 3px;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -52,13 +52,13 @@
 
 .metricValue {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: #2d241c;
 }
 
 .panel {
-  padding: 12px;
+  padding: 10px;
   border-radius: 4px;
   background: #fffdf6;
   border: 1px solid #d8cfbc;
@@ -68,26 +68,26 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .footerInfo {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 6px 8px;
   border-radius: 4px;
   background: #fffdf6;
   border: 1px solid #d8cfbc;
   color: #4e3427;
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: 0.86rem;
 }
 
 .toggle input {
@@ -95,7 +95,7 @@
 }
 
 .button {
-  padding: 9px 12px;
+  padding: 7px 10px;
   border-radius: 4px;
   border: 1px solid #b9b0a0;
   background: #f0ead9;
@@ -108,15 +108,15 @@
 .hint {
   margin: 0;
   color: #635548;
-  line-height: 1.5;
-  font-size: 0.92rem;
+  line-height: 1.35;
+  font-size: 0.86rem;
 }
 
 .result {
   margin: 0;
   color: #8b2715;
   font-weight: 800;
-  font-size: 0.94rem;
+  font-size: 0.88rem;
 }
 
 @media (max-width: 860px) {

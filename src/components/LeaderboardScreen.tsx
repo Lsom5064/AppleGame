@@ -24,9 +24,7 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>결과</h1>
-          <p className={styles.description}>
-            점수는 획득한 사과 수 기준입니다. 모든 사과를 제거한 경우 클리어 시간도 함께 표시됩니다.
-          </p>
+          <p className={styles.description}>점수와 클리어 시간을 확인하세요.</p>
         </div>
         <button className={styles.button} type="button" onClick={onLeaveRoom}>
           홈으로 나가기

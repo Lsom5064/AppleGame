@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .header {
@@ -13,19 +13,19 @@
 
 .title {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   color: #2d241c;
 }
 
 .description {
   margin: 4px 0 0;
   color: #67584b;
-  line-height: 1.5;
-  font-size: 0.92rem;
+  line-height: 1.35;
+  font-size: 0.84rem;
 }
 
 .button {
-  padding: 9px 12px;
+  padding: 7px 10px;
   border-radius: 4px;
   border: 1px solid #b9b0a0;
   background: #f0ead9;
@@ -37,7 +37,7 @@
 
 .tableWrap {
   overflow-x: auto;
-  padding: 10px;
+  padding: 8px;
   border-radius: 4px;
   background: #fffdf6;
   border: 1px solid #d8cfbc;
@@ -50,7 +50,7 @@
 
 .table th,
 .table td {
-  padding: 10px 8px;
+  padding: 8px 6px;
   border-bottom: 1px solid #e4dccd;
   text-align: left;
   white-space: nowrap;
@@ -58,7 +58,7 @@
 
 .table th {
   color: #6a5a49;
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 700;
 }
 
@@ -68,7 +68,7 @@
 }
 
 .roundCell span {
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   color: #6a4f45;
 }
 

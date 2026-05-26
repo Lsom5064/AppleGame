@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .header {
@@ -13,30 +13,30 @@
 
 .headerCopy {
   display: grid;
-  gap: 4px;
+  gap: 2px;
 }
 
 .title {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.02rem;
   color: #2e241b;
 }
 
 .description {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
 }
 
 .buttonRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .button,
 .ghostButton {
-  padding: 9px 12px;
+  padding: 7px 10px;
   border-radius: 4px;
   font: inherit;
   font-weight: 700;
@@ -58,25 +58,25 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .panel {
-  padding: 16px;
+  padding: 14px;
   border-radius: 4px;
   background: #fffdf6;
   border: 1px solid #d8cfbc;
 }
 
 .panelTitle {
-  margin: 0 0 10px;
-  font-size: 1rem;
+  margin: 0 0 8px;
+  font-size: 0.96rem;
   color: #2a1d14;
 }
 
 .list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .playerRow {
@@ -84,7 +84,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border-radius: 4px;
   background: #fffcf2;
   border: 1px solid #e6decd;
@@ -101,19 +101,20 @@
 
 .settings {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .rule {
   margin: 0;
   color: #4b2e23;
+  font-size: 0.88rem;
 }
 
 .hint {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.92rem;
-  line-height: 1.5;
+  font-size: 0.86rem;
+  line-height: 1.4;
 }
 
 @media (max-width: 900px) {
