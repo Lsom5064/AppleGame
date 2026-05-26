@@ -31,48 +31,56 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
         </button>
       </div>
 
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>순위</th>
-              <th>플레이어</th>
-              {singleRound ? <th>점수</th> : null}
-              {singleRound ? <th>클리어 시간</th> : null}
-              {!singleRound
-                ? Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
-                    <th key={roundIndex}>R{roundIndex + 1}</th>
-                  ))
-                : null}
-              {!singleRound ? <th>최종 점수</th> : null}
-            </tr>
-          </thead>
-          <tbody>
-            {leaderboard.map((entry, index) => (
-              <tr key={entry.id} className={index === 0 ? styles.winner : undefined}>
-                <td>{index + 1}</td>
-                <td>
-                  {entry.nickname}
-                  {entry.isHost ? " (Host)" : ""}
-                </td>
-                {singleRound ? <td>{entry.finalScore}</td> : null}
-                {singleRound ? <td>{formatClearTime(entry.clearTimes[0])}</td> : null}
-                {!singleRound
-                  ? entry.roundScores.map((score, roundIndex) => (
-                      <td key={roundIndex}>
-                        <div className={styles.roundCell}>
-                          <strong>{score}</strong>
-                          <span>{formatClearTime(entry.clearTimes[roundIndex])}</span>
-                        </div>
-                      </td>
-                    ))
-                  : null}
-                {!singleRound ? <td>{entry.finalScore}</td> : null}
+      {singleRound ? (
+        <ol className={styles.list}>
+          {leaderboard.map((entry, index) => (
+            <li key={entry.id} className={`${styles.listItem} ${index === 0 ? styles.winner : ""}`}>
+              <span className={styles.rank}>{index + 1}.</span>
+              <span className={styles.player}>
+                {entry.nickname}
+                {entry.isHost ? " (Host)" : ""}
+              </span>
+              <span className={styles.score}>{entry.finalScore}점</span>
+              <span className={styles.time}>{formatClearTime(entry.clearTimes[0])}</span>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>순위</th>
+                <th>플레이어</th>
+                {Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
+                  <th key={roundIndex}>R{roundIndex + 1}</th>
+                ))}
+                <th>최종 점수</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {leaderboard.map((entry, index) => (
+                <tr key={entry.id} className={index === 0 ? styles.winner : undefined}>
+                  <td>{index + 1}</td>
+                  <td>
+                    {entry.nickname}
+                    {entry.isHost ? " (Host)" : ""}
+                  </td>
+                  {entry.roundScores.map((score, roundIndex) => (
+                    <td key={roundIndex}>
+                      <div className={styles.roundCell}>
+                        <strong>{score}</strong>
+                        <span>{formatClearTime(entry.clearTimes[roundIndex])}</span>
+                      </div>
+                    </td>
+                  ))}
+                  <td>{entry.finalScore}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

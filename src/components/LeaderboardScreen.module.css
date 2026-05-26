@@ -35,6 +35,43 @@
   cursor: pointer;
 }
 
+.list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listItem {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #e4dccd;
+}
+
+.rank,
+.player,
+.score,
+.time {
+  font-size: 0.86rem;
+}
+
+.rank {
+  color: #6a5a49;
+}
+
+.player {
+  color: #2d241c;
+}
+
+.score,
+.time {
+  color: #5b4c3f;
+}
+
 .tableWrap {
   overflow-x: auto;
   padding: 0;
