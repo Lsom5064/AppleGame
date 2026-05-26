@@ -28,7 +28,7 @@
   padding: 6px 8px;
   border-radius: 0;
   border: 1px solid #999;
-  background: #efefef;
+  background: #f6f6f6;
   color: #222;
   font: inherit;
   font-weight: 400;
@@ -108,6 +108,6 @@
 }
 
 .winner {
-  font-weight: 800;
-  color: #9f340f;
+  font-weight: 700;
+  color: inherit;
 }
