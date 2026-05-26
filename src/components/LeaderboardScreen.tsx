@@ -17,6 +17,7 @@ function formatClearTime(clearTimeMs: number | null): string {
 
 export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps) {
   const leaderboard = buildLeaderboard(room);
+  const singleRound = room.settings.roundCount === 1;
 
   return (
     <div className={styles.layout}>
@@ -38,10 +39,14 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
             <tr>
               <th>순위</th>
               <th>플레이어</th>
-              {Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
-                <th key={roundIndex}>R{roundIndex + 1}</th>
-              ))}
-              <th>최종 점수</th>
+              {singleRound ? <th>점수</th> : null}
+              {singleRound ? <th>클리어 시간</th> : null}
+              {!singleRound
+                ? Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
+                    <th key={roundIndex}>R{roundIndex + 1}</th>
+                  ))
+                : null}
+              {!singleRound ? <th>최종 점수</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -52,15 +57,19 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
                   {entry.nickname}
                   {entry.isHost ? " (Host)" : ""}
                 </td>
-                {entry.roundScores.map((score, roundIndex) => (
-                  <td key={roundIndex}>
-                    <div className={styles.roundCell}>
-                      <strong>{score}</strong>
-                      <span>{formatClearTime(entry.clearTimes[roundIndex])}</span>
-                    </div>
-                  </td>
-                ))}
-                <td>{entry.finalScore}</td>
+                {singleRound ? <td>{entry.finalScore}</td> : null}
+                {singleRound ? <td>{formatClearTime(entry.clearTimes[0])}</td> : null}
+                {!singleRound
+                  ? entry.roundScores.map((score, roundIndex) => (
+                      <td key={roundIndex}>
+                        <div className={styles.roundCell}>
+                          <strong>{score}</strong>
+                          <span>{formatClearTime(entry.clearTimes[roundIndex])}</span>
+                        </div>
+                      </td>
+                    ))
+                  : null}
+                {!singleRound ? <td>{entry.finalScore}</td> : null}
               </tr>
             ))}
           </tbody>

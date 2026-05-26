@@ -13,14 +13,15 @@
 
 .title {
   margin: 0;
-  font-size: 1.8rem;
+  font-size: 1.3rem;
   color: #2d241c;
 }
 
 .description {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: #67584b;
   line-height: 1.5;
+  font-size: 0.92rem;
 }
 
 .button {
@@ -58,6 +59,7 @@
 .table th {
   color: #6a5a49;
   font-size: 0.86rem;
+  font-weight: 700;
 }
 
 .roundCell {

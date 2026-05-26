@@ -168,17 +168,19 @@ export function GameScreen({
 
   return (
     <div className={styles.layout}>
-      <div className={styles.topBar}>
-        <div className={styles.metric}>
-          <span className={styles.metricLabel}>Room</span>
-          <p className={styles.metricValue}>{room.code}</p>
-        </div>
-        <div className={styles.metric}>
-          <span className={styles.metricLabel}>Round</span>
-          <p className={styles.metricValue}>
-            {room.currentRoundIndex + 1} / {room.settings.roundCount}
+      <div className={styles.header}>
+        <div className={styles.headerCopy}>
+          <h1 className={styles.title}>Fruit Box Multiplayer</h1>
+          <p className={styles.meta}>
+            Room {room.code} / Player {player.nickname}
           </p>
         </div>
+        <button className={styles.button} type="button" onClick={onLeaveRoom}>
+          나가기
+        </button>
+      </div>
+
+      <div className={styles.topBar}>
         <div className={styles.metric}>
           <span className={styles.metricLabel}>Time</span>
           <p className={styles.metricValue}>{displayedSeconds}s</p>
@@ -218,9 +220,6 @@ export function GameScreen({
           />
           Light Colors
         </label>
-        <button className={styles.button} type="button" onClick={onLeaveRoom}>
-          나가기
-        </button>
       </div>
     </div>
   );

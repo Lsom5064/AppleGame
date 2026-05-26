@@ -3,25 +3,29 @@
   gap: 14px;
 }
 
-.topBar {
+.header {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
-.roomCode {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  background: #fff8ea;
-  color: #5c4736;
-  border: 1px solid #d8cfbc;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+.headerCopy {
+  display: grid;
+  gap: 4px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #2e241b;
+}
+
+.description {
+  margin: 0;
+  color: #6a5a49;
+  font-size: 0.9rem;
 }
 
 .buttonRow {
@@ -53,8 +57,8 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 18px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .panel {
@@ -65,8 +69,8 @@
 }
 
 .panelTitle {
-  margin: 0 0 12px;
-  font-size: 1.1rem;
+  margin: 0 0 10px;
+  font-size: 1rem;
   color: #2a1d14;
 }
 

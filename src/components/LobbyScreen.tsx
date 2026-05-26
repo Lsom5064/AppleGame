@@ -10,15 +10,17 @@ interface LobbyScreenProps {
 
 export function LobbyScreen({ room, player, onLeaveRoom, onStartGame }: LobbyScreenProps) {
   const isHost = room.hostId === player.id;
+  const players = Object.values(room.players);
 
   return (
     <div className={styles.layout}>
-      <div className={styles.topBar}>
-        <div className={styles.roomCode}>
-          <span>ROOM</span>
-          <strong>{room.code}</strong>
+      <div className={styles.header}>
+        <div className={styles.headerCopy}>
+          <h1 className={styles.title}>게임 시작 대기 중</h1>
+          <p className={styles.description}>
+            Room {room.code} / 참가자 {players.length}명
+          </p>
         </div>
-
         <div className={styles.buttonRow}>
           <button className={styles.ghostButton} type="button" onClick={onLeaveRoom}>
             나가기
@@ -35,7 +37,7 @@ export function LobbyScreen({ room, player, onLeaveRoom, onStartGame }: LobbyScr
         <section className={styles.panel}>
           <h2 className={styles.panelTitle}>참가자</h2>
           <div className={styles.list}>
-            {Object.values(room.players).map((member) => (
+            {players.map((member) => (
               <div key={member.id} className={styles.playerRow}>
                 <span>{member.nickname}</span>
                 {member.isHost ? <span className={styles.badge}>방장</span> : null}
