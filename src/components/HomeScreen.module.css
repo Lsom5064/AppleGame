@@ -1,60 +1,62 @@
 .shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
+  gap: 18px;
 }
 
 .hero {
   display: grid;
-  gap: 12px;
+  gap: 8px;
+  padding-bottom: 4px;
 }
 
 .eyebrow {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #7a2b19;
+  color: #5f4635;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(2.4rem, 5vw, 4.8rem);
-  line-height: 0.92;
-  letter-spacing: -0.04em;
-  color: #24130b;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #2a2018;
 }
 
 .description {
   margin: 0;
-  max-width: 48rem;
-  font-size: 1rem;
-  color: #5f443b;
+  max-width: 40rem;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: #5f5145;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
 }
 
 .panel {
-  padding: 22px;
-  border-radius: 24px;
-  background: rgba(255, 249, 240, 0.88);
-  border: 1px solid rgba(122, 43, 25, 0.12);
-  box-shadow: 0 18px 60px rgba(71, 34, 22, 0.08);
+  padding: 18px;
+  border-radius: 6px;
+  background: #fffdf6;
+  border: 1px solid #d8cfbc;
 }
 
 .panelTitle {
-  margin: 0 0 10px;
-  font-size: 1.1rem;
-  color: #2a1d14;
+  margin: 0 0 8px;
+  font-size: 1.08rem;
+  color: #2f241b;
 }
 
 .panelText {
-  margin: 0 0 16px;
-  color: #6a4f45;
+  margin: 0 0 14px;
+  color: #64584e;
+  line-height: 1.5;
 }
 
 .label {
@@ -62,25 +64,25 @@
   gap: 8px;
   margin-bottom: 14px;
   font-size: 0.95rem;
-  color: #3d261d;
+  color: #3f3127;
 }
 
 .input {
   width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(80, 46, 32, 0.15);
-  background: #fffdf9;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid #b9b0a0;
+  background: white;
   font: inherit;
 }
 
 .button {
   width: 100%;
-  padding: 14px 16px;
-  border: 0;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #b93b17, #ff815b);
-  color: white;
+  padding: 10px 14px;
+  border: 1px solid #7f8f6b;
+  border-radius: 4px;
+  background: #dcebbd;
+  color: #2c341f;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -88,18 +90,12 @@
 
 .secondaryButton {
   width: 100%;
-  padding: 14px 16px;
-  border: 0;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #2f6f3d, #7dbf5a);
-  color: white;
+  padding: 10px 14px;
+  border: 1px solid #8d8373;
+  border-radius: 4px;
+  background: #f0ead9;
+  color: #3b3128;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
-}
-
-.note {
-  margin: 8px 0 0;
-  font-size: 0.85rem;
-  color: #6b574e;
 }

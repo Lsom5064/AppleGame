@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  gap: 20px;
+  gap: 14px;
 }
 
 .topBar {
@@ -15,12 +15,13 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-radius: 999px;
-  background: rgba(255, 245, 228, 0.9);
-  color: #723420;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #fff8ea;
+  color: #5c4736;
+  border: 1px solid #d8cfbc;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
 }
 
 .buttonRow {
@@ -31,22 +32,22 @@
 
 .button,
 .ghostButton {
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 9px 12px;
+  border-radius: 4px;
   font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
 
 .button {
-  border: 0;
-  background: linear-gradient(135deg, #2f6f3d, #75b95c);
-  color: white;
+  border: 1px solid #7f8f6b;
+  background: #dcebbd;
+  color: #2c341f;
 }
 
 .ghostButton {
-  border: 1px solid rgba(54, 34, 23, 0.15);
-  background: rgba(255, 250, 244, 0.84);
+  border: 1px solid #b9b0a0;
+  background: #f0ead9;
   color: #3d2419;
 }
 
@@ -57,11 +58,10 @@
 }
 
 .panel {
-  padding: 22px;
-  border-radius: 24px;
-  background: rgba(255, 249, 240, 0.88);
-  border: 1px solid rgba(122, 43, 25, 0.12);
-  box-shadow: 0 18px 60px rgba(71, 34, 22, 0.08);
+  padding: 16px;
+  border-radius: 4px;
+  background: #fffdf6;
+  border: 1px solid #d8cfbc;
 }
 
 .panelTitle {
@@ -80,14 +80,15 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.64);
+  padding: 10px 12px;
+  border-radius: 4px;
+  background: #fffcf2;
+  border: 1px solid #e6decd;
 }
 
 .badge {
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: 4px;
   background: #fff0c1;
   color: #7b4d0b;
   font-size: 0.82rem;
@@ -106,8 +107,9 @@
 
 .hint {
   margin: 0;
-  color: #6a4f45;
+  color: #6a5a49;
   font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 @media (max-width: 900px) {

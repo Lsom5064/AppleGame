@@ -194,18 +194,12 @@ export default function App() {
   return (
     <main className={styles.app}>
       <div className={styles.frame}>
-        <div className={styles.status}>
-          백엔드 모드: {realtimeService.providerName === "firebase" ? "Firebase Realtime Database" : "Local Mock"}
-          {realtimeService.providerName === "firebase" && playerId ? ` / Auth: Anonymous (${playerId.slice(0, 8)})` : ""}
-        </div>
-
         {error ? <div className={styles.error}>{error}</div> : null}
 
         {!session ? (
           <HomeScreen
             nickname={nickname}
             roomCode={roomCodeInput}
-            providerName={realtimeService.providerName}
             onNicknameChange={setNickname}
             onRoomCodeChange={setRoomCodeInput}
             onCreateRoom={() => void handleCreateRoom()}

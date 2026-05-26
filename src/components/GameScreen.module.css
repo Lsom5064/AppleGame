@@ -1,44 +1,43 @@
 .layout {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .topBar {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .metric {
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(255, 249, 240, 0.9);
-  border: 1px solid rgba(122, 43, 25, 0.12);
+  padding: 10px 12px;
+  border-radius: 4px;
+  background: #fffdf6;
+  border: 1px solid #d8cfbc;
 }
 
 .metricLabel {
   display: block;
-  margin-bottom: 6px;
-  font-size: 0.82rem;
+  margin-bottom: 4px;
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #82513d;
+  color: #7b6957;
 }
 
 .metricValue {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  color: #2c1c14;
+  color: #2d241c;
 }
 
 .panel {
-  padding: 22px;
-  border-radius: 24px;
-  background: rgba(255, 249, 240, 0.88);
-  border: 1px solid rgba(122, 43, 25, 0.12);
-  box-shadow: 0 18px 60px rgba(71, 34, 22, 0.08);
+  padding: 12px;
+  border-radius: 4px;
+  background: #fffdf6;
+  border: 1px solid #d8cfbc;
 }
 
 .footer {
@@ -58,12 +57,13 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  border-radius: 14px;
-  background: rgba(255, 250, 244, 0.84);
-  border: 1px solid rgba(54, 34, 23, 0.12);
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: #fffdf6;
+  border: 1px solid #d8cfbc;
   color: #4e3427;
   font-weight: 700;
+  font-size: 0.92rem;
 }
 
 .toggle input {
@@ -71,10 +71,10 @@
 }
 
 .button {
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(54, 34, 23, 0.15);
-  background: rgba(255, 250, 244, 0.84);
+  padding: 9px 12px;
+  border-radius: 4px;
+  border: 1px solid #b9b0a0;
+  background: #f0ead9;
   color: #3d2419;
   font: inherit;
   font-weight: 700;
@@ -83,13 +83,16 @@
 
 .hint {
   margin: 0;
-  color: #6a4f45;
+  color: #635548;
+  line-height: 1.5;
+  font-size: 0.92rem;
 }
 
 .result {
   margin: 0;
   color: #8b2715;
   font-weight: 800;
+  font-size: 0.94rem;
 }
 
 @media (max-width: 860px) {
