@@ -3,7 +3,6 @@
   width: min(100%, 720px);
   aspect-ratio: 720 / 470;
   margin: 0 auto;
-  overflow: hidden;
   background: #efd09b;
   border: 1px solid #caa46d;
   touch-action: none;
@@ -40,7 +39,7 @@
   font-size: var(--apple-font-size);
   transform: translate(-50%, -50%);
   border: 1px solid rgba(129, 28, 8, 0.18);
-  box-shadow: inset -3px -4px 6px rgba(112, 26, 8, 0.16);
+  box-shadow: inset -2px -3px 5px rgba(112, 26, 8, 0.12);
   transition:
     transform 120ms ease,
     box-shadow 120ms ease,
@@ -84,7 +83,7 @@
 .selection {
   position: absolute;
   border: 1px solid rgba(49, 118, 54, 0.95);
-  background: rgba(121, 193, 106, 0.08);
+  background: transparent;
   border-radius: 0;
 }
 
@@ -93,8 +92,8 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(56, 34, 22, 0.16);
-  color: white;
-  font-weight: 700;
+  background: rgba(56, 34, 22, 0.08);
+  color: #fff;
+  font-weight: 400;
   letter-spacing: 0.02em;
 }

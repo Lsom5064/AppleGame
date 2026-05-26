@@ -11,20 +11,20 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
   line-height: 1.25;
   color: #2a2018;
 }
 
 .description {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   color: #5f5145;
 }
 
 .note {
   margin: 0;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
   color: #6a5a49;
 }
 

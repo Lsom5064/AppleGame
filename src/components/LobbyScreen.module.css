@@ -18,14 +18,14 @@
 
 .title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.94rem;
   color: #2e241b;
 }
 
 .description {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
 }
 
 .buttonRow {
@@ -99,7 +99,7 @@
   border-radius: 0;
   background: #f3f3f3;
   color: #444;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 400;
 }
 
@@ -111,12 +111,12 @@
 .rule {
   margin: 0;
   color: #4b2e23;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
 }
 
 .hint {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   line-height: 1.4;
 }

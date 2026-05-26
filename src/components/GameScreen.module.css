@@ -1,21 +1,21 @@
 .layout {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .meta {
   margin: 0;
   color: #6a5a49;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
 }
 
 .statusRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #57493c;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .stat {
@@ -31,7 +31,7 @@
   border: 0;
   color: #4e3427;
   font-weight: 400;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .toggle input {
@@ -39,7 +39,7 @@
 }
 
 .button {
-  padding: 4px 8px;
+  padding: 3px 7px;
   border-radius: 0;
   border: 1px solid #999;
   background: #efefef;
@@ -53,5 +53,5 @@
   margin: 0;
   color: #635548;
   line-height: 1.35;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
 }

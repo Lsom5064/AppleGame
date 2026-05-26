@@ -13,7 +13,7 @@
 
 .title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.94rem;
   color: #2d241c;
 }
 
@@ -21,7 +21,7 @@
   margin: 4px 0 0;
   color: #67584b;
   line-height: 1.35;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
 }
 
 .button {
@@ -56,7 +56,7 @@
 .player,
 .score,
 .time {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .rank {
@@ -93,7 +93,7 @@
 
 .table th {
   color: #6a5a49;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 700;
 }
 
@@ -103,7 +103,7 @@
 }
 
 .roundCell span {
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   color: #6a4f45;
 }
 
