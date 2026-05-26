@@ -46,6 +46,17 @@ export function GameScreen({
     () => apples.filter((apple) => !apple.removed).length,
     [apples]
   );
+  const selectedAppleIds = useMemo(() => {
+    if (!selectionRect) {
+      return new Set<string>();
+    }
+
+    return new Set(
+      apples
+        .filter((apple) => !apple.removed && isAppleInsideRect(apple, selectionRect))
+        .map((apple) => apple.id)
+    );
+  }, [apples, selectionRect]);
 
   useEffect(() => {
     setApples(generateApples(roundSeed));
@@ -181,6 +192,7 @@ export function GameScreen({
           apples={apples}
           locked={locked}
           selectionRect={selectionRect}
+          selectedAppleIds={selectedAppleIds}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}

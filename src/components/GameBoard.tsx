@@ -8,6 +8,7 @@ interface GameBoardProps {
   apples: Apple[];
   locked: boolean;
   selectionRect: SelectionRect | null;
+  selectedAppleIds: Set<string>;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -17,6 +18,7 @@ export function GameBoard({
   apples,
   locked,
   selectionRect,
+  selectedAppleIds,
   onPointerDown,
   onPointerMove,
   onPointerUp
@@ -41,7 +43,9 @@ export function GameBoard({
       {apples.map((apple) => (
         <div
           key={apple.id}
-          className={`${styles.apple} ${apple.removed ? styles.removed : ""}`}
+          className={`${styles.apple} ${apple.removed ? styles.removed : ""} ${
+            selectedAppleIds.has(apple.id) ? styles.selected : ""
+          }`}
           style={{ left: apple.x, top: apple.y }}
         >
           {apple.value}

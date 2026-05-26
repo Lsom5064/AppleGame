@@ -40,6 +40,12 @@ describe("generateApples", () => {
     }
   });
 
+  it("fills every grid slot with exactly one apple", () => {
+    const apples = generateApples("room-seed:2");
+
+    expect(apples).toHaveLength(BOARD_GRID_COLUMNS * BOARD_GRID_ROWS);
+  });
+
   it("aligns apples to the fixed grid slots", () => {
     const apples = generateApples("room-seed:3");
     const cellWidth = (BOARD_WIDTH - APPLE_PADDING * 2) / BOARD_GRID_COLUMNS;
