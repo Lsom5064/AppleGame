@@ -49,7 +49,7 @@ export function GameBoard({
           className={`${styles.apple} ${apple.removed ? styles.removed : ""}`}
           style={{ left: apple.x, top: apple.y }}
         >
-          {apple.value}
+          <span className={styles.appleValue}>{apple.value}</span>
         </div>
       ))}
 
