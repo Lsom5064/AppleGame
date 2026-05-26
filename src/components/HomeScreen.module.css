@@ -1,0 +1,105 @@
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+.hero {
+  display: grid;
+  gap: 12px;
+}
+
+.eyebrow {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7a2b19;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 4.8rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  color: #24130b;
+}
+
+.description {
+  margin: 0;
+  max-width: 48rem;
+  font-size: 1rem;
+  color: #5f443b;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.panel {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 249, 240, 0.88);
+  border: 1px solid rgba(122, 43, 25, 0.12);
+  box-shadow: 0 18px 60px rgba(71, 34, 22, 0.08);
+}
+
+.panelTitle {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+  color: #2a1d14;
+}
+
+.panelText {
+  margin: 0 0 16px;
+  color: #6a4f45;
+}
+
+.label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 0.95rem;
+  color: #3d261d;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(80, 46, 32, 0.15);
+  background: #fffdf9;
+  font: inherit;
+}
+
+.button {
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #b93b17, #ff815b);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondaryButton {
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2f6f3d, #7dbf5a);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.note {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #6b574e;
+}

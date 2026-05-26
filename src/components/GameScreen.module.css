@@ -1,0 +1,72 @@
+.layout {
+  display: grid;
+  gap: 18px;
+}
+
+.topBar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 249, 240, 0.9);
+  border: 1px solid rgba(122, 43, 25, 0.12);
+}
+
+.metricLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #82513d;
+}
+
+.metricValue {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2c1c14;
+}
+
+.panel {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 249, 240, 0.88);
+  border: 1px solid rgba(122, 43, 25, 0.12);
+  box-shadow: 0 18px 60px rgba(71, 34, 22, 0.08);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(54, 34, 23, 0.15);
+  background: rgba(255, 250, 244, 0.84);
+  color: #3d2419;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hint {
+  margin: 0;
+  color: #6a4f45;
+}
+
+@media (max-width: 860px) {
+  .topBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,51 @@
+.app {
+  min-height: 100vh;
+  padding: 28px 18px 40px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 192, 120, 0.34), transparent 30%),
+    radial-gradient(circle at right 20%, rgba(139, 211, 120, 0.22), transparent 24%),
+    linear-gradient(180deg, #fff7ec 0%, #ffe9d6 44%, #fff3ee 100%);
+}
+
+.frame {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+  padding: 30px;
+  border-radius: 34px;
+  background: rgba(255, 255, 255, 0.46);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(122, 43, 25, 0.08);
+  box-shadow: 0 28px 100px rgba(77, 41, 24, 0.12);
+}
+
+.status {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 250, 244, 0.84);
+  color: #5d4338;
+  font-size: 0.95rem;
+}
+
+.error {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #ffe2d8;
+  color: #7f2914;
+  font-size: 0.95rem;
+}
+
+.loading {
+  min-height: 60vh;
+  display: grid;
+  place-items: center;
+  color: #6a4f45;
+}
+
+@media (max-width: 720px) {
+  .frame {
+    padding: 18px;
+    border-radius: 24px;
+  }
+}

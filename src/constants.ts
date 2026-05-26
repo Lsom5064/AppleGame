@@ -1,0 +1,8 @@
+export const BOARD_WIDTH = 720;
+export const BOARD_HEIGHT = 470;
+export const APPLE_COUNT = 36;
+export const APPLE_RADIUS = 22;
+export const APPLE_PADDING = 28;
+export const ROUND_DURATION_DEFAULT = 120;
+export const SUBMISSION_GRACE_MS = 1500;
+export const SCORE_MODE = "removed_apples" as const;
