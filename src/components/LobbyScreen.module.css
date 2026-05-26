@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .header {
@@ -8,7 +8,7 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .headerCopy {
@@ -31,7 +31,7 @@
 .buttonRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .button,
@@ -61,25 +61,24 @@
 }
 
 .panel {
-  padding: 12px;
-  border-radius: 4px;
-  background: #fffdf6;
-  border: 1px solid #d8cfbc;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .panelTitle {
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 0.96rem;
   color: #2a1d14;
 }
 
 .panelTitle + .settings {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .list {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   margin: 0 0 12px;
   padding: 0;
   list-style: none;
@@ -90,7 +89,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 6px 0;
+  padding: 5px 0;
   border-bottom: 1px solid #ece4d4;
 }
 

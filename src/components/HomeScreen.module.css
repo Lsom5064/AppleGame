@@ -1,7 +1,7 @@
 .shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 14px;
+  gap: 12px;
 }
 
 .hero {
@@ -30,12 +30,12 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 
 .panel {
-  padding: 14px;
+  padding: 12px;
   border-radius: 4px;
   background: #fffdf6;
   border: 1px solid #d8cfbc;
@@ -56,9 +56,9 @@
 
 .label {
   display: grid;
-  gap: 8px;
-  margin-bottom: 14px;
-  font-size: 0.95rem;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 0.88rem;
   color: #3f3127;
 }
 
@@ -73,7 +73,7 @@
 
 .button {
   width: 100%;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid #7f8f6b;
   border-radius: 4px;
   background: #dcebbd;
@@ -85,7 +85,7 @@
 
 .secondaryButton {
   width: 100%;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid #8d8373;
   border-radius: 4px;
   background: #f0ead9;
@@ -100,6 +100,7 @@
   gap: 4px;
   font-size: 0.82rem;
   color: #67584b;
+  padding-top: 2px;
 }
 
 .rules p {
