@@ -24,10 +24,13 @@ export function GameBoard({
   onPointerUp
 }: GameBoardProps) {
   const { cellWidth, cellHeight } = getBoardGridMetrics();
+  const appleSize = Math.min(cellWidth, cellHeight) - 6;
   const gridStyle = {
     "--grid-inset": `${APPLE_PADDING}px`,
     "--grid-cell-width": `${cellWidth}px`,
-    "--grid-cell-height": `${cellHeight}px`
+    "--grid-cell-height": `${cellHeight}px`,
+    "--apple-size": `${appleSize}px`,
+    "--apple-font-size": `${Math.max(12, appleSize * 0.42)}px`
   } as CSSProperties;
 
   return (
