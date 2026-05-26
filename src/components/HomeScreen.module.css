@@ -31,13 +31,14 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 14px;
 }
 
 .panel {
-  padding: 0;
+  padding: 10px 0 0;
   border: 0;
   background: transparent;
+  border-top: 1px solid #e4dccd;
 }
 
 .panelTitle {
@@ -99,7 +100,7 @@
   gap: 4px;
   font-size: 0.82rem;
   color: #67584b;
-  padding-top: 4px;
+  padding-top: 8px;
   border-top: 1px solid #e4dccd;
 }
 

@@ -74,7 +74,8 @@
 
 .tableWrap {
   overflow-x: auto;
-  padding: 0;
+  padding-top: 6px;
+  border-top: 1px solid #e4dccd;
 }
 
 .table {
