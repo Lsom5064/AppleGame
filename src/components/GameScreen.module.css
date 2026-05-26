@@ -1,24 +1,6 @@
 .layout {
   display: grid;
-  gap: 10px;
-}
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.headerCopy {
-  display: grid;
-  gap: 2px;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.05rem;
-  color: #2e241b;
+  gap: 8px;
 }
 
 .meta {
@@ -30,26 +12,14 @@
 .statusRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  align-items: center;
+  gap: 12px;
   color: #57493c;
-  font-size: 0.9rem;
+  font-size: 0.86rem;
 }
 
 .stat {
   margin: 0;
-}
-
-.footer {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.footerInfo {
-  display: grid;
-  gap: 2px;
 }
 
 .toggle {
@@ -85,11 +55,4 @@
   color: #635548;
   line-height: 1.35;
   font-size: 0.86rem;
-}
-
-.result {
-  margin: 0;
-  color: #8b2715;
-  font-weight: 800;
-  font-size: 0.88rem;
 }

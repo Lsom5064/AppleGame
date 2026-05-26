@@ -5,24 +5,24 @@
   margin: 0 auto;
   border-radius: 4px;
   overflow: hidden;
-  background: #f4d8a7;
-  border: 1px solid #d0b17d;
+  background: #f1d5a1;
+  border: 1px solid #cfae78;
   touch-action: none;
   user-select: none;
 }
 
 .lightColors {
-  background: #f7e1b9;
+  background: #f5dfb7;
 }
 
 .grid {
   position: absolute;
   inset: var(--grid-inset);
-  border: 4px solid #d7de67;
-  background-color: #c6f7b8;
+  border: 4px solid #dbe168;
+  background-color: #c8f4b8;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.26) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26) 1px, transparent 1px);
   background-size: var(--grid-cell-width) var(--grid-cell-height);
   box-shadow: inset 0 0 0 1px rgba(132, 167, 79, 0.3);
 }
@@ -35,7 +35,7 @@
   place-items: center;
   border-radius: 50% 48% 46% 50%;
   background:
-    radial-gradient(circle at 30% 30%, #ffd9c6 0, #ff8b62 30%, #d23c19 68%, #9f210a 100%);
+    radial-gradient(circle at 28% 28%, #ffe4d3 0, #ff9b72 28%, #d9421b 66%, #a32108 100%);
   color: white;
   font-weight: 800;
   font-size: 1rem;
@@ -50,7 +50,7 @@
 
 .lightColors .apple {
   background:
-    radial-gradient(circle at 30% 30%, #fff2e6 0, #ffb48d 28%, #ef724d 68%, #d65a29 100%);
+    radial-gradient(circle at 28% 28%, #fff3e9 0, #ffbe9b 28%, #f17c57 68%, #d96b39 100%);
 }
 
 .apple::before {

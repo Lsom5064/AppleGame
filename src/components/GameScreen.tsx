@@ -168,17 +168,7 @@ export function GameScreen({
 
   return (
     <div className={styles.layout}>
-      <div className={styles.header}>
-        <div className={styles.headerCopy}>
-          <h1 className={styles.title}>Fruit Box</h1>
-          <p className={styles.meta}>
-            Room {room.code} / Player {player.nickname}
-          </p>
-        </div>
-        <button className={styles.button} type="button" onClick={onLeaveRoom}>
-          나가기
-        </button>
-      </div>
+      <p className={styles.meta}>Room {room.code} / Player {player.nickname}</p>
 
       <div className={styles.statusRow}>
         <p className={styles.stat}>Time: {displayedSeconds}s</p>
@@ -186,6 +176,17 @@ export function GameScreen({
         {clearTimeMs !== null ? (
           <p className={styles.stat}>Clear: {(clearTimeMs / 1000).toFixed(1)}s</p>
         ) : null}
+        <label className={styles.toggle}>
+          <input
+            checked={lightColors}
+            type="checkbox"
+            onChange={(event) => setLightColors(event.target.checked)}
+          />
+          Light Colors
+        </label>
+        <button className={styles.button} type="button" onClick={onLeaveRoom}>
+          나가기
+        </button>
       </div>
 
       <GameBoard
@@ -198,19 +199,7 @@ export function GameScreen({
         onPointerUp={handlePointerUp}
       />
 
-      <div className={styles.footer}>
-        <div className={styles.footerInfo}>
-          <p className={styles.hint}>사과의 숫자 합이 10이 되도록 드래그하세요.</p>
-        </div>
-        <label className={styles.toggle}>
-          <input
-            checked={lightColors}
-            type="checkbox"
-            onChange={(event) => setLightColors(event.target.checked)}
-          />
-          Light Colors
-        </label>
-      </div>
+      <p className={styles.hint}>사과의 숫자 합이 10이 되도록 드래그하세요.</p>
     </div>
   );
 }
