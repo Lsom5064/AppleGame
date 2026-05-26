@@ -9,34 +9,81 @@ import {
 import type { Apple, SelectionRect } from "../types";
 import { createSeededRandom } from "./random";
 
+interface GridAxisMetrics {
+  sizes: number[];
+  starts: number[];
+}
+
+interface GridSlot {
+  column: number;
+  row: number;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  centerX: number;
+  centerY: number;
+}
+
 export function getBoardGridMetrics(): {
   innerWidth: number;
   innerHeight: number;
-  cellWidth: number;
-  cellHeight: number;
+  columnWidths: number[];
+  rowHeights: number[];
+  columnStarts: number[];
+  rowStarts: number[];
+  slots: GridSlot[];
 } {
   const innerWidth = BOARD_WIDTH - APPLE_PADDING * 2;
   const innerHeight = BOARD_HEIGHT - APPLE_PADDING * 2;
-  const cellWidth = innerWidth / BOARD_GRID_COLUMNS;
-  const cellHeight = innerHeight / BOARD_GRID_ROWS;
+  const columns = distributeAxis(innerWidth, BOARD_GRID_COLUMNS, APPLE_PADDING);
+  const rows = distributeAxis(innerHeight, BOARD_GRID_ROWS, APPLE_PADDING);
+  const slots = createGridSlots(columns, rows);
 
   return {
     innerWidth,
     innerHeight,
-    cellWidth,
-    cellHeight
+    columnWidths: columns.sizes,
+    rowHeights: rows.sizes,
+    columnStarts: columns.starts,
+    rowStarts: rows.starts,
+    slots
   };
 }
 
-function createGridSlots(): Array<{ x: number; y: number }> {
-  const { cellWidth, cellHeight } = getBoardGridMetrics();
-  const slots: Array<{ x: number; y: number }> = [];
+function distributeAxis(total: number, segments: number, start: number): GridAxisMetrics {
+  const baseSize = Math.floor(total / segments);
+  const remainder = total % segments;
+  const sizes = Array.from({ length: segments }, (_, index) => baseSize + (index < remainder ? 1 : 0));
+  const starts: number[] = [];
+  let cursor = start;
+
+  for (const size of sizes) {
+    starts.push(cursor);
+    cursor += size;
+  }
+
+  return { sizes, starts };
+}
+
+function createGridSlots(columns: GridAxisMetrics, rows: GridAxisMetrics): GridSlot[] {
+  const slots: GridSlot[] = [];
 
   for (let row = 0; row < BOARD_GRID_ROWS; row += 1) {
     for (let column = 0; column < BOARD_GRID_COLUMNS; column += 1) {
+      const left = columns.starts[column];
+      const top = rows.starts[row];
+      const width = columns.sizes[column];
+      const height = rows.sizes[row];
       slots.push({
-        x: APPLE_PADDING + cellWidth * (column + 0.5),
-        y: APPLE_PADDING + cellHeight * (row + 0.5)
+        column,
+        row,
+        left,
+        top,
+        width,
+        height,
+        centerX: left + width / 2,
+        centerY: top + height / 2
       });
     }
   }
@@ -46,7 +93,7 @@ function createGridSlots(): Array<{ x: number; y: number }> {
 
 export function generateApples(seed: string): Apple[] {
   const random = createSeededRandom(seed);
-  const slots = createGridSlots();
+  const { slots } = getBoardGridMetrics();
 
   for (let index = slots.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(random() * (index + 1));
@@ -57,8 +104,12 @@ export function generateApples(seed: string): Apple[] {
 
   return slots.slice(0, APPLE_COUNT).map((slot, index) => ({
       id: `${seed}-${index}`,
-      x: slot.x,
-      y: slot.y,
+      column: slot.column,
+      row: slot.row,
+      width: slot.width,
+      height: slot.height,
+      x: slot.centerX,
+      y: slot.centerY,
       value: 1 + Math.floor(random() * 9),
       removed: false
     }));

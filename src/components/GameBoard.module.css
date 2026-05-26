@@ -16,19 +16,22 @@
 .grid {
   position: absolute;
   inset: var(--grid-inset);
+  display: grid;
+  grid-template-columns: var(--grid-columns);
+  grid-template-rows: var(--grid-rows);
   border: 3px solid #dae06e;
   background-color: #c9f1ba;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.22) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.22) 1px, transparent 1px);
-  background-size: var(--grid-cell-width) var(--grid-cell-height);
   box-shadow: inset 0 0 0 1px rgba(132, 167, 79, 0.22);
+  pointer-events: none;
+}
+
+.gridCell {
+  border-right: 1px solid rgba(255, 255, 255, 0.22);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 .apple {
   position: absolute;
-  width: var(--apple-width);
-  height: var(--apple-height);
   display: grid;
   place-items: center;
   isolation: isolate;

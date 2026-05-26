@@ -7,7 +7,7 @@ import {
   BOARD_HEIGHT,
   BOARD_WIDTH
 } from "../constants";
-import { generateApples } from "../utils/gameBoard";
+import { generateApples, getBoardGridMetrics } from "../utils/gameBoard";
 
 describe("generateApples", () => {
   it("returns a deterministic board for the same seed", () => {
@@ -46,17 +46,28 @@ describe("generateApples", () => {
     expect(apples).toHaveLength(BOARD_GRID_COLUMNS * BOARD_GRID_ROWS);
   });
 
+  it("distributes the grid to match the full board interior exactly", () => {
+    const metrics = getBoardGridMetrics();
+
+    expect(metrics.columnWidths).toHaveLength(BOARD_GRID_COLUMNS);
+    expect(metrics.rowHeights).toHaveLength(BOARD_GRID_ROWS);
+    expect(metrics.columnWidths.reduce((sum, width) => sum + width, 0)).toBe(
+      BOARD_WIDTH - APPLE_PADDING * 2
+    );
+    expect(metrics.rowHeights.reduce((sum, height) => sum + height, 0)).toBe(
+      BOARD_HEIGHT - APPLE_PADDING * 2
+    );
+  });
+
   it("aligns apples to the fixed grid slots", () => {
     const apples = generateApples("room-seed:3");
-    const cellWidth = (BOARD_WIDTH - APPLE_PADDING * 2) / BOARD_GRID_COLUMNS;
-    const cellHeight = (BOARD_HEIGHT - APPLE_PADDING * 2) / BOARD_GRID_ROWS;
+    const metrics = getBoardGridMetrics();
+    const slotCenters = new Set(
+      metrics.slots.map((slot) => `${slot.centerX}:${slot.centerY}:${slot.width}:${slot.height}`)
+    );
 
     for (const apple of apples) {
-      const normalizedColumn = (apple.x - APPLE_PADDING) / cellWidth - 0.5;
-      const normalizedRow = (apple.y - APPLE_PADDING) / cellHeight - 0.5;
-
-      expect(normalizedColumn).toBeCloseTo(Math.round(normalizedColumn), 6);
-      expect(normalizedRow).toBeCloseTo(Math.round(normalizedRow), 6);
+      expect(slotCenters.has(`${apple.x}:${apple.y}:${apple.width}:${apple.height}`)).toBe(true);
     }
   });
 });

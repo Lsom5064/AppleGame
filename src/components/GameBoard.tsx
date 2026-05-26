@@ -23,14 +23,14 @@ export function GameBoard({
   onPointerMove,
   onPointerUp
 }: GameBoardProps) {
-  const { cellWidth, cellHeight } = getBoardGridMetrics();
+  const { columnWidths, rowHeights, slots } = getBoardGridMetrics();
+  const smallestColumn = Math.min(...columnWidths);
+  const smallestRow = Math.min(...rowHeights);
   const gridStyle = {
     "--grid-inset": `${APPLE_PADDING}px`,
-    "--grid-cell-width": `${cellWidth}px`,
-    "--grid-cell-height": `${cellHeight}px`,
-    "--apple-width": `${Math.max(24, cellWidth + 2)}px`,
-    "--apple-height": `${Math.max(24, cellHeight + 2)}px`,
-    "--apple-font-size": `${Math.max(13, Math.min(cellWidth, cellHeight) * 0.5)}px`
+    "--grid-columns": columnWidths.map((width) => `${width}px`).join(" "),
+    "--grid-rows": rowHeights.map((height) => `${height}px`).join(" "),
+    "--apple-font-size": `${Math.max(13, Math.min(smallestColumn, smallestRow) * 0.52)}px`
   } as CSSProperties;
 
   return (
@@ -41,13 +41,25 @@ export function GameBoard({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <div className={styles.grid} style={gridStyle} />
+      <div className={styles.grid} style={gridStyle}>
+        {slots.map((slot) => (
+          <div
+            key={`${slot.column}-${slot.row}`}
+            className={styles.gridCell}
+          />
+        ))}
+      </div>
 
       {apples.map((apple) => (
         <div
           key={apple.id}
           className={`${styles.apple} ${apple.removed ? styles.removed : ""}`}
-          style={{ left: apple.x, top: apple.y }}
+          style={{
+            left: apple.x,
+            top: apple.y,
+            width: apple.width,
+            height: apple.height
+          }}
         >
           <span className={styles.appleValue}>{apple.value}</span>
         </div>

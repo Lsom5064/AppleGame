@@ -51,6 +51,10 @@ export interface LeaderboardEntry {
 
 export interface Apple {
   id: string;
+  column: number;
+  row: number;
+  width: number;
+  height: number;
   x: number;
   y: number;
   value: number;
