@@ -28,9 +28,9 @@ export function GameBoard({
     "--grid-inset": `${APPLE_PADDING}px`,
     "--grid-cell-width": `${cellWidth}px`,
     "--grid-cell-height": `${cellHeight}px`,
-    "--apple-width": `${Math.max(22, cellWidth - 2)}px`,
-    "--apple-height": `${Math.max(22, cellHeight - 2)}px`,
-    "--apple-font-size": `${Math.max(12, Math.min(cellWidth, cellHeight) * 0.44)}px`
+    "--apple-width": `${Math.max(24, cellWidth + 2)}px`,
+    "--apple-height": `${Math.max(24, cellHeight + 2)}px`,
+    "--apple-font-size": `${Math.max(13, Math.min(cellWidth, cellHeight) * 0.5)}px`
   } as CSSProperties;
 
   return (
