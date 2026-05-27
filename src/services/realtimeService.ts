@@ -60,6 +60,7 @@ function createRoomDirectoryEntry(room: RoomState): RoomDirectoryEntry {
 
   return {
     roomCode: normalizedRoom.code,
+    roomName: normalizedRoom.name,
     hostNickname: host.nickname,
     playerCount: Object.keys(normalizedRoom.players).length,
     createdAt: normalizedRoom.createdAt,
@@ -73,6 +74,14 @@ function createRoomDirectoryEntry(room: RoomState): RoomDirectoryEntry {
 
 function createRoomDirectoryState(roomsByCode: Record<string, RoomState> | null): RoomDirectoryState {
   const rooms = Object.values(roomsByCode ?? {})
+    .filter((room) => {
+      try {
+        const normalizedRoom = normalizeRoomState(room);
+        return normalizedRoom.phase === "lobby" && Object.keys(normalizedRoom.players).length > 0;
+      } catch {
+        return false;
+      }
+    })
     .flatMap((room) => {
       try {
         return [createRoomDirectoryEntry(room)];
@@ -213,7 +222,10 @@ function createLocalService(): RealtimeService {
   function listDirectoryRooms(): RoomDirectoryEntry[] {
     return listExistingCodes()
       .map((roomCode) => loadRoom(roomCode))
-      .filter((room): room is RoomState => room !== null)
+      .filter(
+        (room): room is RoomState =>
+          room !== null && room.phase === "lobby" && Object.keys(room.players).length > 0
+      )
       .map((room) => createRoomDirectoryEntry(room))
       .sort((left, right) => right.createdAt - left.createdAt);
   }

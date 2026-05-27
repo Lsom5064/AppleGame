@@ -21,6 +21,7 @@ export default function App() {
   const [nickname, setNickname] = useState(() => window.localStorage.getItem(NICKNAME_STORAGE_KEY) ?? "");
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
+  const [createRoomName, setCreateRoomName] = useState("");
   const [createRoomPassword, setCreateRoomPassword] = useState("");
   const [createRoomIsPublic, setCreateRoomIsPublic] = useState(true);
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -162,6 +163,7 @@ export default function App() {
     await runWithBusy(async () => {
       const nextPlayerId = assertPlayerId();
       const roomCode = await realtimeService.createRoom(assertNickname(), nextPlayerId, {
+        name: createRoomName,
         password: createRoomPassword,
         isPublic: createRoomIsPublic
       });
@@ -239,12 +241,14 @@ export default function App() {
             nickname={nickname}
             roomCode={roomCodeInput}
             joinPassword={joinPassword}
+            createRoomName={createRoomName}
             createRoomPassword={createRoomPassword}
             createRoomIsPublic={createRoomIsPublic}
             roomDirectoryState={roomDirectoryState}
             onNicknameChange={setNickname}
             onRoomCodeChange={setRoomCodeInput}
             onJoinPasswordChange={setJoinPassword}
+            onCreateRoomNameChange={setCreateRoomName}
             onCreateRoomPasswordChange={setCreateRoomPassword}
             onCreateRoomIsPublicChange={setCreateRoomIsPublic}
             onCreateRoom={() => void handleCreateRoom()}

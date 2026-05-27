@@ -24,10 +24,12 @@ function createStartedRoom(): RoomState {
 describe("roomMutations", () => {
   it("stores the room access options when a host creates a room", () => {
     const room = createInitialRoom("ROOM12", "host", "Host", 1000, {
+      name: "  사과방  ",
       password: " 1234 ",
       isPublic: false
     });
 
+    expect(room.name).toBe("사과방");
     expect(room.access).toEqual({
       password: "1234",
       isPublic: false
@@ -56,6 +58,7 @@ describe("roomMutations", () => {
 
   it("requires the correct password when joining a locked room", () => {
     const room = createInitialRoom("ROOM12", "host", "Host", 1000, {
+      name: "잠금방",
       password: "apple",
       isPublic: true
     });
@@ -209,5 +212,16 @@ describe("roomMutations", () => {
     expect(joined.players.host.roundScores).toEqual({});
     expect(joined.players.guest.roundScores).toEqual({});
     expect(joined.submissions).toEqual({});
+  });
+
+  it("falls back to a host-based room name when no room name is provided", () => {
+    const room = normalizeRoomState(
+      {
+        ...createInitialRoom("ROOM12", "host", "Host", 1000),
+        name: ""
+      } as RoomState
+    );
+
+    expect(room.name).toBe("Host님의 방");
   });
 });

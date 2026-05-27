@@ -15,6 +15,7 @@ const player: PlayerState = {
 function createRoom(overrides: Partial<RoomState>): RoomState {
   return {
     code: "ROOM12",
+    name: "테스트 방",
     hostId: "host",
     seed: "ROOM12-seed",
     createdAt: 1000,

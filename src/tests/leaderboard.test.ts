@@ -4,6 +4,7 @@ import { buildLeaderboard } from "../utils/leaderboard";
 
 const room: RoomState = {
   code: "ABC123",
+  name: "리더보드 방",
   hostId: "host",
   seed: "seed",
   createdAt: 0,

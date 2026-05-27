@@ -28,6 +28,7 @@ export interface PlayerState {
 
 export interface RoomState {
   code: string;
+  name: string;
   hostId: string;
   seed: string;
   createdAt: number;
@@ -47,6 +48,7 @@ export interface SessionState {
 
 export interface RoomDirectoryEntry {
   roomCode: string;
+  roomName: string;
   hostNickname: string;
   playerCount: number;
   createdAt: number;
@@ -63,6 +65,7 @@ export interface RoomDirectoryState {
 }
 
 export interface CreateRoomOptions {
+  name: string;
   password: string;
   isPublic: boolean;
 }

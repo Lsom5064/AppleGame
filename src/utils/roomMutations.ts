@@ -13,12 +13,19 @@ function normalizePlayer(playerId: string, player: Partial<PlayerState>): Player
   };
 }
 
+function normalizeRoomName(name: string | undefined, hostNickname: string): string {
+  const trimmed = name?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : `${hostNickname}님의 방`;
+}
+
 export function normalizeRoomState(room: RoomState): RoomState {
   const normalizedPhase =
     room.phase === "playing" && room.roundStartedAt === null ? "between-rounds" : room.phase;
+  const hostNickname = room.players?.[room.hostId]?.nickname ?? "Host";
 
   return {
     ...room,
+    name: normalizeRoomName(room.name, hostNickname),
     phase: normalizedPhase,
     settings: {
       roundCount: room.settings?.roundCount ?? 1,
@@ -91,9 +98,11 @@ export function createInitialRoom(
     roundDurationSec: ROUND_DURATION_DEFAULT
   };
   const normalizedPassword = options?.password.trim() ? options.password.trim() : null;
+  const roomName = normalizeRoomName(options?.name, nickname);
 
   return {
     code,
+    name: roomName,
     hostId,
     seed: `${code}-${now}`,
     createdAt: now,

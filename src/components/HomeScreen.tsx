@@ -6,12 +6,14 @@ interface HomeScreenProps {
   nickname: string;
   roomCode: string;
   joinPassword: string;
+  createRoomName: string;
   createRoomPassword: string;
   createRoomIsPublic: boolean;
   roomDirectoryState: RoomDirectoryState;
   onNicknameChange: (value: string) => void;
   onRoomCodeChange: (value: string) => void;
   onJoinPasswordChange: (value: string) => void;
+  onCreateRoomNameChange: (value: string) => void;
   onCreateRoomPasswordChange: (value: string) => void;
   onCreateRoomIsPublicChange: (value: boolean) => void;
   onCreateRoom: () => void;
@@ -38,12 +40,14 @@ export function HomeScreen({
   nickname,
   roomCode,
   joinPassword,
+  createRoomName,
   createRoomPassword,
   createRoomIsPublic,
   roomDirectoryState,
   onNicknameChange,
   onRoomCodeChange,
   onJoinPasswordChange,
+  onCreateRoomNameChange,
   onCreateRoomPasswordChange,
   onCreateRoomIsPublicChange,
   onCreateRoom,
@@ -68,14 +72,14 @@ export function HomeScreen({
       <section className={styles.hero}>
         <h1 className={styles.title}>Fruit Box Multiplayer</h1>
         <p className={styles.description}>숫자 합이 10이 되도록 사과를 드래그하세요.</p>
-        <p className={styles.note}>방장은 비밀번호와 공개 여부를 정할 수 있습니다.</p>
+        <p className={styles.note}>방장은 방 이름, 비밀번호, 공개 여부를 정할 수 있습니다.</p>
         <p className={styles.note}>메인 화면에서는 전체 방 목록을 보고 바로 입장할 수 있습니다.</p>
       </section>
 
       <div className={styles.grid}>
         <section className={styles.panel}>
           <h2 className={styles.panelTitle}>새 방 만들기</h2>
-          <p className={styles.panelText}>닉네임, 비밀번호, 공개 여부를 정한 뒤 방을 만듭니다.</p>
+          <p className={styles.panelText}>닉네임, 방 이름, 비밀번호, 공개 여부를 정한 뒤 방을 만듭니다.</p>
           <label className={styles.label}>
             닉네임
             <input
@@ -84,6 +88,16 @@ export function HomeScreen({
               placeholder="닉네임 입력"
               value={nickname}
               onChange={(event) => onNicknameChange(event.target.value)}
+            />
+          </label>
+          <label className={styles.label}>
+            방 이름
+            <input
+              className={styles.input}
+              maxLength={30}
+              placeholder="비우면 닉네임 기반으로 자동 생성"
+              value={createRoomName}
+              onChange={(event) => onCreateRoomNameChange(event.target.value)}
             />
           </label>
           <label className={styles.label}>
@@ -142,7 +156,7 @@ export function HomeScreen({
 
       <section className={styles.panel}>
         <h2 className={styles.panelTitle}>방 목록</h2>
-        <p className={styles.panelText}>모든 생성된 방이 방장 이름과 함께 표시됩니다.</p>
+        <p className={styles.panelText}>현재 입장 가능한 대기실만 방 이름과 방장 이름으로 표시됩니다.</p>
 
         {roomDirectoryState.status === "loading" ? (
           <p className={styles.directoryMessage}>방 목록을 불러오는 중입니다.</p>
@@ -162,9 +176,9 @@ export function HomeScreen({
                 <div key={room.roomCode} className={styles.roomCard}>
                   <div className={styles.roomCardHeader}>
                     <div>
-                      <p className={styles.roomTitle}>{room.hostNickname}님의 방</p>
+                      <p className={styles.roomTitle}>{room.roomName}</p>
                       <p className={styles.roomMeta}>
-                        코드 {room.roomCode} · {room.playerCount}명 · {room.roundCount}판 ·{" "}
+                        방장 {room.hostNickname} · 코드 {room.roomCode} · {room.playerCount}명 · {room.roundCount}판 ·{" "}
                         {room.leaderboardMode === "sum" ? "합계" : "최고점"}
                       </p>
                     </div>
@@ -214,7 +228,7 @@ export function HomeScreen({
         <p>제한시간은 120초입니다.</p>
         <p>사과 1개당 1점입니다.</p>
         <p>방장은 로비에서 1판, 3판, 5판과 리더보드 기준을 정할 수 있습니다.</p>
-        <p>진행 중이거나 종료된 방은 목록에 보이지만 새로 입장할 수는 없습니다.</p>
+        <p>진행 중이거나 종료됐거나 삭제된 방은 목록에서 자동으로 빠집니다.</p>
       </section>
     </div>
   );
