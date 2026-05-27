@@ -1,5 +1,3 @@
-export const BOARD_WIDTH = 1920;
-export const BOARD_HEIGHT = 1080;
 export const BOARD_GRID_COLUMNS = 17;
 export const BOARD_GRID_ROWS = 10;
 export const APPLE_COUNT = BOARD_GRID_COLUMNS * BOARD_GRID_ROWS;
@@ -14,3 +12,5 @@ export const APPLE_PADDING = 26;
 export const ROUND_DURATION_DEFAULT = 120;
 export const SUBMISSION_GRACE_MS = 1500;
 export const SCORE_MODE = "removed_apples" as const;
+export const BOARD_WIDTH = APPLE_START_X + APPLE_SPACING_X * (BOARD_GRID_COLUMNS - 1) + APPLE_WIDTH + APPLE_PADDING;
+export const BOARD_HEIGHT = APPLE_START_Y + APPLE_SPACING_Y * (BOARD_GRID_ROWS - 1) + APPLE_HEIGHT + APPLE_PADDING;
