@@ -26,7 +26,7 @@ function normalizeRoomName(name: string | undefined, hostNickname: string): stri
 }
 
 export function normalizeRoomState(room: RoomState): RoomState {
-const normalizedPhase =
+  const normalizedPhase =
     room.phase === "playing" && room.roundStartedAt === null ? "between-rounds" : room.phase;
   const hostNickname = room.players?.[room.hostId]?.nickname ?? "Host";
 
@@ -63,6 +63,9 @@ const normalizedPhase =
         )
       ])
     ),
+    nextRoundVotes: Object.fromEntries(
+      Object.entries(room.nextRoundVotes ?? {}).filter(([, voted]) => voted === true)
+    ),
     chatMessages: (room.chatMessages ?? [])
       .filter((message): message is RoomChatMessage => Boolean(message?.id) && Boolean(message?.nickname))
       .map((message) => ({
@@ -96,6 +99,7 @@ function cloneRoom(room: RoomState): RoomState {
         )
       ])
     ),
+    nextRoundVotes: { ...normalizedRoom.nextRoundVotes },
     chatMessages: normalizedRoom.chatMessages.map((message) => ({ ...message }))
   };
 }
@@ -139,6 +143,7 @@ export function createInitialRoom(
       }
     },
     submissions: {},
+    nextRoundVotes: {},
     chatMessages: []
   };
 }
@@ -252,6 +257,7 @@ export function startRoomGame(room: RoomState, playerId: string, now: number): R
     currentRoundIndex: 0,
     roundStartedAt: now,
     submissions: {},
+    nextRoundVotes: {},
     players: Object.fromEntries(
       Object.entries(normalizedRoom.players).map(([id, player]) => [
         id,
@@ -305,6 +311,7 @@ export function forceRoomProgress(room: RoomState, now: number): RoomState {
   }
 
   nextRoom.submissions[roundKey] = roundSubmissions;
+  nextRoom.nextRoundVotes = {};
 
   const isLastRound = nextRoom.currentRoundIndex + 1 >= nextRoom.settings.roundCount;
 
@@ -335,7 +342,42 @@ export function startNextRound(room: RoomState, playerId: string, now: number): 
     ...normalizedRoom,
     phase: "playing",
     currentRoundIndex: normalizedRoom.currentRoundIndex + 1,
-    roundStartedAt: now
+    roundStartedAt: now,
+    nextRoundVotes: {}
+  };
+}
+
+export function voteForNextRound(room: RoomState, playerId: string, now: number): RoomState {
+  const normalizedRoom = normalizeRoomState(room);
+
+  if (normalizedRoom.phase !== "between-rounds") {
+    return room;
+  }
+
+  if (!normalizedRoom.players[playerId]) {
+    return room;
+  }
+
+  if (normalizedRoom.nextRoundVotes[playerId]) {
+    return room;
+  }
+
+  const nextRoom = cloneRoom(normalizedRoom);
+  nextRoom.nextRoundVotes[playerId] = true;
+
+  const playerIds = Object.keys(nextRoom.players);
+  const everyoneAgreed = playerIds.every((id) => nextRoom.nextRoundVotes[id] === true);
+
+  if (!everyoneAgreed) {
+    return nextRoom;
+  }
+
+  return {
+    ...nextRoom,
+    phase: "playing",
+    currentRoundIndex: nextRoom.currentRoundIndex + 1,
+    roundStartedAt: now,
+    nextRoundVotes: {}
   };
 }
 

@@ -30,6 +30,7 @@ function createRoom(overrides: Partial<RoomState>): RoomState {
       isPublic: true
     },
     chatMessages: [],
+    nextRoundVotes: {},
     currentRoundIndex: 0,
     roundStartedAt: 1000,
     players: {
@@ -83,7 +84,8 @@ describe("GameScreen round transitions", () => {
             room={room}
             player={player}
             onLeaveRoom={() => {}}
-            onStartNextRound={() => Promise.resolve()}
+            onVoteNextRound={() => Promise.resolve()}
+            onSendChatMessage={() => Promise.resolve()}
             onSubmitRound={onSubmitRound}
             onForceProgress={onForceProgress}
           />
@@ -109,7 +111,7 @@ describe("GameScreen round transitions", () => {
     });
 
     await renderRoom(betweenRounds);
-    expect(container.textContent).toContain("2라운드 시작");
+    expect(container.textContent).toContain("2라운드 찬성하기");
 
     onSubmitRound.mockClear();
     onForceProgress.mockClear();

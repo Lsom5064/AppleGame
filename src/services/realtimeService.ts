@@ -12,7 +12,8 @@ import {
   startNextRound,
   startRoomGame,
   submitRoundScore,
-  updateRoomSettings
+  updateRoomSettings,
+  voteForNextRound
 } from "../utils/roomMutations";
 
 interface RealtimeService {
@@ -28,6 +29,7 @@ interface RealtimeService {
   ): Promise<void>;
   startGame(roomCode: string, playerId: string): Promise<void>;
   startNextRound(roomCode: string, playerId: string): Promise<void>;
+  voteForNextRound(roomCode: string, playerId: string): Promise<void>;
   submitRoundScore(
     roomCode: string,
     playerId: string,
@@ -157,6 +159,9 @@ function createFirebaseService(): RealtimeService {
     },
     async startNextRound(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => startNextRound(room, playerId, Date.now()));
+    },
+    async voteForNextRound(roomCode, playerId) {
+      await runRoomTransaction(database, roomCode, (room) => voteForNextRound(room, playerId, Date.now()));
     },
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
       await runRoomTransaction(database, roomCode, (room) =>
@@ -305,6 +310,9 @@ function createLocalService(): RealtimeService {
     },
     async startNextRound(roomCode, playerId) {
       withRoom(roomCode, (room) => startNextRound(requireRoom(room), playerId, Date.now()));
+    },
+    async voteForNextRound(roomCode, playerId) {
+      withRoom(roomCode, (room) => voteForNextRound(requireRoom(room), playerId, Date.now()));
     },
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
       withRoom(roomCode, (room) =>

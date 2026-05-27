@@ -5,13 +5,15 @@ import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
 import { generateApples, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
 import { calculateSelectionScore } from "../utils/scoring";
 import { GameBoard } from "./GameBoard";
+import { RoomChat } from "./RoomChat";
 import styles from "./GameScreen.module.css";
 
 interface GameScreenProps {
   room: RoomState;
   player: PlayerState;
   onLeaveRoom: () => void;
-  onStartNextRound: () => Promise<void>;
+  onVoteNextRound: () => Promise<void>;
+  onSendChatMessage: (text: string) => Promise<void>;
   onSubmitRound: (roundIndex: number, score: number, clearTimeMs: number | null) => Promise<void>;
   onForceProgress: () => Promise<void>;
 }
@@ -39,7 +41,8 @@ export function GameScreen({
   room,
   player,
   onLeaveRoom,
-  onStartNextRound,
+  onVoteNextRound,
+  onSendChatMessage,
   onSubmitRound,
   onForceProgress
 }: GameScreenProps) {
@@ -65,6 +68,12 @@ export function GameScreen({
     () => apples.filter((apple) => !apple.removed && !apple.dropping).length,
     [apples]
   );
+  const voteCount = Object.keys(room.nextRoundVotes).length;
+  const playerIds = Object.keys(room.players);
+  const hasVotedForNextRound = Boolean(room.nextRoundVotes[player.id]);
+  const voters = playerIds
+    .filter((id) => room.nextRoundVotes[id])
+    .map((id) => room.players[id]?.nickname ?? id);
 
   useEffect(() => {
     return () => {
@@ -308,23 +317,40 @@ export function GameScreen({
       </div>
 
       {waitingForNextRound ? (
-        <div className={styles.waitingCard}>
-          <p className={styles.waitingTitle}>{room.currentRoundIndex + 1}라운드가 끝났습니다.</p>
-          {lastRoundSubmission ? (
+        <div className={styles.waitingLayout}>
+          <div className={styles.waitingCard}>
+            <p className={styles.waitingTitle}>{room.currentRoundIndex + 1}라운드가 끝났습니다.</p>
+            {lastRoundSubmission ? (
+              <p className={styles.waitingSummary}>
+                이번 라운드 점수 {lastRoundSubmission.score}점 / 클리어{" "}
+                {lastRoundSubmission.clearTimeMs === null
+                  ? "-"
+                  : `${(lastRoundSubmission.clearTimeMs / 1000).toFixed(1)}s`}
+              </p>
+            ) : null}
             <p className={styles.waitingSummary}>
-              이번 라운드 점수 {lastRoundSubmission.score}점 / 클리어{" "}
-              {lastRoundSubmission.clearTimeMs === null
-                ? "-"
-                : `${(lastRoundSubmission.clearTimeMs / 1000).toFixed(1)}s`}
+              다음 라운드 찬성 {voteCount} / {playerIds.length}
             </p>
-          ) : null}
-          {player.isHost ? (
-            <button className={styles.primaryButton} type="button" onClick={() => void onStartNextRound()}>
-              {room.currentRoundIndex + 2}라운드 시작
+            <p className={styles.voteList}>
+              {voters.length > 0 ? `찬성 완료: ${voters.join(", ")}` : "아직 찬성한 사람이 없습니다."}
+            </p>
+            <button
+              className={styles.primaryButton}
+              type="button"
+              disabled={hasVotedForNextRound}
+              onClick={() => void onVoteNextRound()}
+            >
+              {hasVotedForNextRound ? "찬성 완료" : `${room.currentRoundIndex + 2}라운드 찬성하기`}
             </button>
-          ) : (
-            <p className={styles.waitingSummary}>방장이 다음 게임 시작 버튼을 누를 때까지 기다리는 중입니다.</p>
-          )}
+            <p className={styles.waitingSummary}>모든 인원이 찬성하면 자동으로 다음 라운드가 시작됩니다.</p>
+          </div>
+
+          <RoomChat
+            player={player}
+            messages={room.chatMessages}
+            title="라운드 대기 채팅"
+            onSendMessage={onSendChatMessage}
+          />
         </div>
       ) : (
         <>

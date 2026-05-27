@@ -7,10 +7,10 @@ import {
   joinRoom,
   leaveRoom,
   normalizeRoomState,
-  startNextRound,
   startRoomGame,
   submitRoundScore,
-  updateRoomSettings
+  updateRoomSettings,
+  voteForNextRound
 } from "../utils/roomMutations";
 
 function createStartedRoom(): RoomState {
@@ -95,17 +95,24 @@ describe("roomMutations", () => {
     expect(afterGuest.players.guest.roundScores["0"]).toBe(4);
     expect(afterGuest.roundStartedAt).toBeNull();
     expect(afterGuest.submissions["0"].host.clearTimeMs).toBe(11000);
+    expect(afterGuest.nextRoundVotes).toEqual({});
   });
 
-  it("starts the next round only when the host requests it", () => {
+  it("starts the next round only when every player votes for it", () => {
     const started = createStartedRoom();
     const afterHost = submitRoundScore(started, "host", 0, 6, 11000, 3000);
     const waiting = submitRoundScore(afterHost, "guest", 0, 4, null, 3500);
-    const nextRound = startNextRound(waiting, "host", 5000);
+    const afterHostVote = voteForNextRound(waiting, "host", 4500);
+
+    expect(afterHostVote.phase).toBe("between-rounds");
+    expect(afterHostVote.nextRoundVotes).toEqual({ host: true });
+
+    const nextRound = voteForNextRound(afterHostVote, "guest", 5000);
 
     expect(nextRound.phase).toBe("playing");
     expect(nextRound.currentRoundIndex).toBe(1);
     expect(nextRound.roundStartedAt).toBe(5000);
+    expect(nextRound.nextRoundVotes).toEqual({});
   });
 
   it("completes a 3-round game in the expected pause and resume order", () => {
@@ -116,7 +123,8 @@ describe("roomMutations", () => {
     expect(waitingForRoundTwo.phase).toBe("between-rounds");
     expect(waitingForRoundTwo.currentRoundIndex).toBe(0);
 
-    const roundTwo = startNextRound(waitingForRoundTwo, "host", 5000);
+    const hostApprovedRoundTwo = voteForNextRound(waitingForRoundTwo, "host", 4800);
+    const roundTwo = voteForNextRound(hostApprovedRoundTwo, "guest", 5000);
     expect(roundTwo.phase).toBe("playing");
     expect(roundTwo.currentRoundIndex).toBe(1);
 
@@ -125,7 +133,8 @@ describe("roomMutations", () => {
     expect(waitingForRoundThree.phase).toBe("between-rounds");
     expect(waitingForRoundThree.currentRoundIndex).toBe(1);
 
-    const roundThree = startNextRound(waitingForRoundThree, "host", 9000);
+    const hostApprovedRoundThree = voteForNextRound(waitingForRoundThree, "host", 8800);
+    const roundThree = voteForNextRound(hostApprovedRoundThree, "guest", 9000);
     expect(roundThree.phase).toBe("playing");
     expect(roundThree.currentRoundIndex).toBe(2);
 
@@ -179,6 +188,7 @@ describe("roomMutations", () => {
     expect(restarted.currentRoundIndex).toBe(0);
     expect(restarted.roundStartedAt).toBe(9000);
     expect(restarted.submissions).toEqual({});
+    expect(restarted.nextRoundVotes).toEqual({});
     expect(restarted.players.host.roundScores).toEqual({});
     expect(restarted.players.guest.roundScores).toEqual({});
   });
@@ -227,6 +237,7 @@ describe("roomMutations", () => {
       isPublic: true
     });
     expect(normalized.chatMessages).toEqual([]);
+    expect(normalized.nextRoundVotes).toEqual({});
     expect(joined.players.host.roundScores).toEqual({});
     expect(joined.players.guest.roundScores).toEqual({});
     expect(joined.submissions).toEqual({});

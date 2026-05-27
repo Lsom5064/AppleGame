@@ -272,9 +272,8 @@ export default function App() {
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
-            onStartNextRound={() =>
-              runWithBusy(() => realtimeService.startNextRound(room.code, player.id))
-            }
+            onVoteNextRound={() => runWithBusy(() => realtimeService.voteForNextRound(room.code, player.id))}
+            onSendChatMessage={(text) => realtimeService.sendChatMessage(room.code, player.id, text)}
             onSubmitRound={(roundIndex, score, clearTimeMs) =>
               realtimeService.submitRoundScore(room.code, player.id, roundIndex, score, clearTimeMs)
             }

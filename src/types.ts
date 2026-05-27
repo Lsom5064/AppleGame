@@ -47,6 +47,7 @@ export interface RoomState {
   roundStartedAt: number | null;
   players: Record<string, PlayerState>;
   submissions: Record<string, Record<string, RoundSubmission>>;
+  nextRoundVotes: Record<string, boolean>;
   chatMessages: RoomChatMessage[];
 }
 

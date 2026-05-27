@@ -88,6 +88,17 @@
   cursor: pointer;
 }
 
+.primaryButton:disabled {
+  cursor: not-allowed;
+  color: #87673b;
+  background: linear-gradient(180deg, #f3e5b8 0%, #e4c989 100%);
+}
+
+.waitingLayout {
+  display: grid;
+  gap: 12px;
+}
+
 .waitingCard {
   display: grid;
   gap: 10px;
@@ -98,7 +109,8 @@
 }
 
 .waitingTitle,
-.waitingSummary {
+.waitingSummary,
+.voteList {
   margin: 0;
 }
 
@@ -111,6 +123,12 @@
 .waitingSummary {
   color: #6a5338;
   font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.voteList {
+  color: #70593d;
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
