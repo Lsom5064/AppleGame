@@ -38,22 +38,39 @@ export function GameScreen({
   const [apples, setApples] = useState<Apple[]>(() => generateApples(roundSeed));
   const [score, setScore] = useState(0);
   const [dragState, setDragState] = useState<DragState | null>(null);
-  const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null);
+  const [selectedAppleIds, setSelectedAppleIds] = useState<Set<string>>(() => new Set());
   const [timeLeftMs, setTimeLeftMs] = useState(room.settings.roundDurationSec * 1000);
   const [lightColors, setLightColors] = useState(false);
   const [clearTimeMs, setClearTimeMs] = useState<number | null>(null);
   const progressRequestedRef = useRef(false);
+  const dropDirectionRef = useRef<-1 | 1>(1);
+  const dropTimeoutsRef = useRef<number[]>([]);
 
   const remainingApples = useMemo(
-    () => apples.filter((apple) => !apple.removed).length,
+    () => apples.filter((apple) => !apple.removed && !apple.dropping).length,
     [apples]
   );
+
   useEffect(() => {
+    return () => {
+      for (const timeoutId of dropTimeoutsRef.current) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    for (const timeoutId of dropTimeoutsRef.current) {
+      window.clearTimeout(timeoutId);
+    }
+
+    dropTimeoutsRef.current = [];
+    dropDirectionRef.current = 1;
     setApples(generateApples(roundSeed));
     setScore(room.submissions[roundKey]?.[player.id]?.score ?? 0);
     setClearTimeMs(room.submissions[roundKey]?.[player.id]?.clearTimeMs ?? null);
     setDragState(null);
-    setSelectionRect(null);
+    setSelectedAppleIds(new Set());
     setTimeLeftMs(room.settings.roundDurationSec * 1000);
     progressRequestedRef.current = false;
   }, [player.id, room.settings.roundDurationSec, roundKey, roundSeed]);
@@ -94,6 +111,11 @@ export function GameScreen({
     void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
   }, [clearTimeMs, locked, onForceProgress, onSubmitRound, room.currentRoundIndex, score, timeLeftMs]);
 
+  function resetSelection(): void {
+    setDragState(null);
+    setSelectedAppleIds(new Set());
+  }
+
   function getElapsedRoundMs(): number | null {
     if (room.roundStartedAt === null) {
       return null;
@@ -111,15 +133,27 @@ export function GameScreen({
     return { x, y };
   }
 
+  function getSelectionSnapshot(rect: SelectionRect): { ids: Set<string>; apples: Apple[]; sum: number } {
+    const selected = apples.filter(
+      (apple) => !apple.removed && !apple.dropping && isAppleInsideRect(apple, rect)
+    );
+
+    return {
+      ids: new Set(selected.map((apple) => apple.id)),
+      apples: selected,
+      sum: selected.reduce((total, apple) => total + apple.value, 0)
+    };
+  }
+
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
-    if (locked) {
+    if (locked || timeLeftMs <= 0) {
       return;
     }
 
     const { x, y } = getBoardPoint(event);
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragState({ pointerId: event.pointerId, startX: x, startY: y });
-    setSelectionRect(normalizeSelectionRect(x, y, x, y));
+    setSelectedAppleIds(new Set());
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>): void {
@@ -128,7 +162,10 @@ export function GameScreen({
     }
 
     const { x, y } = getBoardPoint(event);
-    setSelectionRect(normalizeSelectionRect(dragState.startX, dragState.startY, x, y));
+    const rect = normalizeSelectionRect(dragState.startX, dragState.startY, x, y);
+    const snapshot = getSelectionSnapshot(rect);
+
+    setSelectedAppleIds(snapshot.ids);
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>): void {
@@ -138,68 +175,99 @@ export function GameScreen({
 
     const { x, y } = getBoardPoint(event);
     const rect = normalizeSelectionRect(dragState.startX, dragState.startY, x, y);
-    const selected = apples.filter((apple) => !apple.removed && isAppleInsideRect(apple, rect));
-    const sum = selected.reduce((total, apple) => total + apple.value, 0);
+    const snapshot = getSelectionSnapshot(rect);
 
-    if (sum === 10 && selected.length > 0) {
-      const selectedIds = new Set(selected.map((apple) => apple.id));
+    if (snapshot.sum === 10 && snapshot.apples.length > 0 && timeLeftMs > 0 && !locked) {
+      const selectedIds = snapshot.ids;
+      let nextDirection = dropDirectionRef.current;
+
       setApples((current) =>
-        current.map((apple) =>
-          selectedIds.has(apple.id)
-            ? {
-                ...apple,
-                removed: true
-              }
-            : apple
-        )
+        current.map((apple) => {
+          if (!selectedIds.has(apple.id)) {
+            return apple;
+          }
+
+          nextDirection = nextDirection === 1 ? -1 : 1;
+
+          return {
+            ...apple,
+            dropping: true,
+            dropDirection: nextDirection
+          };
+        })
       );
-      setScore((current) => current + calculateSelectionScore(selected.length));
-      if (selected.length === remainingApples) {
+
+      dropDirectionRef.current = nextDirection;
+      setScore((current) => current + calculateSelectionScore(snapshot.apples.length));
+
+      if (snapshot.apples.length === remainingApples) {
         setClearTimeMs(getElapsedRoundMs());
       }
+
+      const timeoutId = window.setTimeout(() => {
+        setApples((current) =>
+          current.map((apple) =>
+            selectedIds.has(apple.id)
+              ? {
+                  ...apple,
+                  dropping: false,
+                  removed: true
+                }
+              : apple
+          )
+        );
+        dropTimeoutsRef.current = dropTimeoutsRef.current.filter((value) => value !== timeoutId);
+      }, 520);
+
+      dropTimeoutsRef.current.push(timeoutId);
     }
 
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    setDragState(null);
-    setSelectionRect(null);
-  }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
 
-  const displayedSeconds = Math.ceil(timeLeftMs / 1000);
+    resetSelection();
+  }
 
   return (
     <div className={styles.layout}>
-      <p className={styles.meta}>Room {room.code} / Player {player.nickname}</p>
-
-      <div className={styles.statusRow}>
-        <p className={styles.stat}>Time: {displayedSeconds}s</p>
-        <p className={styles.stat}>Score: {score}</p>
-        {clearTimeMs !== null ? (
-          <p className={styles.stat}>Clear: {(clearTimeMs / 1000).toFixed(1)}s</p>
-        ) : null}
-        <label className={styles.toggle}>
-          <input
-            checked={lightColors}
-            type="checkbox"
-            onChange={(event) => setLightColors(event.target.checked)}
-          />
-          Light Colors
-        </label>
-        <button className={styles.button} type="button" onClick={onLeaveRoom}>
-          나가기
-        </button>
+      <div className={styles.header}>
+        <div>
+          <p className={styles.meta}>Room {room.code}</p>
+          <p className={styles.player}>Player {player.nickname}</p>
+        </div>
+        <div className={styles.controls}>
+          {clearTimeMs !== null ? (
+            <p className={styles.clear}>클리어 {(clearTimeMs / 1000).toFixed(1)}s</p>
+          ) : null}
+          <label className={styles.toggle}>
+            <input
+              checked={lightColors}
+              type="checkbox"
+              onChange={(event) => setLightColors(event.target.checked)}
+            />
+            Light Colors
+          </label>
+          <button className={styles.button} type="button" onClick={onLeaveRoom}>
+            나가기
+          </button>
+        </div>
       </div>
 
       <GameBoard
         apples={apples}
         locked={locked}
         lightColors={lightColors}
-        selectionRect={selectionRect}
+        score={score}
+        timeLeftMs={timeLeftMs}
+        roundDurationSec={room.settings.roundDurationSec}
+        selectedAppleIds={selectedAppleIds}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       />
 
-      <p className={styles.hint}>사과의 숫자 합이 10이 되도록 드래그하세요.</p>
+      <p className={styles.hint}>사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다.</p>
     </div>
   );
 }

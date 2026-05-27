@@ -3,99 +3,191 @@
   width: min(100%, 720px);
   aspect-ratio: 720 / 470;
   margin: 0 auto;
-  background: #efd09b;
-  border: 1px solid #caa46d;
   touch-action: none;
   user-select: none;
 }
 
-.lightColors {
-  background: #f3dcb4;
-}
-
-.grid {
+.boardFrame {
   position: absolute;
-  inset: var(--grid-inset);
-  display: grid;
-  grid-template-columns: var(--grid-columns);
-  grid-template-rows: var(--grid-rows);
-  border: 3px solid #dae06e;
-  background-color: #c9f1ba;
-  box-shadow: inset 0 0 0 1px rgba(132, 167, 79, 0.22);
-  pointer-events: none;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.65), transparent 28%),
+    linear-gradient(180deg, #efe6b7 0%, #d6b679 100%);
+  box-shadow:
+    inset 0 0 0 3px #f9f0cb,
+    inset 0 0 0 16px #a16c36,
+    inset 0 0 0 20px #d9aa69,
+    0 18px 30px rgba(95, 62, 28, 0.28);
 }
 
-.gridCell {
-  border-right: 1px solid rgba(255, 255, 255, 0.22);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+.playfield {
+  position: absolute;
+  inset: 26px 40px 26px 26px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)) top / 100% 28% no-repeat,
+    linear-gradient(180deg, #e4f7c8 0%, #c8ef9c 100%);
+  box-shadow:
+    inset 0 0 0 3px #effbcf,
+    inset 0 0 0 6px #7bb351;
+}
+
+.lightColors .playfield {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0)) top / 100% 28% no-repeat,
+    linear-gradient(180deg, #f2fbdf 0%, #ddf4bd 100%);
+}
+
+.scorePanel {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 18px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 8px 20px rgba(98, 78, 28, 0.15);
+  transform: translateX(-50%);
+  color: #7a4d19;
+}
+
+.scoreLabel,
+.timeLabel {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.scoreValue {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.timePanel {
+  position: absolute;
+  top: 78px;
+  right: 16px;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: #7a4d19;
+}
+
+.timeRail {
+  position: relative;
+  width: 14px;
+  height: 202px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 0 0 2px rgba(126, 99, 49, 0.22);
+}
+
+.timeFill {
+  position: absolute;
+  inset: 0;
+  transform-origin: bottom;
+  background: linear-gradient(180deg, #ffeb79 0%, #73d447 100%);
+}
+
+.timeValue {
+  min-width: 2ch;
+  font-size: 1.2rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .apple {
   position: absolute;
-  display: grid;
-  place-items: center;
-  isolation: isolate;
   transform: translate(-50%, -50%);
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease,
-    filter 120ms ease,
-    opacity 120ms ease;
+  pointer-events: none;
 }
 
-.apple::before {
-  content: "";
+.appleShadow {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: 74%;
+  height: 18%;
+  border-radius: 999px;
+  background: rgba(68, 53, 22, 0.22);
+  transform: translateX(-50%);
+  filter: blur(2px);
+}
+
+.appleBody {
   position: absolute;
   inset: 0;
-  border-radius: 42% 42% 46% 46% / 30% 30% 58% 58%;
+  display: grid;
+  place-items: center;
+  border-radius: 48% 48% 44% 44% / 34% 34% 58% 58%;
   background:
-    radial-gradient(circle at 32% 28%, rgba(255, 245, 236, 0.95) 0, rgba(255, 221, 196, 0.9) 14%, transparent 30%),
-    radial-gradient(circle at 48% 78%, rgba(121, 24, 7, 0.28) 0, transparent 46%),
-    radial-gradient(circle at 30% 34%, #ffd2b5 0, #ff9767 28%, #da4d24 60%, #b4270e 100%);
+    radial-gradient(circle at 32% 24%, rgba(255, 243, 229, 0.98) 0, rgba(255, 225, 198, 0.9) 18%, transparent 30%),
+    radial-gradient(circle at 62% 76%, rgba(125, 21, 5, 0.2) 0, transparent 38%),
+    linear-gradient(180deg, #ff8162 0%, #ff5032 45%, #e33317 72%, #bf1c0b 100%);
   box-shadow:
-    inset -3px -5px 7px rgba(112, 26, 8, 0.18),
-    inset 2px 3px 6px rgba(255, 240, 230, 0.22);
-  z-index: -1;
+    inset -3px -5px 8px rgba(117, 22, 7, 0.25),
+    inset 2px 3px 6px rgba(255, 247, 236, 0.2);
 }
 
-.lightColors .apple::before {
+.lightColors .appleBody {
   background:
-    radial-gradient(circle at 32% 28%, rgba(255, 248, 243, 0.98) 0, rgba(255, 236, 219, 0.92) 14%, transparent 30%),
-    radial-gradient(circle at 48% 78%, rgba(150, 54, 20, 0.2) 0, transparent 46%),
-    radial-gradient(circle at 30% 34%, #ffe1d0 0, #ffb38f 28%, #f4835e 60%, #da6b39 100%);
+    radial-gradient(circle at 32% 24%, rgba(255, 248, 240, 0.99) 0, rgba(255, 236, 217, 0.94) 18%, transparent 30%),
+    radial-gradient(circle at 62% 76%, rgba(160, 49, 21, 0.16) 0, transparent 38%),
+    linear-gradient(180deg, #ffae95 0%, #ff8664 45%, #f06e4e 72%, #dc5537 100%);
 }
 
-.apple::after {
-  content: "";
+.stem {
   position: absolute;
-  inset: -8% 0 0;
-  background:
-    linear-gradient(#5d2d17, #5d2d17) 52% 4% / 8% 23% no-repeat,
-    radial-gradient(circle at 50% 50%, #67b95a 0, #4f9c4b 62%, #3b7f39 100%) 33% 8% / 30% 17% no-repeat;
-  transform: rotate(-16deg);
-  z-index: -1;
+  top: 2px;
+  left: 52%;
+  width: 7%;
+  height: 26%;
+  border-radius: 999px;
+  background: #7b4d1f;
+  transform: translateX(-50%) rotate(10deg);
+}
+
+.leaf {
+  position: absolute;
+  top: 4px;
+  left: 33%;
+  width: 28%;
+  height: 16%;
+  border-radius: 70% 20% 60% 20%;
+  background: linear-gradient(180deg, #9ce260 0%, #58b93e 100%);
+  transform: rotate(-18deg);
 }
 
 .appleValue {
   position: relative;
-  z-index: 1;
-  color: white;
+  margin-top: 6px;
+  color: #fff;
+  font-size: 1rem;
   font-weight: 800;
-  font-size: var(--apple-font-size);
   line-height: 1;
-  transform: translateY(10%);
-  text-shadow: 0 1px 2px rgba(99, 24, 10, 0.38);
+  text-shadow: 0 1px 2px rgba(89, 17, 8, 0.4);
 }
 
-.removed {
-  opacity: 0.08;
+.selected .appleShadow {
+  background: rgba(69, 163, 34, 0.32);
+  filter: blur(3px);
 }
 
-.selection {
-  position: absolute;
-  border: 1px solid rgba(49, 118, 54, 0.95);
-  background: transparent;
-  border-radius: 0;
+.selected .appleBody {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 0 3px #ffe36f,
+    inset -3px -5px 8px rgba(117, 22, 7, 0.2),
+    inset 2px 3px 6px rgba(255, 247, 236, 0.24);
+}
+
+.dropping {
+  animation: drop 520ms cubic-bezier(0.2, 0.72, 0.28, 1) forwards;
 }
 
 .locked {
@@ -103,8 +195,22 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(56, 34, 22, 0.08);
-  color: #fff;
-  font-weight: 400;
+  border-radius: 18px;
+  background: rgba(61, 38, 18, 0.16);
+  color: #fff7e0;
+  font-size: 1.05rem;
+  font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+@keyframes drop {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) rotate(0deg);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(var(--drop-x), 168px) rotate(var(--drop-rotate));
+  }
 }

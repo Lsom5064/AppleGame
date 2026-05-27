@@ -1,37 +1,56 @@
 .layout {
   display: grid;
-  gap: 6px;
+  gap: 10px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.meta,
+.player,
+.clear,
+.hint {
+  margin: 0;
 }
 
 .meta {
-  margin: 0;
-  color: #6a5a49;
-  font-size: 0.76rem;
+  color: #6f5c43;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
-.statusRow {
+.player {
+  color: #3f2e1f;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
-  color: #57493c;
-  font-size: 0.78rem;
 }
 
-.stat {
-  margin: 0;
+.clear {
+  color: #5e4c32;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .toggle {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  color: #4e3427;
-  font-weight: 400;
-  font-size: 0.78rem;
+  gap: 6px;
+  color: #4e3c24;
+  font-size: 0.8rem;
 }
 
 .toggle input {
@@ -39,19 +58,19 @@
 }
 
 .button {
-  padding: 3px 7px;
-  border-radius: 0;
-  border: 1px solid #999;
-  background: #f6f6f6;
-  color: #222;
+  padding: 5px 10px;
+  border: 1px solid #9b835a;
+  border-radius: 999px;
+  background: #fffaf0;
+  color: #45311e;
   font: inherit;
-  font-weight: 400;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .hint {
-  margin: 0;
-  color: #635548;
-  line-height: 1.35;
-  font-size: 0.76rem;
+  color: #6a573f;
+  line-height: 1.4;
+  font-size: 0.78rem;
 }

@@ -1,89 +1,33 @@
 import {
   APPLE_COUNT,
-  APPLE_PADDING,
+  APPLE_HEIGHT,
+  APPLE_SPACING,
+  APPLE_START_X,
+  APPLE_START_Y,
+  APPLE_WIDTH,
   BOARD_GRID_COLUMNS,
-  BOARD_GRID_ROWS,
-  BOARD_HEIGHT,
-  BOARD_WIDTH
+  BOARD_GRID_ROWS
 } from "../constants";
 import type { Apple, SelectionRect } from "../types";
 import { createSeededRandom } from "./random";
 
-interface GridAxisMetrics {
-  sizes: number[];
-  starts: number[];
-}
-
-interface GridSlot {
+interface BoardSlot {
   column: number;
   row: number;
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
+  x: number;
+  y: number;
 }
 
-export function getBoardGridMetrics(): {
-  innerWidth: number;
-  innerHeight: number;
-  columnWidths: number[];
-  rowHeights: number[];
-  columnStarts: number[];
-  rowStarts: number[];
-  slots: GridSlot[];
-} {
-  const innerWidth = BOARD_WIDTH - APPLE_PADDING * 2;
-  const innerHeight = BOARD_HEIGHT - APPLE_PADDING * 2;
-  const columns = distributeAxis(innerWidth, BOARD_GRID_COLUMNS, APPLE_PADDING);
-  const rows = distributeAxis(innerHeight, BOARD_GRID_ROWS, APPLE_PADDING);
-  const slots = createGridSlots(columns, rows);
-
-  return {
-    innerWidth,
-    innerHeight,
-    columnWidths: columns.sizes,
-    rowHeights: rows.sizes,
-    columnStarts: columns.starts,
-    rowStarts: rows.starts,
-    slots
-  };
-}
-
-function distributeAxis(total: number, segments: number, start: number): GridAxisMetrics {
-  const baseSize = Math.floor(total / segments);
-  const remainder = total % segments;
-  const sizes = Array.from({ length: segments }, (_, index) => baseSize + (index < remainder ? 1 : 0));
-  const starts: number[] = [];
-  let cursor = start;
-
-  for (const size of sizes) {
-    starts.push(cursor);
-    cursor += size;
-  }
-
-  return { sizes, starts };
-}
-
-function createGridSlots(columns: GridAxisMetrics, rows: GridAxisMetrics): GridSlot[] {
-  const slots: GridSlot[] = [];
+export function getBoardSlots(): BoardSlot[] {
+  const slots: BoardSlot[] = [];
 
   for (let row = 0; row < BOARD_GRID_ROWS; row += 1) {
     for (let column = 0; column < BOARD_GRID_COLUMNS; column += 1) {
-      const left = columns.starts[column];
-      const top = rows.starts[row];
-      const width = columns.sizes[column];
-      const height = rows.sizes[row];
       slots.push({
         column,
         row,
-        left,
-        top,
-        width,
-        height,
-        centerX: left + width / 2,
-        centerY: top + height / 2
+        x: APPLE_START_X + column * APPLE_SPACING,
+        y: APPLE_START_Y + row * APPLE_SPACING
       });
     }
   }
@@ -93,26 +37,44 @@ function createGridSlots(columns: GridAxisMetrics, rows: GridAxisMetrics): GridS
 
 export function generateApples(seed: string): Apple[] {
   const random = createSeededRandom(seed);
-  const { slots } = getBoardGridMetrics();
+  const slots = getBoardSlots();
 
-  for (let index = slots.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(random() * (index + 1));
-    const current = slots[index];
-    slots[index] = slots[swapIndex];
-    slots[swapIndex] = current;
-  }
+  while (true) {
+    let sum = 0;
+    let hasSingleTen = false;
+    const values: number[] = [];
 
-  return slots.slice(0, APPLE_COUNT).map((slot, index) => ({
-      id: `${seed}-${index}`,
+    for (let index = 0; index < APPLE_COUNT; index += 1) {
+      if (index === APPLE_COUNT - 1) {
+        const adjustedValue = 10 - (sum % 10);
+        values.push(adjustedValue);
+        hasSingleTen = adjustedValue === 10;
+        continue;
+      }
+
+      const value = 1 + Math.floor(random() * 9);
+      values.push(value);
+      sum += value;
+    }
+
+    if (hasSingleTen) {
+      continue;
+    }
+
+    return slots.map((slot, index) => ({
+      id: `${seed}-${slot.column}-${slot.row}`,
       column: slot.column,
       row: slot.row,
-      width: slot.width,
-      height: slot.height,
-      x: slot.centerX,
-      y: slot.centerY,
-      value: 1 + Math.floor(random() * 9),
+      width: APPLE_WIDTH,
+      height: APPLE_HEIGHT,
+      x: slot.x,
+      y: slot.y,
+      value: values[index],
+      dropping: false,
+      dropDirection: 1,
       removed: false
     }));
+  }
 }
 
 export function normalizeSelectionRect(
@@ -131,9 +93,9 @@ export function normalizeSelectionRect(
 
 export function isAppleInsideRect(apple: Apple, rect: SelectionRect): boolean {
   return (
-    apple.x >= rect.left &&
-    apple.x <= rect.left + rect.width &&
-    apple.y >= rect.top &&
-    apple.y <= rect.top + rect.height
+    apple.x > rect.left &&
+    apple.x < rect.left + rect.width &&
+    apple.y > rect.top &&
+    apple.y < rect.top + rect.height
   );
 }

@@ -58,6 +58,8 @@ export interface Apple {
   x: number;
   y: number;
   value: number;
+  dropping: boolean;
+  dropDirection: -1 | 1;
   removed: boolean;
 }
 
