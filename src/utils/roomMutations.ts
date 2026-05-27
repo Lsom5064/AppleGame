@@ -1,5 +1,5 @@
 import { ROUND_DURATION_DEFAULT, SUBMISSION_GRACE_MS } from "../constants";
-import type { GameSettings, PlayerState, RoomState, RoundSubmission } from "../types";
+import type { CreateRoomOptions, GameSettings, PlayerState, RoomState, RoundSubmission } from "../types";
 import { createSeededRandom } from "./random";
 import { generateRoomCode } from "./roomCode";
 
@@ -24,6 +24,10 @@ export function normalizeRoomState(room: RoomState): RoomState {
       roundCount: room.settings?.roundCount ?? 1,
       leaderboardMode: room.settings?.leaderboardMode ?? "sum",
       roundDurationSec: room.settings?.roundDurationSec ?? ROUND_DURATION_DEFAULT
+    },
+    access: {
+      password: room.access?.password?.trim() ? room.access.password.trim() : null,
+      isPublic: room.access?.isPublic ?? true
     },
     players: Object.fromEntries(
       Object.entries(room.players ?? {}).map(([playerId, player]) => [
@@ -74,12 +78,19 @@ function cloneRoom(room: RoomState): RoomState {
   };
 }
 
-export function createInitialRoom(code: string, hostId: string, nickname: string, now: number): RoomState {
+export function createInitialRoom(
+  code: string,
+  hostId: string,
+  nickname: string,
+  now: number,
+  options?: CreateRoomOptions
+): RoomState {
   const settings: GameSettings = {
     roundCount: 1,
     leaderboardMode: "sum",
     roundDurationSec: ROUND_DURATION_DEFAULT
   };
+  const normalizedPassword = options?.password.trim() ? options.password.trim() : null;
 
   return {
     code,
@@ -88,6 +99,10 @@ export function createInitialRoom(code: string, hostId: string, nickname: string
     createdAt: now,
     phase: "lobby",
     settings,
+    access: {
+      password: normalizedPassword,
+      isPublic: options?.isPublic ?? true
+    },
     currentRoundIndex: 0,
     roundStartedAt: null,
     players: {
@@ -117,11 +132,21 @@ export function createNewRoomCode(existingCodes: string[]): string {
   throw new Error("사용 가능한 방 코드를 생성하지 못했습니다.");
 }
 
-export function joinRoom(room: RoomState, playerId: string, nickname: string, now: number): RoomState {
+export function joinRoom(
+  room: RoomState,
+  playerId: string,
+  nickname: string,
+  now: number,
+  password?: string
+): RoomState {
   const nextRoom = cloneRoom(room);
 
   if (nextRoom.phase !== "lobby") {
     throw new Error("이미 게임이 시작된 방입니다.");
+  }
+
+  if (nextRoom.access.password && nextRoom.access.password !== (password?.trim() ?? "")) {
+    throw new Error("비밀번호가 올바르지 않습니다.");
   }
 
   nextRoom.players[playerId] = {

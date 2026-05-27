@@ -1,6 +1,11 @@
 export type LeaderboardMode = "sum" | "best";
 export type RoomPhase = "lobby" | "playing" | "between-rounds" | "finished";
 
+export interface RoomAccessSettings {
+  password: string | null;
+  isPublic: boolean;
+}
+
 export interface GameSettings {
   roundCount: 1 | 3 | 5;
   leaderboardMode: LeaderboardMode;
@@ -28,6 +33,7 @@ export interface RoomState {
   createdAt: number;
   phase: RoomPhase;
   settings: GameSettings;
+  access: RoomAccessSettings;
   currentRoundIndex: number;
   roundStartedAt: number | null;
   players: Record<string, PlayerState>;
@@ -39,18 +45,26 @@ export interface SessionState {
   playerId: string;
 }
 
-export interface NearbyRoomSummary {
+export interface RoomDirectoryEntry {
   roomCode: string;
   hostNickname: string;
   playerCount: number;
   createdAt: number;
+  phase: RoomPhase;
   roundCount: GameSettings["roundCount"];
   leaderboardMode: LeaderboardMode;
+  isPublic: boolean;
+  requiresPassword: boolean;
 }
 
-export interface NearbyRoomsState {
-  status: "loading" | "ready" | "unavailable";
-  rooms: NearbyRoomSummary[];
+export interface RoomDirectoryState {
+  status: "loading" | "ready";
+  rooms: RoomDirectoryEntry[];
+}
+
+export interface CreateRoomOptions {
+  password: string;
+  isPublic: boolean;
 }
 
 export interface LeaderboardEntry {

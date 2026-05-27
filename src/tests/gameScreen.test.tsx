@@ -24,6 +24,10 @@ function createRoom(overrides: Partial<RoomState>): RoomState {
       leaderboardMode: "sum",
       roundDurationSec: 1
     },
+    access: {
+      password: null,
+      isPublic: true
+    },
     currentRoundIndex: 0,
     roundStartedAt: 1000,
     players: {

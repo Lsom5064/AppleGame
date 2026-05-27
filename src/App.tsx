@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import { GameScreen } from "./components/GameScreen";
 import { HomeScreen } from "./components/HomeScreen";
@@ -8,11 +8,10 @@ import { BOARD_WIDTH } from "./constants";
 import { ensureFirebaseIdentity } from "./lib/firebase";
 import { realtimeService } from "./services/realtimeService";
 import styles from "./styles/App.module.css";
-import type { NearbyRoomsState, RoomState, SessionState } from "./types";
+import type { RoomDirectoryState, RoomState, SessionState } from "./types";
 import { getOrCreateClientId } from "./utils/client";
 
 const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
-const LOBBY_ANNOUNCEMENT_REFRESH_MS = 15_000;
 type IdentityStatus = "loading" | "ready" | "error";
 
 export default function App() {
@@ -21,18 +20,20 @@ export default function App() {
   } as CSSProperties;
   const [nickname, setNickname] = useState(() => window.localStorage.getItem(NICKNAME_STORAGE_KEY) ?? "");
   const [roomCodeInput, setRoomCodeInput] = useState("");
+  const [joinPassword, setJoinPassword] = useState("");
+  const [createRoomPassword, setCreateRoomPassword] = useState("");
+  const [createRoomIsPublic, setCreateRoomIsPublic] = useState(true);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [identityStatus, setIdentityStatus] = useState<IdentityStatus>("loading");
   const [session, setSession] = useState<SessionState | null>(null);
   const [room, setRoom] = useState<RoomState | null>(null);
   const [hasResolvedRoom, setHasResolvedRoom] = useState(false);
-  const [nearbyRoomsState, setNearbyRoomsState] = useState<NearbyRoomsState>({
+  const [roomDirectoryState, setRoomDirectoryState] = useState<RoomDirectoryState>({
     status: "loading",
     rooms: []
   });
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
-  const publishedLobbyRoomCodeRef = useRef<string | null>(null);
 
   useEffect(() => {
     window.localStorage.setItem(NICKNAME_STORAGE_KEY, nickname);
@@ -104,15 +105,15 @@ export default function App() {
 
   useEffect(() => {
     if (session) {
-      setNearbyRoomsState({
+      setRoomDirectoryState({
         status: "loading",
         rooms: []
       });
       return;
     }
 
-    return realtimeService.subscribeToNearbyRooms((nextNearbyRoomsState) => {
-      setNearbyRoomsState(nextNearbyRoomsState);
+    return realtimeService.subscribeToRoomDirectory((nextRoomDirectoryState) => {
+      setRoomDirectoryState(nextRoomDirectoryState);
     });
   }, [session]);
 
@@ -127,29 +128,6 @@ export default function App() {
       setRoom(null);
     }
   }, [hasResolvedRoom, room, session]);
-
-  useEffect(() => {
-    if (!room || !player || !player.isHost || room.phase !== "lobby") {
-      const publishedRoomCode = publishedLobbyRoomCodeRef.current;
-      publishedLobbyRoomCodeRef.current = null;
-
-      if (publishedRoomCode) {
-        void realtimeService.clearLobbyRoom(publishedRoomCode);
-      }
-
-      return;
-    }
-
-    publishedLobbyRoomCodeRef.current = room.code;
-    void realtimeService.publishLobbyRoom(room);
-    const intervalId = window.setInterval(() => {
-      void realtimeService.publishLobbyRoom(room);
-    }, LOBBY_ANNOUNCEMENT_REFRESH_MS);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [player, room]);
 
   async function runWithBusy(task: () => Promise<void>): Promise<void> {
     try {
@@ -183,17 +161,21 @@ export default function App() {
   async function handleCreateRoom(): Promise<void> {
     await runWithBusy(async () => {
       const nextPlayerId = assertPlayerId();
-      const roomCode = await realtimeService.createRoom(assertNickname(), nextPlayerId);
+      const roomCode = await realtimeService.createRoom(assertNickname(), nextPlayerId, {
+        password: createRoomPassword,
+        isPublic: createRoomIsPublic
+      });
       setSession({ roomCode, playerId: nextPlayerId });
+      setJoinPassword("");
     });
   }
 
   async function handleJoinRoom(): Promise<void> {
     const trimmedRoomCode = roomCodeInput.trim().toUpperCase();
-    await handleJoinRoomByCode(trimmedRoomCode);
+    await handleJoinRoomByCode(trimmedRoomCode, joinPassword);
   }
 
-  async function handleJoinRoomByCode(roomCode: string): Promise<void> {
+  async function handleJoinRoomByCode(roomCode: string, password = ""): Promise<void> {
     await runWithBusy(async () => {
       const trimmedRoomCode = roomCode.trim().toUpperCase();
       if (!trimmedRoomCode) {
@@ -201,8 +183,10 @@ export default function App() {
       }
 
       const nextPlayerId = assertPlayerId();
-      await realtimeService.joinRoom(trimmedRoomCode, assertNickname(), nextPlayerId);
+      await realtimeService.joinRoom(trimmedRoomCode, assertNickname(), nextPlayerId, password);
       setSession({ roomCode: trimmedRoomCode, playerId: nextPlayerId });
+      setRoomCodeInput(trimmedRoomCode);
+      setJoinPassword("");
     });
   }
 
@@ -213,13 +197,11 @@ export default function App() {
     }
 
     await runWithBusy(async () => {
-      if (room?.hostId === currentSession.playerId) {
-        await realtimeService.clearLobbyRoom(currentSession.roomCode);
-      }
       await realtimeService.leaveRoom(currentSession.roomCode, currentSession.playerId);
       setSession(null);
       setRoom(null);
       setRoomCodeInput("");
+      setJoinPassword("");
     });
   }
 
@@ -256,12 +238,18 @@ export default function App() {
           <HomeScreen
             nickname={nickname}
             roomCode={roomCodeInput}
-            nearbyRoomsState={nearbyRoomsState}
+            joinPassword={joinPassword}
+            createRoomPassword={createRoomPassword}
+            createRoomIsPublic={createRoomIsPublic}
+            roomDirectoryState={roomDirectoryState}
             onNicknameChange={setNickname}
             onRoomCodeChange={setRoomCodeInput}
+            onJoinPasswordChange={setJoinPassword}
+            onCreateRoomPasswordChange={setCreateRoomPassword}
+            onCreateRoomIsPublicChange={setCreateRoomIsPublic}
             onCreateRoom={() => void handleCreateRoom()}
             onJoinRoom={() => void handleJoinRoom()}
-            onJoinNearbyRoom={(nextRoomCode) => void handleJoinRoomByCode(nextRoomCode)}
+            onJoinListedRoom={(nextRoomCode, password) => void handleJoinRoomByCode(nextRoomCode, password)}
           />
         ) : room && player && room.phase === "lobby" ? (
           <LobbyScreen

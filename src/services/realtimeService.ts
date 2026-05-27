@@ -1,7 +1,6 @@
 import { get, onValue, ref, runTransaction, set } from "firebase/database";
 import { firebaseDatabase } from "../lib/firebase";
-import type { NearbyRoomSummary, NearbyRoomsState, RoomState } from "../types";
-import { getNetworkFingerprint } from "../utils/networkFingerprint";
+import type { CreateRoomOptions, RoomDirectoryEntry, RoomDirectoryState, RoomState } from "../types";
 import {
   createInitialRoom,
   createNewRoomCode,
@@ -17,10 +16,10 @@ import {
 
 interface RealtimeService {
   providerName: "firebase" | "local";
-  createRoom(nickname: string, playerId: string): Promise<string>;
-  joinRoom(roomCode: string, nickname: string, playerId: string): Promise<void>;
+  createRoom(nickname: string, playerId: string, options: CreateRoomOptions): Promise<string>;
+  joinRoom(roomCode: string, nickname: string, playerId: string, password?: string): Promise<void>;
   subscribeToRoom(roomCode: string, callback: (room: RoomState | null) => void): () => void;
-  subscribeToNearbyRooms(callback: (state: NearbyRoomsState) => void): () => void;
+  subscribeToRoomDirectory(callback: (state: RoomDirectoryState) => void): () => void;
   updateSettings(
     roomCode: string,
     playerId: string,
@@ -37,45 +36,10 @@ interface RealtimeService {
   ): Promise<void>;
   forceRoundProgress(roomCode: string): Promise<void>;
   leaveRoom(roomCode: string, playerId: string): Promise<void>;
-  publishLobbyRoom(room: RoomState): Promise<void>;
-  clearLobbyRoom(roomCode: string): Promise<void>;
 }
-
-interface NearbyRoomAnnouncement extends NearbyRoomSummary {
-  hostId: string;
-  expiresAt: number;
-  updatedAt: number;
-}
-
-const NEARBY_ROOM_TTL_MS = 30_000;
 
 function getRoomPath(roomCode: string): string {
   return `rooms/${roomCode}`;
-}
-
-function getNearbyRoomsPath(networkFingerprint: string): string {
-  return `nearbyRooms/${networkFingerprint}`;
-}
-
-function getPublicNearbyRoomsPath(): string {
-  return "nearbyRoomsPublic";
-}
-
-function createNearbyRoomSummary(room: RoomState): NearbyRoomSummary {
-  const host = room.players[room.hostId];
-
-  if (!host) {
-    throw new Error("방장 정보를 찾을 수 없습니다.");
-  }
-
-  return {
-    roomCode: room.code,
-    hostNickname: host.nickname,
-    playerCount: Object.keys(room.players).length,
-    createdAt: room.createdAt,
-    roundCount: room.settings.roundCount,
-    leaderboardMode: room.settings.leaderboardMode
-  };
 }
 
 function requireRoom(room: RoomState | null): RoomState {
@@ -86,30 +50,42 @@ function requireRoom(room: RoomState | null): RoomState {
   return normalizeRoomState(room);
 }
 
-function readAnnouncements(snapshotValue: Record<string, NearbyRoomAnnouncement> | null): NearbyRoomSummary[] {
-  const announcements = snapshotValue ?? {};
-  const now = Date.now();
+function createRoomDirectoryEntry(room: RoomState): RoomDirectoryEntry {
+  const normalizedRoom = normalizeRoomState(room);
+  const host = normalizedRoom.players[normalizedRoom.hostId];
 
-  return Object.values(announcements)
-    .filter((announcement) => announcement.expiresAt > now)
-    .sort((left, right) => right.updatedAt - left.updatedAt)
-    .map(({ hostId: _hostId, expiresAt: _expiresAt, updatedAt: _updatedAt, ...room }) => room);
+  if (!host) {
+    throw new Error("방장 정보를 찾을 수 없습니다.");
+  }
+
+  return {
+    roomCode: normalizedRoom.code,
+    hostNickname: host.nickname,
+    playerCount: Object.keys(normalizedRoom.players).length,
+    createdAt: normalizedRoom.createdAt,
+    phase: normalizedRoom.phase,
+    roundCount: normalizedRoom.settings.roundCount,
+    leaderboardMode: normalizedRoom.settings.leaderboardMode,
+    isPublic: normalizedRoom.access.isPublic,
+    requiresPassword: Boolean(normalizedRoom.access.password)
+  };
 }
 
-function mergeNearbyRoomLists(networkRooms: NearbyRoomSummary[], publicRooms: NearbyRoomSummary[]): NearbyRoomSummary[] {
-  const dedupedRooms = new Map<string, NearbyRoomSummary>();
+function createRoomDirectoryState(roomsByCode: Record<string, RoomState> | null): RoomDirectoryState {
+  const rooms = Object.values(roomsByCode ?? {})
+    .flatMap((room) => {
+      try {
+        return [createRoomDirectoryEntry(room)];
+      } catch {
+        return [];
+      }
+    })
+    .sort((left, right) => right.createdAt - left.createdAt);
 
-  for (const room of networkRooms) {
-    dedupedRooms.set(room.roomCode, room);
-  }
-
-  for (const room of publicRooms) {
-    if (!dedupedRooms.has(room.roomCode)) {
-      dedupedRooms.set(room.roomCode, room);
-    }
-  }
-
-  return Array.from(dedupedRooms.values()).sort((left, right) => right.createdAt - left.createdAt);
+  return {
+    status: "ready",
+    rooms
+  };
 }
 
 async function runRoomTransaction(
@@ -133,75 +109,34 @@ function createFirebaseService(): RealtimeService {
 
   return {
     providerName: "firebase",
-    async createRoom(nickname, playerId) {
+    async createRoom(nickname, playerId, options) {
       const roomsRef = ref(database, "rooms");
       const snapshot = await get(roomsRef);
       const existingCodes = snapshot.exists() ? Object.keys(snapshot.val() as Record<string, unknown>) : [];
       const roomCode = createNewRoomCode(existingCodes);
-      const room = createInitialRoom(roomCode, playerId, nickname, Date.now());
+      const room = createInitialRoom(roomCode, playerId, nickname, Date.now(), options);
       await set(ref(database, getRoomPath(roomCode)), room);
       return roomCode;
     },
-    async joinRoom(roomCode, nickname, playerId) {
-      await runRoomTransaction(database, roomCode, (room) => joinRoom(room, playerId, nickname, Date.now()));
+    async joinRoom(roomCode, nickname, playerId, password) {
+      await runRoomTransaction(database, roomCode, (room) =>
+        joinRoom(room, playerId, nickname, Date.now(), password)
+      );
     },
     subscribeToRoom(roomCode, callback) {
       const roomRef = ref(database, getRoomPath(roomCode));
-      const unsubscribe = onValue(roomRef, (snapshot) => {
+      return onValue(roomRef, (snapshot) => {
         const nextRoom = (snapshot.val() as RoomState | null) ?? null;
         callback(nextRoom ? normalizeRoomState(nextRoom) : null);
       });
-      return unsubscribe;
     },
-    subscribeToNearbyRooms(callback) {
-      let disposed = false;
-      let unsubscribeFromPublic: (() => void) | null = null;
-      let unsubscribeFromNetwork: (() => void) | null = null;
-      let publicRooms: NearbyRoomSummary[] = [];
-      let networkRooms: NearbyRoomSummary[] = [];
-      let hasResolvedPublicRooms = false;
-
+    subscribeToRoomDirectory(callback) {
       callback({ status: "loading", rooms: [] });
+      const roomsRef = ref(database, "rooms");
 
-      const emit = () => {
-        if (disposed || !hasResolvedPublicRooms) {
-          return;
-        }
-
-        callback({
-          status: "ready",
-          rooms: mergeNearbyRoomLists(networkRooms, publicRooms)
-        });
-      };
-
-      unsubscribeFromPublic = onValue(ref(database, getPublicNearbyRoomsPath()), (snapshot) => {
-        publicRooms = readAnnouncements(snapshot.val() as Record<string, NearbyRoomAnnouncement> | null);
-        hasResolvedPublicRooms = true;
-        emit();
+      return onValue(roomsRef, (snapshot) => {
+        callback(createRoomDirectoryState((snapshot.val() as Record<string, RoomState> | null) ?? null));
       });
-
-      void getNetworkFingerprint()
-        .then((networkFingerprint) => {
-          if (disposed || !networkFingerprint) {
-            emit();
-            return;
-          }
-
-          const nearbyRoomsRef = ref(database, getNearbyRoomsPath(networkFingerprint));
-          unsubscribeFromNetwork = onValue(nearbyRoomsRef, (snapshot) => {
-            networkRooms = readAnnouncements(snapshot.val() as Record<string, NearbyRoomAnnouncement> | null);
-            emit();
-          });
-        })
-        .catch(() => {
-          emit();
-        });
-
-      return () => {
-        disposed = true;
-        unsubscribeFromPublic?.();
-        unsubscribeFromNetwork?.();
-      };
     },
     async updateSettings(roomCode, playerId, settings) {
       await runRoomTransaction(database, roomCode, (room) => updateRoomSettings(room, playerId, settings));
@@ -222,39 +157,6 @@ function createFirebaseService(): RealtimeService {
     },
     async leaveRoom(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => leaveRoom(room, playerId));
-    },
-    async publishLobbyRoom(room) {
-      if (room.phase !== "lobby") {
-        return;
-      }
-
-      const summary = createNearbyRoomSummary(room);
-      const timestamp = Date.now();
-      const announcement: NearbyRoomAnnouncement = {
-        ...summary,
-        hostId: room.hostId,
-        expiresAt: timestamp + NEARBY_ROOM_TTL_MS,
-        updatedAt: timestamp
-      };
-
-      await set(ref(database, `${getPublicNearbyRoomsPath()}/${room.code}`), announcement);
-
-      const networkFingerprint = await getNetworkFingerprint();
-      if (!networkFingerprint) {
-        return;
-      }
-
-      await set(ref(database, `${getNearbyRoomsPath(networkFingerprint)}/${room.code}`), announcement);
-    },
-    async clearLobbyRoom(roomCode) {
-      await set(ref(database, `${getPublicNearbyRoomsPath()}/${roomCode}`), null);
-
-      const networkFingerprint = await getNetworkFingerprint();
-      if (!networkFingerprint) {
-        return;
-      }
-
-      await set(ref(database, `${getNearbyRoomsPath(networkFingerprint)}/${roomCode}`), null);
     }
   };
 }
@@ -308,23 +210,23 @@ function createLocalService(): RealtimeService {
       .map((key) => key.replace(STORAGE_PREFIX, ""));
   }
 
-  function listNearbyRooms(): NearbyRoomSummary[] {
+  function listDirectoryRooms(): RoomDirectoryEntry[] {
     return listExistingCodes()
       .map((roomCode) => loadRoom(roomCode))
-      .filter((room): room is RoomState => room !== null && room.phase === "lobby")
-      .sort((left, right) => right.createdAt - left.createdAt)
-      .map((room) => createNearbyRoomSummary(room));
+      .filter((room): room is RoomState => room !== null)
+      .map((room) => createRoomDirectoryEntry(room))
+      .sort((left, right) => right.createdAt - left.createdAt);
   }
 
   return {
     providerName: "local",
-    async createRoom(nickname, playerId) {
+    async createRoom(nickname, playerId, options) {
       const roomCode = createNewRoomCode(listExistingCodes());
-      persistRoom(roomCode, createInitialRoom(roomCode, playerId, nickname, Date.now()));
+      persistRoom(roomCode, createInitialRoom(roomCode, playerId, nickname, Date.now(), options));
       return roomCode;
     },
-    async joinRoom(roomCode, nickname, playerId) {
-      withRoom(roomCode, (room) => joinRoom(requireRoom(room), playerId, nickname, Date.now()));
+    async joinRoom(roomCode, nickname, playerId, password) {
+      withRoom(roomCode, (room) => joinRoom(requireRoom(room), playerId, nickname, Date.now(), password));
     },
     subscribeToRoom(roomCode, callback) {
       callback(loadRoom(roomCode));
@@ -349,14 +251,15 @@ function createLocalService(): RealtimeService {
         channel?.removeEventListener("message", handleMessage);
       };
     },
-    subscribeToNearbyRooms(callback) {
+    subscribeToRoomDirectory(callback) {
       const emit = () => {
         callback({
           status: "ready",
-          rooms: listNearbyRooms()
+          rooms: listDirectoryRooms()
         });
       };
 
+      callback({ status: "loading", rooms: [] });
       emit();
 
       const handleStorage = (event: StorageEvent) => {
@@ -396,12 +299,6 @@ function createLocalService(): RealtimeService {
     },
     async leaveRoom(roomCode, playerId) {
       withRoom(roomCode, (room) => leaveRoom(requireRoom(room), playerId));
-    },
-    async publishLobbyRoom(_room) {
-      return;
-    },
-    async clearLobbyRoom(_roomCode) {
-      return;
     }
   };
 }

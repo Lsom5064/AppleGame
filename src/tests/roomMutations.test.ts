@@ -22,6 +22,18 @@ function createStartedRoom(): RoomState {
 }
 
 describe("roomMutations", () => {
+  it("stores the room access options when a host creates a room", () => {
+    const room = createInitialRoom("ROOM12", "host", "Host", 1000, {
+      password: " 1234 ",
+      isPublic: false
+    });
+
+    expect(room.access).toEqual({
+      password: "1234",
+      isPublic: false
+    });
+  });
+
   it("allows only the host to change lobby settings", () => {
     const room = createInitialRoom("ROOM12", "host", "Host", 1000);
 
@@ -40,6 +52,16 @@ describe("roomMutations", () => {
         roundCount: 1
       })
     ).toThrow("방장만 설정을 변경할 수 있습니다.");
+  });
+
+  it("requires the correct password when joining a locked room", () => {
+    const room = createInitialRoom("ROOM12", "host", "Host", 1000, {
+      password: "apple",
+      isPublic: true
+    });
+
+    expect(() => joinRoom(room, "guest", "Guest", 1500, "wrong")).toThrow("비밀번호가 올바르지 않습니다.");
+    expect(joinRoom(room, "guest", "Guest", 1500, "apple").players.guest.nickname).toBe("Guest");
   });
 
   it("waits for the host to start the next round after every player submits", () => {
@@ -180,6 +202,10 @@ describe("roomMutations", () => {
     const normalized = normalizeRoomState(sparseRoom);
     const joined = joinRoom(normalized, "guest", "Guest", 1500);
 
+    expect(normalized.access).toEqual({
+      password: null,
+      isPublic: true
+    });
     expect(joined.players.host.roundScores).toEqual({});
     expect(joined.players.guest.roundScores).toEqual({});
     expect(joined.submissions).toEqual({});

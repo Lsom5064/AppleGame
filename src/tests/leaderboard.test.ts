@@ -13,6 +13,10 @@ const room: RoomState = {
     leaderboardMode: "sum",
     roundDurationSec: 120
   },
+  access: {
+    password: null,
+    isPublic: true
+  },
   currentRoundIndex: 2,
   roundStartedAt: 0,
   submissions: {

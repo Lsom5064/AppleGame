@@ -64,6 +64,15 @@
   color: #3f3127;
 }
 
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.88rem;
+  color: #3f3127;
+}
+
 .input {
   width: 100%;
   padding: 8px 10px;
@@ -98,38 +107,86 @@
   cursor: pointer;
 }
 
-.nearbyMessage {
+.directoryMessage {
   margin: 0;
   color: #64584e;
   line-height: 1.4;
   font-size: 0.84rem;
 }
 
-.nearbyList {
+.roomList {
   display: grid;
   gap: 8px;
 }
 
-.nearbyRoom {
+.roomCard {
   display: grid;
-  gap: 3px;
-  width: 100%;
-  padding: 8px 10px;
+  gap: 8px;
+  padding: 10px;
   border: 1px solid #d3c5b2;
   background: #fffaf1;
-  text-align: left;
+}
+
+.roomCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.roomTitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #2f241b;
+}
+
+.roomMeta {
+  margin: 3px 0 0;
+  font-size: 0.78rem;
+  color: #6a5a49;
+}
+
+.roomPhase {
+  font-size: 0.76rem;
+  color: #7a6549;
+}
+
+.roomBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  border: 1px solid #d8cbb8;
+  background: #fff;
+  font-size: 0.76rem;
+  color: #584939;
+}
+
+.inlineLabel {
+  display: grid;
+  gap: 6px;
+  font-size: 0.84rem;
+  color: #3f3127;
+}
+
+.roomButton {
+  padding: 8px 10px;
+  border: 1px solid #d3c5b2;
+  background: #f7efe1;
   cursor: pointer;
   font: inherit;
   color: #2f241b;
 }
 
-.nearbyRoomTitle {
-  font-size: 0.88rem;
-}
-
-.nearbyRoomMeta {
-  font-size: 0.78rem;
-  color: #6a5a49;
+.roomButton:disabled {
+  cursor: not-allowed;
+  color: #87735a;
+  background: #efe6d9;
 }
 
 .rules {
