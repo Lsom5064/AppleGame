@@ -89,7 +89,7 @@ export function GameScreen({
     setSelectedAppleIds(new Set());
     setTimeLeftMs(room.settings.roundDurationSec * 1000);
     progressRequestedRef.current = false;
-  }, [player.id, room.settings.roundDurationSec, roundKey, roundSeed]);
+  }, [player.id, room.phase, room.roundStartedAt, room.settings.roundDurationSec, roundKey, roundSeed]);
 
   useEffect(() => {
     const interval = window.setInterval(() => {

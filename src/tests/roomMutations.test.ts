@@ -66,6 +66,34 @@ describe("roomMutations", () => {
     expect(nextRound.roundStartedAt).toBe(5000);
   });
 
+  it("completes a 3-round game in the expected pause and resume order", () => {
+    const started = createStartedRoom();
+
+    const afterRoundOne = submitRoundScore(started, "host", 0, 6, 11000, 3000);
+    const waitingForRoundTwo = submitRoundScore(afterRoundOne, "guest", 0, 4, null, 3500);
+    expect(waitingForRoundTwo.phase).toBe("between-rounds");
+    expect(waitingForRoundTwo.currentRoundIndex).toBe(0);
+
+    const roundTwo = startNextRound(waitingForRoundTwo, "host", 5000);
+    expect(roundTwo.phase).toBe("playing");
+    expect(roundTwo.currentRoundIndex).toBe(1);
+
+    const afterRoundTwo = submitRoundScore(roundTwo, "host", 1, 9, 9000, 7000);
+    const waitingForRoundThree = submitRoundScore(afterRoundTwo, "guest", 1, 1, null, 7100);
+    expect(waitingForRoundThree.phase).toBe("between-rounds");
+    expect(waitingForRoundThree.currentRoundIndex).toBe(1);
+
+    const roundThree = startNextRound(waitingForRoundThree, "host", 9000);
+    expect(roundThree.phase).toBe("playing");
+    expect(roundThree.currentRoundIndex).toBe(2);
+
+    const afterRoundThree = submitRoundScore(roundThree, "host", 2, 5, null, 12000);
+    const finished = submitRoundScore(afterRoundThree, "guest", 2, 3, null, 12100);
+    expect(finished.phase).toBe("finished");
+    expect(finished.players.host.roundScores).toEqual({ "0": 6, "1": 9, "2": 5 });
+    expect(finished.players.guest.roundScores).toEqual({ "0": 4, "1": 1, "2": 3 });
+  });
+
   it("normalizes legacy paused rooms into between-rounds state", () => {
     const started = createStartedRoom();
     const legacyPausedRoom = {

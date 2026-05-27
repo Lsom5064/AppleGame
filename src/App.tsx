@@ -222,6 +222,7 @@ export default function App() {
           />
         ) : room && player && (room.phase === "playing" || room.phase === "between-rounds") ? (
           <GameScreen
+            key={`${room.phase}:${room.currentRoundIndex}:${room.roundStartedAt ?? "paused"}:${player.id}`}
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
