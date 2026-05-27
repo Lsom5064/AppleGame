@@ -9,7 +9,7 @@ import { ensureFirebaseIdentity } from "./lib/firebase";
 import { realtimeService } from "./services/realtimeService";
 import styles from "./styles/App.module.css";
 import type { RoomDirectoryState, RoomState, SessionState } from "./types";
-import { getOrCreateClientId } from "./utils/client";
+import { clearStoredSession, getOrCreateClientId, loadStoredSession, storeSession } from "./utils/client";
 
 const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
 type IdentityStatus = "loading" | "ready" | "error";
@@ -27,6 +27,7 @@ export default function App() {
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [identityStatus, setIdentityStatus] = useState<IdentityStatus>("loading");
   const [session, setSession] = useState<SessionState | null>(null);
+  const [hasAttemptedSessionRestore, setHasAttemptedSessionRestore] = useState(false);
   const [room, setRoom] = useState<RoomState | null>(null);
   const [hasResolvedRoom, setHasResolvedRoom] = useState(false);
   const [roomDirectoryState, setRoomDirectoryState] = useState<RoomDirectoryState>({
@@ -84,6 +85,36 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (identityStatus !== "ready" || !playerId || hasAttemptedSessionRestore) {
+      return;
+    }
+
+    const storedSession = loadStoredSession();
+
+    if (storedSession?.playerId === playerId) {
+      setSession(storedSession);
+      setRoomCodeInput(storedSession.roomCode);
+    } else if (storedSession) {
+      clearStoredSession();
+    }
+
+    setHasAttemptedSessionRestore(true);
+  }, [hasAttemptedSessionRestore, identityStatus, playerId]);
+
+  useEffect(() => {
+    if (!hasAttemptedSessionRestore) {
+      return;
+    }
+
+    if (session) {
+      storeSession(session);
+      return;
+    }
+
+    clearStoredSession();
+  }, [hasAttemptedSessionRestore, session]);
+
+  useEffect(() => {
     if (!session) {
       setRoom(null);
       setHasResolvedRoom(false);
@@ -98,6 +129,7 @@ export default function App() {
       if (!nextRoom) {
         setError("방이 존재하지 않거나 종료되었습니다.");
         setSession(null);
+        clearStoredSession();
       }
     });
   }, [session]);
@@ -127,6 +159,7 @@ export default function App() {
       setError("현재 방에서 플레이어 정보를 찾을 수 없습니다.");
       setSession(null);
       setRoom(null);
+      clearStoredSession();
     }
   }, [hasResolvedRoom, room, session]);
 

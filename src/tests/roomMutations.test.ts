@@ -68,6 +68,20 @@ describe("roomMutations", () => {
     expect(joinRoom(room, "guest", "Guest", 1500, "apple").players.guest.nickname).toBe("Guest");
   });
 
+  it("allows an existing player to reconnect without resetting progress", () => {
+    const created = createInitialRoom("ROOM12", "host", "Host", 1000);
+    const joined = joinRoom(created, "guest", "Guest", 1500);
+    const configured = updateRoomSettings(joined, "host", { roundCount: 1 });
+    const started = startRoomGame(configured, "host", 2000);
+    const withHostScore = submitRoundScore(started, "host", 0, 8, null, 2100);
+    const rejoined = joinRoom(withHostScore, "host", "Host Reloaded", 4000);
+
+    expect(rejoined.players.host.nickname).toBe("Host Reloaded");
+    expect(rejoined.players.host.isHost).toBe(true);
+    expect(rejoined.players.host.roundScores["0"]).toBe(8);
+    expect(rejoined.phase).toBe("playing");
+  });
+
   it("adds chat messages for players in the room", () => {
     const created = createInitialRoom("ROOM12", "host", "Host", 1000);
     const joined = joinRoom(created, "guest", "Guest", 1500);

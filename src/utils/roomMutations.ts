@@ -170,6 +170,15 @@ export function joinRoom(
   password?: string
 ): RoomState {
   const nextRoom = cloneRoom(room);
+  const existingPlayer = nextRoom.players[playerId];
+
+  if (existingPlayer) {
+    nextRoom.players[playerId] = {
+      ...existingPlayer,
+      nickname
+    };
+    return nextRoom;
+  }
 
   if (nextRoom.phase !== "lobby") {
     throw new Error("이미 게임이 시작된 방입니다.");
