@@ -76,20 +76,25 @@ export function HomeScreen({
         <p className={styles.note}>메인 화면에서는 전체 방 목록을 보고 바로 입장할 수 있습니다.</p>
       </section>
 
-      <div className={styles.grid}>
+      <section className={styles.panel}>
+        <h2 className={styles.panelTitle}>닉네임 설정</h2>
+        <p className={styles.panelText}>방을 만들거나 참가하기 전에 사용할 닉네임을 먼저 정합니다.</p>
+        <label className={styles.label}>
+          닉네임
+          <input
+            className={styles.input}
+            maxLength={20}
+            placeholder="닉네임 입력"
+            value={nickname}
+            onChange={(event) => onNicknameChange(event.target.value)}
+          />
+        </label>
+      </section>
+
+      <div className={styles.splitGrid}>
         <section className={styles.panel}>
           <h2 className={styles.panelTitle}>새 방 만들기</h2>
-          <p className={styles.panelText}>닉네임, 방 이름, 비밀번호, 공개 여부를 정한 뒤 방을 만듭니다.</p>
-          <label className={styles.label}>
-            닉네임
-            <input
-              className={styles.input}
-              maxLength={20}
-              placeholder="닉네임 입력"
-              value={nickname}
-              onChange={(event) => onNicknameChange(event.target.value)}
-            />
-          </label>
+          <p className={styles.panelText}>방 이름, 비밀번호, 공개 여부를 정한 뒤 방을 만듭니다.</p>
           <label className={styles.label}>
             방 이름
             <input
