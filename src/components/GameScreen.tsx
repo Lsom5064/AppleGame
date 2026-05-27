@@ -38,6 +38,7 @@ export function GameScreen({
   const [apples, setApples] = useState<Apple[]>(() => generateApples(roundSeed));
   const [score, setScore] = useState(0);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null);
   const [selectedAppleIds, setSelectedAppleIds] = useState<Set<string>>(() => new Set());
   const [timeLeftMs, setTimeLeftMs] = useState(room.settings.roundDurationSec * 1000);
   const [lightColors, setLightColors] = useState(false);
@@ -70,6 +71,7 @@ export function GameScreen({
     setScore(room.submissions[roundKey]?.[player.id]?.score ?? 0);
     setClearTimeMs(room.submissions[roundKey]?.[player.id]?.clearTimeMs ?? null);
     setDragState(null);
+    setSelectionRect(null);
     setSelectedAppleIds(new Set());
     setTimeLeftMs(room.settings.roundDurationSec * 1000);
     progressRequestedRef.current = false;
@@ -113,6 +115,7 @@ export function GameScreen({
 
   function resetSelection(): void {
     setDragState(null);
+    setSelectionRect(null);
     setSelectedAppleIds(new Set());
   }
 
@@ -153,6 +156,7 @@ export function GameScreen({
     const { x, y } = getBoardPoint(event);
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragState({ pointerId: event.pointerId, startX: x, startY: y });
+    setSelectionRect(normalizeSelectionRect(x, y, x, y));
     setSelectedAppleIds(new Set());
   }
 
@@ -165,6 +169,7 @@ export function GameScreen({
     const rect = normalizeSelectionRect(dragState.startX, dragState.startY, x, y);
     const snapshot = getSelectionSnapshot(rect);
 
+    setSelectionRect(rect);
     setSelectedAppleIds(snapshot.ids);
   }
 
@@ -261,6 +266,7 @@ export function GameScreen({
         score={score}
         timeLeftMs={timeLeftMs}
         roundDurationSec={room.settings.roundDurationSec}
+        selectionRect={selectionRect}
         selectedAppleIds={selectedAppleIds}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}

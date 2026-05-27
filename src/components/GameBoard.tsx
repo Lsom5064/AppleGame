@@ -1,5 +1,5 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import type { Apple } from "../types";
+import type { Apple, SelectionRect } from "../types";
 import styles from "./GameBoard.module.css";
 
 interface GameBoardProps {
@@ -9,6 +9,7 @@ interface GameBoardProps {
   score: number;
   timeLeftMs: number;
   roundDurationSec: number;
+  selectionRect: SelectionRect | null;
   selectedAppleIds: Set<string>;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -26,6 +27,7 @@ export function GameBoard({
   score,
   timeLeftMs,
   roundDurationSec,
+  selectionRect,
   selectedAppleIds,
   onPointerDown,
   onPointerMove,
@@ -86,6 +88,18 @@ export function GameBoard({
             </div>
           );
         })}
+
+        {selectionRect ? (
+          <div
+            className={styles.selection}
+            style={{
+              left: selectionRect.left,
+              top: selectionRect.top,
+              width: selectionRect.width,
+              height: selectionRect.height
+            }}
+          />
+        ) : null}
 
       </div>
 
