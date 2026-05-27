@@ -18,6 +18,7 @@ const room: RoomState = {
     password: null,
     isPublic: true
   },
+  chatMessages: [],
   currentRoundIndex: 2,
   roundStartedAt: 0,
   submissions: {

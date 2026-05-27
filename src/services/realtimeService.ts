@@ -2,6 +2,7 @@ import { get, onValue, ref, runTransaction, set } from "firebase/database";
 import { firebaseDatabase } from "../lib/firebase";
 import type { CreateRoomOptions, RoomDirectoryEntry, RoomDirectoryState, RoomState } from "../types";
 import {
+  addRoomChatMessage,
   createInitialRoom,
   createNewRoomCode,
   forceRoomProgress,
@@ -34,6 +35,7 @@ interface RealtimeService {
     score: number,
     clearTimeMs: number | null
   ): Promise<void>;
+  sendChatMessage(roomCode: string, playerId: string, text: string): Promise<void>;
   forceRoundProgress(roomCode: string): Promise<void>;
   leaveRoom(roomCode: string, playerId: string): Promise<void>;
 }
@@ -160,6 +162,9 @@ function createFirebaseService(): RealtimeService {
       await runRoomTransaction(database, roomCode, (room) =>
         submitRoundScore(room, playerId, roundIndex, score, clearTimeMs, Date.now())
       );
+    },
+    async sendChatMessage(roomCode, playerId, text) {
+      await runRoomTransaction(database, roomCode, (room) => addRoomChatMessage(room, playerId, text, Date.now()));
     },
     async forceRoundProgress(roomCode) {
       await runRoomTransaction(database, roomCode, (room) => forceRoomProgress(room, Date.now()));
@@ -305,6 +310,9 @@ function createLocalService(): RealtimeService {
       withRoom(roomCode, (room) =>
         submitRoundScore(requireRoom(room), playerId, roundIndex, score, clearTimeMs, Date.now())
       );
+    },
+    async sendChatMessage(roomCode, playerId, text) {
+      withRoom(roomCode, (room) => addRoomChatMessage(requireRoom(room), playerId, text, Date.now()));
     },
     async forceRoundProgress(roomCode) {
       withRoom(roomCode, (room) => forceRoomProgress(requireRoom(room), Date.now()));

@@ -1,11 +1,13 @@
 import { buildLeaderboard } from "../utils/leaderboard";
 import type { PlayerState, RoomState } from "../types";
+import { RoomChat } from "./RoomChat";
 import styles from "./LeaderboardScreen.module.css";
 
 interface LeaderboardScreenProps {
   room: RoomState;
   player: PlayerState;
   onLeaveRoom: () => void;
+  onSendChatMessage: (text: string) => Promise<void>;
   onRestartGame: () => Promise<void>;
 }
 
@@ -23,7 +25,13 @@ function getModeLabel(room: RoomState): string {
     : `${room.settings.roundCount}판 합계`;
 }
 
-export function LeaderboardScreen({ room, player, onLeaveRoom, onRestartGame }: LeaderboardScreenProps) {
+export function LeaderboardScreen({
+  room,
+  player,
+  onLeaveRoom,
+  onSendChatMessage,
+  onRestartGame
+}: LeaderboardScreenProps) {
   const leaderboard = buildLeaderboard(room);
   const singleRound = room.settings.roundCount === 1;
 
@@ -98,6 +106,13 @@ export function LeaderboardScreen({ room, player, onLeaveRoom, onRestartGame }: 
           </table>
         </div>
       )}
+
+      <RoomChat
+        player={player}
+        messages={room.chatMessages}
+        title="결과 화면 채팅"
+        onSendMessage={onSendChatMessage}
+      />
     </div>
   );
 }

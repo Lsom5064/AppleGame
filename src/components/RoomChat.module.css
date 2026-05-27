@@ -1,0 +1,108 @@
+.panel {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0 0;
+  border-top: 1px solid #e4dccd;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.94rem;
+  color: #2a1d14;
+}
+
+.notice {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #6a5a49;
+}
+
+.messageList {
+  display: grid;
+  gap: 8px;
+  min-height: 180px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 2px 4px 0;
+}
+
+.empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6a5a49;
+}
+
+.message {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid #e4dccd;
+  background: #fffaf1;
+}
+
+.messageHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nickname {
+  font-size: 0.8rem;
+  color: #2f241b;
+}
+
+.time {
+  font-size: 0.72rem;
+  color: #6a5a49;
+}
+
+.text {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #3f3127;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #999;
+  background: white;
+  font: inherit;
+  color: #222;
+}
+
+.button {
+  padding: 8px 12px;
+  border: 1px solid #999;
+  background: #f6f6f6;
+  color: #222;
+  font: inherit;
+  cursor: pointer;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  color: #87735a;
+  background: #efe6d9;
+}
+
+@media (max-width: 720px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+}

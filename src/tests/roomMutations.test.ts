@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { RoomState } from "../types";
 import {
+  addRoomChatMessage,
   createInitialRoom,
   forceRoomProgress,
   joinRoom,
@@ -65,6 +66,22 @@ describe("roomMutations", () => {
 
     expect(() => joinRoom(room, "guest", "Guest", 1500, "wrong")).toThrow("비밀번호가 올바르지 않습니다.");
     expect(joinRoom(room, "guest", "Guest", 1500, "apple").players.guest.nickname).toBe("Guest");
+  });
+
+  it("adds chat messages for players in the room", () => {
+    const created = createInitialRoom("ROOM12", "host", "Host", 1000);
+    const joined = joinRoom(created, "guest", "Guest", 1500);
+    const withMessage = addRoomChatMessage(joined, "guest", "  안녕하세요  ", 2000);
+
+    expect(withMessage.chatMessages).toEqual([
+      {
+        id: "guest:2000:0",
+        playerId: "guest",
+        nickname: "Guest",
+        text: "안녕하세요",
+        createdAt: 2000
+      }
+    ]);
   });
 
   it("waits for the host to start the next round after every player submits", () => {
@@ -209,6 +226,7 @@ describe("roomMutations", () => {
       password: null,
       isPublic: true
     });
+    expect(normalized.chatMessages).toEqual([]);
     expect(joined.players.host.roundScores).toEqual({});
     expect(joined.players.guest.roundScores).toEqual({});
     expect(joined.submissions).toEqual({});

@@ -1,5 +1,12 @@
 import { ROUND_DURATION_DEFAULT, SUBMISSION_GRACE_MS } from "../constants";
-import type { CreateRoomOptions, GameSettings, PlayerState, RoomState, RoundSubmission } from "../types";
+import type {
+  CreateRoomOptions,
+  GameSettings,
+  PlayerState,
+  RoomChatMessage,
+  RoomState,
+  RoundSubmission
+} from "../types";
 import { createSeededRandom } from "./random";
 import { generateRoomCode } from "./roomCode";
 
@@ -19,7 +26,7 @@ function normalizeRoomName(name: string | undefined, hostNickname: string): stri
 }
 
 export function normalizeRoomState(room: RoomState): RoomState {
-  const normalizedPhase =
+const normalizedPhase =
     room.phase === "playing" && room.roundStartedAt === null ? "between-rounds" : room.phase;
   const hostNickname = room.players?.[room.hostId]?.nickname ?? "Host";
 
@@ -55,7 +62,14 @@ export function normalizeRoomState(room: RoomState): RoomState {
           ])
         )
       ])
-    )
+    ),
+    chatMessages: (room.chatMessages ?? [])
+      .filter((message): message is RoomChatMessage => Boolean(message?.id) && Boolean(message?.nickname))
+      .map((message) => ({
+        ...message,
+        text: message.text?.trim() ?? ""
+      }))
+      .filter((message) => message.text.length > 0)
   };
 }
 
@@ -81,7 +95,8 @@ function cloneRoom(room: RoomState): RoomState {
           Object.entries(roundEntries).map(([playerId, submission]) => [playerId, { ...submission }])
         )
       ])
-    )
+    ),
+    chatMessages: normalizedRoom.chatMessages.map((message) => ({ ...message }))
   };
 }
 
@@ -123,7 +138,8 @@ export function createInitialRoom(
         roundScores: {}
       }
     },
-    submissions: {}
+    submissions: {},
+    chatMessages: []
   };
 }
 
@@ -191,6 +207,31 @@ export function updateRoomSettings(
       ...settings
     }
   };
+}
+
+export function addRoomChatMessage(room: RoomState, playerId: string, text: string, now: number): RoomState {
+  const normalizedRoom = normalizeRoomState(room);
+  const player = normalizedRoom.players[playerId];
+  const trimmedText = text.trim();
+
+  if (!player || !trimmedText) {
+    return room;
+  }
+
+  const nextRoom = cloneRoom(normalizedRoom);
+  nextRoom.chatMessages.push({
+    id: `${playerId}:${now}:${nextRoom.chatMessages.length}`,
+    playerId,
+    nickname: player.nickname,
+    text: trimmedText,
+    createdAt: now
+  });
+
+  if (nextRoom.chatMessages.length > 100) {
+    nextRoom.chatMessages = nextRoom.chatMessages.slice(-100);
+  }
+
+  return nextRoom;
 }
 
 export function startRoomGame(room: RoomState, playerId: string, now: number): RoomState {

@@ -1,10 +1,12 @@
 import type { GameSettings, PlayerState, RoomState } from "../types";
+import { RoomChat } from "./RoomChat";
 import styles from "./LobbyScreen.module.css";
 
 interface LobbyScreenProps {
   room: RoomState;
   player: PlayerState;
   onLeaveRoom: () => void;
+  onSendChatMessage: (text: string) => Promise<void>;
   onUpdateSettings: (
     settings: Partial<Pick<GameSettings, "roundCount" | "leaderboardMode">>
   ) => void;
@@ -19,6 +21,7 @@ export function LobbyScreen({
   room,
   player,
   onLeaveRoom,
+  onSendChatMessage,
   onUpdateSettings,
   onStartGame
 }: LobbyScreenProps) {
@@ -120,6 +123,13 @@ export function LobbyScreen({
           </div>
         </section>
       </div>
+
+      <RoomChat
+        player={player}
+        messages={room.chatMessages}
+        title="대기실 채팅"
+        onSendMessage={onSendChatMessage}
+      />
     </div>
   );
 }

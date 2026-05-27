@@ -260,6 +260,7 @@ export default function App() {
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
+            onSendChatMessage={(text) => realtimeService.sendChatMessage(room.code, player.id, text)}
             onUpdateSettings={(settings) =>
               void runWithBusy(() => realtimeService.updateSettings(room.code, player.id, settings))
             }
@@ -284,6 +285,7 @@ export default function App() {
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
+            onSendChatMessage={(text) => realtimeService.sendChatMessage(room.code, player.id, text)}
             onRestartGame={() => runWithBusy(() => realtimeService.startGame(room.code, player.id))}
           />
         ) : null}

@@ -29,6 +29,7 @@ function createRoom(overrides: Partial<RoomState>): RoomState {
       password: null,
       isPublic: true
     },
+    chatMessages: [],
     currentRoundIndex: 0,
     roundStartedAt: 1000,
     players: {

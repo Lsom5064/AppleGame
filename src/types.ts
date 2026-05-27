@@ -18,6 +18,14 @@ export interface RoundSubmission {
   clearTimeMs: number | null;
 }
 
+export interface RoomChatMessage {
+  id: string;
+  playerId: string;
+  nickname: string;
+  text: string;
+  createdAt: number;
+}
+
 export interface PlayerState {
   id: string;
   nickname: string;
@@ -39,6 +47,7 @@ export interface RoomState {
   roundStartedAt: number | null;
   players: Record<string, PlayerState>;
   submissions: Record<string, Record<string, RoundSubmission>>;
+  chatMessages: RoomChatMessage[];
 }
 
 export interface SessionState {
