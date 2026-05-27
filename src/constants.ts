@@ -1,5 +1,5 @@
-export const BOARD_WIDTH = 860;
-export const BOARD_HEIGHT = 620;
+export const BOARD_WIDTH = 1920;
+export const BOARD_HEIGHT = 1080;
 export const BOARD_GRID_COLUMNS = 17;
 export const BOARD_GRID_ROWS = 10;
 export const APPLE_COUNT = BOARD_GRID_COLUMNS * BOARD_GRID_ROWS;
