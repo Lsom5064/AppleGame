@@ -1,5 +1,6 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import type { Apple, SelectionRect } from "../types";
+import appleImage from "../../apple.png";
 import styles from "./GameBoard.module.css";
 
 interface GameBoardProps {
@@ -81,8 +82,7 @@ export function GameBoard({
             >
               <span className={styles.appleShadow} />
               <span className={styles.appleBody}>
-                <span className={styles.stem} />
-                <span className={styles.leaf} />
+                <img alt="" className={styles.appleImage} draggable={false} src={appleImage} />
                 <span className={styles.appleValue}>{apple.value}</span>
               </span>
             </div>

@@ -124,53 +124,32 @@
   inset: 0;
   display: grid;
   place-items: center;
-  border-radius: 48% 48% 44% 44% / 34% 34% 58% 58%;
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 243, 229, 0.98) 0, rgba(255, 225, 198, 0.9) 18%, transparent 30%),
-    radial-gradient(circle at 62% 76%, rgba(125, 21, 5, 0.2) 0, transparent 38%),
-    linear-gradient(180deg, #ff8162 0%, #ff5032 45%, #e33317 72%, #bf1c0b 100%);
-  box-shadow:
-    inset -3px -5px 8px rgba(117, 22, 7, 0.25),
-    inset 2px 3px 6px rgba(255, 247, 236, 0.2);
+  isolation: isolate;
 }
 
-.lightColors .appleBody {
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 248, 240, 0.99) 0, rgba(255, 236, 217, 0.94) 18%, transparent 30%),
-    radial-gradient(circle at 62% 76%, rgba(160, 49, 21, 0.16) 0, transparent 38%),
-    linear-gradient(180deg, #ffae95 0%, #ff8664 45%, #f06e4e 72%, #dc5537 100%);
-}
-
-.stem {
+.appleImage {
   position: absolute;
-  top: 2px;
-  left: 52%;
-  width: 7%;
-  height: 26%;
-  border-radius: 999px;
-  background: #7b4d1f;
-  transform: translateX(-50%) rotate(10deg);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.leaf {
-  position: absolute;
-  top: 4px;
-  left: 33%;
-  width: 28%;
-  height: 16%;
-  border-radius: 70% 20% 60% 20%;
-  background: linear-gradient(180deg, #9ce260 0%, #58b93e 100%);
-  transform: rotate(-18deg);
+.lightColors .appleImage {
+  filter: brightness(1.1) saturate(0.82);
 }
 
 .appleValue {
   position: relative;
-  margin-top: 6px;
+  margin-top: 5px;
   color: #fff;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
   line-height: 1;
   text-shadow: 0 1px 2px rgba(89, 17, 8, 0.4);
+  z-index: 1;
 }
 
 .selected .appleShadow {
@@ -179,11 +158,25 @@
 }
 
 .selected .appleBody {
-  transform: translateY(-2px);
-  box-shadow:
-    0 0 0 3px #ffe36f,
-    inset -3px -5px 8px rgba(117, 22, 7, 0.2),
-    inset 2px 3px 6px rgba(255, 247, 236, 0.24);
+  transform: translateY(-1px);
+}
+
+.selected .appleImage {
+  filter:
+    drop-shadow(1px 0 0 #ffe36f)
+    drop-shadow(-1px 0 0 #ffe36f)
+    drop-shadow(0 1px 0 #ffe36f)
+    drop-shadow(0 -1px 0 #ffe36f);
+}
+
+.lightColors .selected .appleImage {
+  filter:
+    brightness(1.1)
+    saturate(0.82)
+    drop-shadow(1px 0 0 #ffe36f)
+    drop-shadow(-1px 0 0 #ffe36f)
+    drop-shadow(0 1px 0 #ffe36f)
+    drop-shadow(0 -1px 0 #ffe36f);
 }
 
 .selection {
