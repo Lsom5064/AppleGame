@@ -24,7 +24,7 @@
 
 .playfield {
   position: absolute;
-  inset: 40px 86px 40px 40px;
+  inset: 42px 94px 42px 42px;
   border-radius: 14px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)) top / 100% 28% no-repeat,
@@ -42,7 +42,7 @@
 
 .scorePanel {
   position: absolute;
-  top: 26px;
+  top: 24px;
   left: 50%;
   display: flex;
   align-items: baseline;
@@ -69,8 +69,8 @@
 
 .timePanel {
   position: absolute;
-  top: 106px;
-  right: 26px;
+  top: 118px;
+  right: 28px;
   display: grid;
   justify-items: center;
   gap: 8px;
@@ -80,7 +80,7 @@
 .timeRail {
   position: relative;
   width: 14px;
-  height: 232px;
+  height: 248px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.45);

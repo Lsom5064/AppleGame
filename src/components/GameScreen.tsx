@@ -17,12 +17,21 @@ interface GameScreenProps {
 
 interface DragState {
   pointerId: number;
-  startX: number;
-  startY: number;
+  startBoardX: number;
+  startBoardY: number;
+  startDisplayX: number;
+  startDisplayY: number;
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+interface PointerPosition {
+  boardX: number;
+  boardY: number;
+  displayX: number;
+  displayY: number;
 }
 
 export function GameScreen({
@@ -127,13 +136,15 @@ export function GameScreen({
     return Math.max(0, Date.now() - room.roundStartedAt);
   }
 
-  function getBoardPoint(event: ReactPointerEvent<HTMLDivElement>): { x: number; y: number } {
+  function getPointerPosition(event: ReactPointerEvent<HTMLDivElement>): PointerPosition {
     const rect = event.currentTarget.getBoundingClientRect();
+    const displayX = clamp(event.clientX - rect.left, 0, rect.width);
+    const displayY = clamp(event.clientY - rect.top, 0, rect.height);
     const scaleX = BOARD_WIDTH / rect.width;
     const scaleY = BOARD_HEIGHT / rect.height;
-    const x = clamp((event.clientX - rect.left) * scaleX, 0, BOARD_WIDTH);
-    const y = clamp((event.clientY - rect.top) * scaleY, 0, BOARD_HEIGHT);
-    return { x, y };
+    const boardX = clamp(displayX * scaleX, 0, BOARD_WIDTH);
+    const boardY = clamp(displayY * scaleY, 0, BOARD_HEIGHT);
+    return { boardX, boardY, displayX, displayY };
   }
 
   function getSelectionSnapshot(rect: SelectionRect): { ids: Set<string>; apples: Apple[]; sum: number } {
@@ -153,10 +164,16 @@ export function GameScreen({
       return;
     }
 
-    const { x, y } = getBoardPoint(event);
+    const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
     event.currentTarget.setPointerCapture(event.pointerId);
-    setDragState({ pointerId: event.pointerId, startX: x, startY: y });
-    setSelectionRect(normalizeSelectionRect(x, y, x, y));
+    setDragState({
+      pointerId: event.pointerId,
+      startBoardX: boardX,
+      startBoardY: boardY,
+      startDisplayX: displayX,
+      startDisplayY: displayY
+    });
+    setSelectionRect(normalizeSelectionRect(displayX, displayY, displayX, displayY));
     setSelectedAppleIds(new Set());
   }
 
@@ -165,11 +182,18 @@ export function GameScreen({
       return;
     }
 
-    const { x, y } = getBoardPoint(event);
-    const rect = normalizeSelectionRect(dragState.startX, dragState.startY, x, y);
-    const snapshot = getSelectionSnapshot(rect);
+    const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
+    const boardRect = normalizeSelectionRect(
+      dragState.startBoardX,
+      dragState.startBoardY,
+      boardX,
+      boardY
+    );
+    const snapshot = getSelectionSnapshot(boardRect);
 
-    setSelectionRect(rect);
+    setSelectionRect(
+      normalizeSelectionRect(dragState.startDisplayX, dragState.startDisplayY, displayX, displayY)
+    );
     startTransition(() => {
       setSelectedAppleIds(snapshot.ids);
     });
@@ -180,8 +204,13 @@ export function GameScreen({
       return;
     }
 
-    const { x, y } = getBoardPoint(event);
-    const rect = normalizeSelectionRect(dragState.startX, dragState.startY, x, y);
+    const { boardX, boardY } = getPointerPosition(event);
+    const rect = normalizeSelectionRect(
+      dragState.startBoardX,
+      dragState.startBoardY,
+      boardX,
+      boardY
+    );
     const snapshot = getSelectionSnapshot(rect);
 
     if (snapshot.sum === 10 && snapshot.apples.length > 0 && timeLeftMs > 0 && !locked) {
