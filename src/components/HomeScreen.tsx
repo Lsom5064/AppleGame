@@ -1,28 +1,36 @@
+import type { NearbyRoomsState } from "../types";
 import styles from "./HomeScreen.module.css";
 
 interface HomeScreenProps {
   nickname: string;
   roomCode: string;
+  nearbyRoomsState: NearbyRoomsState;
   onNicknameChange: (value: string) => void;
   onRoomCodeChange: (value: string) => void;
   onCreateRoom: () => void;
   onJoinRoom: () => void;
+  onJoinNearbyRoom: (roomCode: string) => void;
 }
 
 export function HomeScreen({
   nickname,
   roomCode,
+  nearbyRoomsState,
   onNicknameChange,
   onRoomCodeChange,
   onCreateRoom,
-  onJoinRoom
+  onJoinRoom,
+  onJoinNearbyRoom
 }: HomeScreenProps) {
+  const hasNearbyRooms = nearbyRoomsState.status === "ready" && nearbyRoomsState.rooms.length > 0;
+
   return (
     <div className={styles.shell}>
       <section className={styles.hero}>
         <h1 className={styles.title}>Fruit Box Multiplayer</h1>
         <p className={styles.description}>숫자 합이 10이 되도록 사과를 드래그하세요.</p>
         <p className={styles.note}>방을 만들거나 방 코드로 입장해 같은 배치에서 동시에 플레이합니다.</p>
+        <p className={styles.note}>같은 공유기에 연결된 로비는 아래 근처 방 목록에 자동으로 나타납니다.</p>
       </section>
 
       <div className={styles.grid}>
@@ -62,6 +70,44 @@ export function HomeScreen({
           </button>
         </section>
       </div>
+
+      <section className={styles.panel}>
+        <h2 className={styles.panelTitle}>근처 방</h2>
+        <p className={styles.panelText}>같은 공유기에서 열어둔 대기실을 자동으로 찾습니다.</p>
+
+        {nearbyRoomsState.status === "loading" ? (
+          <p className={styles.nearbyMessage}>근처 방을 확인하는 중입니다.</p>
+        ) : null}
+
+        {nearbyRoomsState.status === "unavailable" ? (
+          <p className={styles.nearbyMessage}>
+            현재 브라우저나 네트워크에서는 자동 방 찾기를 사용할 수 없습니다.
+          </p>
+        ) : null}
+
+        {nearbyRoomsState.status === "ready" && !hasNearbyRooms ? (
+          <p className={styles.nearbyMessage}>지금 발견된 근처 방이 없습니다.</p>
+        ) : null}
+
+        {hasNearbyRooms ? (
+          <div className={styles.nearbyList}>
+            {nearbyRoomsState.rooms.map((room) => (
+              <button
+                key={room.roomCode}
+                className={styles.nearbyRoom}
+                type="button"
+                onClick={() => onJoinNearbyRoom(room.roomCode)}
+              >
+                <span className={styles.nearbyRoomTitle}>{room.hostNickname}님의 방</span>
+                <span className={styles.nearbyRoomMeta}>
+                  코드 {room.roomCode} · {room.playerCount}명 · {room.roundCount}판 ·{" "}
+                  {room.leaderboardMode === "sum" ? "합계" : "최고점"}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </section>
 
       <section className={styles.rules}>
         <p>제한시간은 120초입니다.</p>

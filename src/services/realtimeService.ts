@@ -1,6 +1,7 @@
 import { get, onValue, ref, runTransaction, set } from "firebase/database";
 import { firebaseDatabase } from "../lib/firebase";
-import type { RoomState } from "../types";
+import type { NearbyRoomSummary, NearbyRoomsState, RoomState } from "../types";
+import { getNetworkFingerprint } from "../utils/networkFingerprint";
 import {
   createInitialRoom,
   createNewRoomCode,
@@ -19,6 +20,7 @@ interface RealtimeService {
   createRoom(nickname: string, playerId: string): Promise<string>;
   joinRoom(roomCode: string, nickname: string, playerId: string): Promise<void>;
   subscribeToRoom(roomCode: string, callback: (room: RoomState | null) => void): () => void;
+  subscribeToNearbyRooms(callback: (state: NearbyRoomsState) => void): () => void;
   updateSettings(
     roomCode: string,
     playerId: string,
@@ -35,10 +37,41 @@ interface RealtimeService {
   ): Promise<void>;
   forceRoundProgress(roomCode: string): Promise<void>;
   leaveRoom(roomCode: string, playerId: string): Promise<void>;
+  publishLobbyRoom(room: RoomState): Promise<void>;
+  clearLobbyRoom(roomCode: string): Promise<void>;
 }
+
+interface NearbyRoomAnnouncement extends NearbyRoomSummary {
+  hostId: string;
+  expiresAt: number;
+  updatedAt: number;
+}
+
+const NEARBY_ROOM_TTL_MS = 30_000;
 
 function getRoomPath(roomCode: string): string {
   return `rooms/${roomCode}`;
+}
+
+function getNearbyRoomsPath(networkFingerprint: string): string {
+  return `nearbyRooms/${networkFingerprint}`;
+}
+
+function createNearbyRoomSummary(room: RoomState): NearbyRoomSummary {
+  const host = room.players[room.hostId];
+
+  if (!host) {
+    throw new Error("방장 정보를 찾을 수 없습니다.");
+  }
+
+  return {
+    roomCode: room.code,
+    hostNickname: host.nickname,
+    playerCount: Object.keys(room.players).length,
+    createdAt: room.createdAt,
+    roundCount: room.settings.roundCount,
+    leaderboardMode: room.settings.leaderboardMode
+  };
 }
 
 function requireRoom(room: RoomState | null): RoomState {
@@ -82,6 +115,50 @@ function createFirebaseService(): RealtimeService {
       });
       return unsubscribe;
     },
+    subscribeToNearbyRooms(callback) {
+      let disposed = false;
+      let unsubscribe: (() => void) | null = null;
+
+      callback({ status: "loading", rooms: [] });
+
+      void getNetworkFingerprint()
+        .then((networkFingerprint) => {
+          if (disposed) {
+            return;
+          }
+
+          if (!networkFingerprint) {
+            callback({ status: "unavailable", rooms: [] });
+            return;
+          }
+
+          const nearbyRoomsRef = ref(database, getNearbyRoomsPath(networkFingerprint));
+          unsubscribe = onValue(nearbyRoomsRef, (snapshot) => {
+            const announcements =
+              (snapshot.val() as Record<string, NearbyRoomAnnouncement> | null) ?? {};
+            const now = Date.now();
+            const rooms = Object.values(announcements)
+              .filter((announcement) => announcement.expiresAt > now)
+              .sort((left, right) => right.updatedAt - left.updatedAt)
+              .map(({ hostId: _hostId, expiresAt: _expiresAt, updatedAt: _updatedAt, ...room }) => room);
+
+            callback({
+              status: "ready",
+              rooms
+            });
+          });
+        })
+        .catch(() => {
+          if (!disposed) {
+            callback({ status: "unavailable", rooms: [] });
+          }
+        });
+
+      return () => {
+        disposed = true;
+        unsubscribe?.();
+      };
+    },
     async updateSettings(roomCode, playerId, settings) {
       const roomRef = ref(database, getRoomPath(roomCode));
       await runTransaction(roomRef, (current) => {
@@ -123,6 +200,35 @@ function createFirebaseService(): RealtimeService {
         const room = current as RoomState | null;
         return leaveRoom(requireRoom(room), playerId);
       });
+    },
+    async publishLobbyRoom(room) {
+      if (room.phase !== "lobby") {
+        return;
+      }
+
+      const networkFingerprint = await getNetworkFingerprint();
+      if (!networkFingerprint) {
+        return;
+      }
+
+      const summary = createNearbyRoomSummary(room);
+      const timestamp = Date.now();
+      const announcement: NearbyRoomAnnouncement = {
+        ...summary,
+        hostId: room.hostId,
+        expiresAt: timestamp + NEARBY_ROOM_TTL_MS,
+        updatedAt: timestamp
+      };
+
+      await set(ref(database, `${getNearbyRoomsPath(networkFingerprint)}/${room.code}`), announcement);
+    },
+    async clearLobbyRoom(roomCode) {
+      const networkFingerprint = await getNetworkFingerprint();
+      if (!networkFingerprint) {
+        return;
+      }
+
+      await set(ref(database, `${getNearbyRoomsPath(networkFingerprint)}/${roomCode}`), null);
     }
   };
 }
@@ -176,6 +282,14 @@ function createLocalService(): RealtimeService {
       .map((key) => key.replace(STORAGE_PREFIX, ""));
   }
 
+  function listNearbyRooms(): NearbyRoomSummary[] {
+    return listExistingCodes()
+      .map((roomCode) => loadRoom(roomCode))
+      .filter((room): room is RoomState => room !== null && room.phase === "lobby")
+      .sort((left, right) => right.createdAt - left.createdAt)
+      .map((room) => createNearbyRoomSummary(room));
+  }
+
   return {
     providerName: "local",
     async createRoom(nickname, playerId) {
@@ -209,6 +323,34 @@ function createLocalService(): RealtimeService {
         channel?.removeEventListener("message", handleMessage);
       };
     },
+    subscribeToNearbyRooms(callback) {
+      const emit = () => {
+        callback({
+          status: "ready",
+          rooms: listNearbyRooms()
+        });
+      };
+
+      emit();
+
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key?.startsWith(STORAGE_PREFIX)) {
+          emit();
+        }
+      };
+
+      const handleMessage = () => {
+        emit();
+      };
+
+      window.addEventListener("storage", handleStorage);
+      channel?.addEventListener("message", handleMessage);
+
+      return () => {
+        window.removeEventListener("storage", handleStorage);
+        channel?.removeEventListener("message", handleMessage);
+      };
+    },
     async updateSettings(roomCode, playerId, settings) {
       withRoom(roomCode, (room) => updateRoomSettings(requireRoom(room), playerId, settings));
     },
@@ -228,6 +370,12 @@ function createLocalService(): RealtimeService {
     },
     async leaveRoom(roomCode, playerId) {
       withRoom(roomCode, (room) => leaveRoom(requireRoom(room), playerId));
+    },
+    async publishLobbyRoom(_room) {
+      return;
+    },
+    async clearLobbyRoom(_roomCode) {
+      return;
     }
   };
 }

@@ -8,10 +8,11 @@ import { BOARD_WIDTH } from "./constants";
 import { ensureFirebaseIdentity } from "./lib/firebase";
 import { realtimeService } from "./services/realtimeService";
 import styles from "./styles/App.module.css";
-import type { RoomState, SessionState } from "./types";
+import type { NearbyRoomsState, RoomState, SessionState } from "./types";
 import { getOrCreateClientId } from "./utils/client";
 
 const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
+const LOBBY_ANNOUNCEMENT_REFRESH_MS = 15_000;
 type IdentityStatus = "loading" | "ready" | "error";
 
 export default function App() {
@@ -25,6 +26,10 @@ export default function App() {
   const [session, setSession] = useState<SessionState | null>(null);
   const [room, setRoom] = useState<RoomState | null>(null);
   const [hasResolvedRoom, setHasResolvedRoom] = useState(false);
+  const [nearbyRoomsState, setNearbyRoomsState] = useState<NearbyRoomsState>({
+    status: "loading",
+    rooms: []
+  });
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -97,6 +102,20 @@ export default function App() {
   const player = session && room ? room.players[session.playerId] : null;
 
   useEffect(() => {
+    if (session) {
+      setNearbyRoomsState({
+        status: "loading",
+        rooms: []
+      });
+      return;
+    }
+
+    return realtimeService.subscribeToNearbyRooms((nextNearbyRoomsState) => {
+      setNearbyRoomsState(nextNearbyRoomsState);
+    });
+  }, [session]);
+
+  useEffect(() => {
     if (!session || !hasResolvedRoom || !room) {
       return;
     }
@@ -107,6 +126,22 @@ export default function App() {
       setRoom(null);
     }
   }, [hasResolvedRoom, room, session]);
+
+  useEffect(() => {
+    if (!room || !player || !player.isHost || room.phase !== "lobby") {
+      return;
+    }
+
+    void realtimeService.publishLobbyRoom(room);
+    const intervalId = window.setInterval(() => {
+      void realtimeService.publishLobbyRoom(room);
+    }, LOBBY_ANNOUNCEMENT_REFRESH_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+      void realtimeService.clearLobbyRoom(room.code);
+    };
+  }, [player, room]);
 
   async function runWithBusy(task: () => Promise<void>): Promise<void> {
     try {
@@ -146,8 +181,13 @@ export default function App() {
   }
 
   async function handleJoinRoom(): Promise<void> {
+    const trimmedRoomCode = roomCodeInput.trim().toUpperCase();
+    await handleJoinRoomByCode(trimmedRoomCode);
+  }
+
+  async function handleJoinRoomByCode(roomCode: string): Promise<void> {
     await runWithBusy(async () => {
-      const trimmedRoomCode = roomCodeInput.trim().toUpperCase();
+      const trimmedRoomCode = roomCode.trim().toUpperCase();
       if (!trimmedRoomCode) {
         throw new Error("방 코드를 입력해주세요.");
       }
@@ -165,6 +205,9 @@ export default function App() {
     }
 
     await runWithBusy(async () => {
+      if (room?.hostId === currentSession.playerId) {
+        await realtimeService.clearLobbyRoom(currentSession.roomCode);
+      }
       await realtimeService.leaveRoom(currentSession.roomCode, currentSession.playerId);
       setSession(null);
       setRoom(null);
@@ -205,10 +248,12 @@ export default function App() {
           <HomeScreen
             nickname={nickname}
             roomCode={roomCodeInput}
+            nearbyRoomsState={nearbyRoomsState}
             onNicknameChange={setNickname}
             onRoomCodeChange={setRoomCodeInput}
             onCreateRoom={() => void handleCreateRoom()}
             onJoinRoom={() => void handleJoinRoom()}
+            onJoinNearbyRoom={(nextRoomCode) => void handleJoinRoomByCode(nextRoomCode)}
           />
         ) : room && player && room.phase === "lobby" ? (
           <LobbyScreen

@@ -39,6 +39,20 @@ export interface SessionState {
   playerId: string;
 }
 
+export interface NearbyRoomSummary {
+  roomCode: string;
+  hostNickname: string;
+  playerCount: number;
+  createdAt: number;
+  roundCount: GameSettings["roundCount"];
+  leaderboardMode: LeaderboardMode;
+}
+
+export interface NearbyRoomsState {
+  status: "loading" | "ready" | "unavailable";
+  rooms: NearbyRoomSummary[];
+}
+
 export interface LeaderboardEntry {
   id: string;
   nickname: string;
