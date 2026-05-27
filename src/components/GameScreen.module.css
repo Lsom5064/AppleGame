@@ -132,6 +132,42 @@
   line-height: 1.5;
 }
 
+.scoreboardPanel {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e4dccd;
+}
+
+.scoreboardTitle {
+  margin: 0;
+  color: #3f2e1f;
+  font-size: 0.9rem;
+}
+
+.scoreboardWrap {
+  overflow-x: auto;
+}
+
+.scoreboardTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scoreboardTable th,
+.scoreboardTable td {
+  padding: 7px 6px;
+  border-bottom: 1px solid #e4dccd;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
+.scoreboardTable th {
+  color: #6a5a49;
+  font-weight: 700;
+}
+
 .hint {
   color: #6a573f;
   line-height: 1.4;

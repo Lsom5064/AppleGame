@@ -112,6 +112,7 @@ describe("GameScreen round transitions", () => {
 
     await renderRoom(betweenRounds);
     expect(container.textContent).toContain("2라운드 찬성하기");
+    expect(container.textContent).toContain("전체 점수판");
 
     onSubmitRound.mockClear();
     onForceProgress.mockClear();
@@ -136,6 +137,7 @@ describe("GameScreen round transitions", () => {
       vi.advanceTimersByTime(250);
     });
 
+    expect(container.textContent).toContain("현재 점수판");
     expect(onSubmitRound).not.toHaveBeenCalled();
     expect(onForceProgress).not.toHaveBeenCalled();
     expect(container.textContent).not.toContain("3라운드 시작");

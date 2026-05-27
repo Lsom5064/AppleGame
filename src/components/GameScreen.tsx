@@ -37,6 +37,14 @@ interface PointerPosition {
   displayY: number;
 }
 
+interface LiveScoreEntry {
+  id: string;
+  nickname: string;
+  isHost: boolean;
+  roundScores: Array<number | null>;
+  totalScore: number;
+}
+
 export function GameScreen({
   room,
   player,
@@ -74,6 +82,58 @@ export function GameScreen({
   const voters = playerIds
     .filter((id) => room.nextRoundVotes[id])
     .map((id) => room.players[id]?.nickname ?? id);
+  const liveScoreboard = useMemo<LiveScoreEntry[]>(() => {
+    const roundCount = room.settings.roundCount;
+    const currentRoundIndex = room.currentRoundIndex;
+
+    return Object.values(room.players)
+      .map((member) => {
+        const roundScores = Array.from({ length: roundCount }, (_, roundIndex) => {
+          const savedScore = member.roundScores[String(roundIndex)];
+
+          if (savedScore !== undefined) {
+            return savedScore;
+          }
+
+          if (roundIndex < currentRoundIndex) {
+            return 0;
+          }
+
+          if (roundIndex > currentRoundIndex) {
+            return null;
+          }
+
+          if (waitingForNextRound) {
+            return room.submissions[String(currentRoundIndex)]?.[member.id]?.score ?? 0;
+          }
+
+          if (member.id === player.id) {
+            return score;
+          }
+
+          return room.submissions[String(currentRoundIndex)]?.[member.id]?.score ?? null;
+        });
+
+        const totalScore = roundScores.reduce<number>((sum, roundScore) => sum + (roundScore ?? 0), 0);
+
+        return {
+          id: member.id,
+          nickname: member.nickname,
+          isHost: member.isHost,
+          roundScores,
+          totalScore
+        };
+      })
+      .sort((left, right) => {
+        if (right.totalScore !== left.totalScore) {
+          return right.totalScore - left.totalScore;
+        }
+
+        const leftPlayer = room.players[left.id];
+        const rightPlayer = room.players[right.id];
+        return leftPlayer.joinedAt - rightPlayer.joinedAt;
+      });
+  }, [player.id, room.currentRoundIndex, room.players, room.settings.roundCount, room.submissions, score, waitingForNextRound]);
 
   useEffect(() => {
     return () => {
@@ -368,9 +428,73 @@ export function GameScreen({
             onPointerUp={handlePointerUp}
           />
 
+          <section className={styles.scoreboardPanel}>
+            <h2 className={styles.scoreboardTitle}>현재 점수판</h2>
+            <div className={styles.scoreboardWrap}>
+              <table className={styles.scoreboardTable}>
+                <thead>
+                  <tr>
+                    <th>플레이어</th>
+                    {Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
+                      <th key={roundIndex}>R{roundIndex + 1}</th>
+                    ))}
+                    <th>합계</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {liveScoreboard.map((entry) => (
+                    <tr key={entry.id}>
+                      <td>
+                        {entry.nickname}
+                        {entry.isHost ? " (방장)" : ""}
+                      </td>
+                      {entry.roundScores.map((roundScore, roundIndex) => (
+                        <td key={roundIndex}>{roundScore === null ? "-" : roundScore}</td>
+                      ))}
+                      <td>{entry.totalScore}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           <p className={styles.hint}>사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다.</p>
         </>
       )}
+
+      {waitingForNextRound ? (
+        <section className={styles.scoreboardPanel}>
+          <h2 className={styles.scoreboardTitle}>전체 점수판</h2>
+          <div className={styles.scoreboardWrap}>
+            <table className={styles.scoreboardTable}>
+              <thead>
+                <tr>
+                  <th>플레이어</th>
+                  {Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
+                    <th key={roundIndex}>R{roundIndex + 1}</th>
+                  ))}
+                  <th>합계</th>
+                </tr>
+              </thead>
+              <tbody>
+                {liveScoreboard.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>
+                      {entry.nickname}
+                      {entry.isHost ? " (방장)" : ""}
+                    </td>
+                    {entry.roundScores.map((roundScore, roundIndex) => (
+                      <td key={roundIndex}>{roundScore === null ? "-" : roundScore}</td>
+                    ))}
+                    <td>{entry.totalScore}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
