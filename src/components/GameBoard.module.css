@@ -1,7 +1,7 @@
 .shell {
   position: relative;
-  width: min(100%, 720px);
-  aspect-ratio: 720 / 470;
+  width: min(100%, calc(var(--board-width) * 1px));
+  aspect-ratio: var(--board-width) / var(--board-height);
   margin: 0 auto;
   touch-action: none;
   user-select: none;
@@ -24,7 +24,7 @@
 
 .playfield {
   position: absolute;
-  inset: 26px 40px 26px 26px;
+  inset: 34px 74px 34px 34px;
   border-radius: 14px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)) top / 100% 28% no-repeat,
@@ -42,7 +42,7 @@
 
 .scorePanel {
   position: absolute;
-  top: 26px;
+  top: 28px;
   left: 50%;
   display: flex;
   align-items: baseline;
@@ -69,8 +69,8 @@
 
 .timePanel {
   position: absolute;
-  top: 78px;
-  right: 16px;
+  top: 92px;
+  right: 22px;
   display: grid;
   justify-items: center;
   gap: 8px;

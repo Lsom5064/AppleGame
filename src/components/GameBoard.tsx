@@ -1,4 +1,5 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
 import type { Apple, SelectionRect } from "../types";
 import appleImage from "../../apple.png";
 import styles from "./GameBoard.module.css";
@@ -36,10 +37,15 @@ export function GameBoard({
 }: GameBoardProps) {
   const timeRatio = clamp(timeLeftMs / (roundDurationSec * 1000), 0, 1);
   const visibleApples = apples.filter((apple) => !apple.removed);
+  const shellStyle = {
+    "--board-width": BOARD_WIDTH,
+    "--board-height": BOARD_HEIGHT
+  } as CSSProperties;
 
   return (
     <div
       className={`${styles.shell} ${lightColors ? styles.lightColors : ""}`}
+      style={shellStyle}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
