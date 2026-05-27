@@ -1,5 +1,5 @@
 export type LeaderboardMode = "sum" | "best";
-export type RoomPhase = "lobby" | "playing" | "finished";
+export type RoomPhase = "lobby" | "playing" | "between-rounds" | "finished";
 
 export interface GameSettings {
   roundCount: 1 | 3 | 5;

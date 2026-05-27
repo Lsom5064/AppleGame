@@ -220,7 +220,7 @@ export default function App() {
             }
             onStartGame={() => void runWithBusy(() => realtimeService.startGame(room.code, player.id))}
           />
-        ) : room && player && room.phase === "playing" ? (
+        ) : room && player && (room.phase === "playing" || room.phase === "between-rounds") ? (
           <GameScreen
             room={room}
             player={player}

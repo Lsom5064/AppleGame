@@ -14,8 +14,12 @@ function normalizePlayer(playerId: string, player: Partial<PlayerState>): Player
 }
 
 export function normalizeRoomState(room: RoomState): RoomState {
+  const normalizedPhase =
+    room.phase === "playing" && room.roundStartedAt === null ? "between-rounds" : room.phase;
+
   return {
     ...room,
+    phase: normalizedPhase,
     settings: {
       roundCount: room.settings?.roundCount ?? 1,
       leaderboardMode: room.settings?.leaderboardMode ?? "sum",
@@ -162,7 +166,7 @@ export function startRoomGame(room: RoomState, playerId: string, now: number): R
     throw new Error("방장만 게임을 시작할 수 있습니다.");
   }
 
-  if (normalizedRoom.phase === "playing") {
+  if (normalizedRoom.phase === "playing" || normalizedRoom.phase === "between-rounds") {
     throw new Error("이미 진행 중인 게임입니다.");
   }
 
@@ -235,7 +239,7 @@ export function forceRoomProgress(room: RoomState, now: number): RoomState {
     return nextRoom;
   }
 
-  nextRoom.currentRoundIndex += 1;
+  nextRoom.phase = "between-rounds";
   nextRoom.roundStartedAt = null;
 
   return nextRoom;
@@ -248,16 +252,14 @@ export function startNextRound(room: RoomState, playerId: string, now: number): 
     throw new Error("방장만 다음 게임을 시작할 수 있습니다.");
   }
 
-  if (normalizedRoom.phase !== "playing") {
+  if (normalizedRoom.phase !== "between-rounds") {
     throw new Error("다음 라운드를 시작할 수 없는 상태입니다.");
-  }
-
-  if (normalizedRoom.roundStartedAt !== null) {
-    return normalizedRoom;
   }
 
   return {
     ...normalizedRoom,
+    phase: "playing",
+    currentRoundIndex: normalizedRoom.currentRoundIndex + 1,
     roundStartedAt: now
   };
 }

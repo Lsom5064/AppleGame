@@ -47,8 +47,8 @@ describe("roomMutations", () => {
     const afterHost = submitRoundScore(started, "host", 0, 6, 11000, 3000);
     const afterGuest = submitRoundScore(afterHost, "guest", 0, 4, null, 3500);
 
-    expect(afterGuest.phase).toBe("playing");
-    expect(afterGuest.currentRoundIndex).toBe(1);
+    expect(afterGuest.phase).toBe("between-rounds");
+    expect(afterGuest.currentRoundIndex).toBe(0);
     expect(afterGuest.players.host.roundScores["0"]).toBe(6);
     expect(afterGuest.players.guest.roundScores["0"]).toBe(4);
     expect(afterGuest.roundStartedAt).toBeNull();
@@ -64,6 +64,18 @@ describe("roomMutations", () => {
     expect(nextRound.phase).toBe("playing");
     expect(nextRound.currentRoundIndex).toBe(1);
     expect(nextRound.roundStartedAt).toBe(5000);
+  });
+
+  it("normalizes legacy paused rooms into between-rounds state", () => {
+    const started = createStartedRoom();
+    const legacyPausedRoom = {
+      ...started,
+      phase: "playing" as const,
+      currentRoundIndex: 1,
+      roundStartedAt: null
+    };
+
+    expect(normalizeRoomState(legacyPausedRoom).phase).toBe("between-rounds");
   });
 
   it("fills missing submissions with zero after timeout and finishes the last round", () => {
