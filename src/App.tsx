@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { GameScreen } from "./components/GameScreen";
 import { HomeScreen } from "./components/HomeScreen";
 import { LeaderboardScreen } from "./components/LeaderboardScreen";
 import { LobbyScreen } from "./components/LobbyScreen";
+import { BOARD_WIDTH } from "./constants";
 import { ensureFirebaseIdentity } from "./lib/firebase";
 import { realtimeService } from "./services/realtimeService";
 import styles from "./styles/App.module.css";
@@ -13,6 +15,9 @@ const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
 type IdentityStatus = "loading" | "ready" | "error";
 
 export default function App() {
+  const frameStyle = {
+    "--app-frame-width": BOARD_WIDTH
+  } as CSSProperties;
   const [nickname, setNickname] = useState(() => window.localStorage.getItem(NICKNAME_STORAGE_KEY) ?? "");
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [playerId, setPlayerId] = useState<string | null>(null);
@@ -170,7 +175,7 @@ export default function App() {
   if (session && !hasResolvedRoom) {
     return (
       <main className={styles.app}>
-        <div className={styles.frame}>
+        <div className={styles.frame} style={frameStyle}>
           <div className={styles.loading}>방 정보를 불러오는 중입니다.</div>
         </div>
       </main>
@@ -180,7 +185,7 @@ export default function App() {
   if (identityStatus === "loading") {
     return (
       <main className={styles.app}>
-        <div className={styles.frame}>
+        <div className={styles.frame} style={frameStyle}>
           <div className={styles.loading}>
             {realtimeService.providerName === "firebase"
               ? "Firebase 세션을 준비하는 중입니다."
@@ -193,7 +198,7 @@ export default function App() {
 
   return (
     <main className={styles.app}>
-      <div className={styles.frame}>
+      <div className={styles.frame} style={frameStyle}>
         {error ? <div className={styles.error}>{error}</div> : null}
 
         {!session ? (

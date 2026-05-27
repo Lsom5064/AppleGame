@@ -7,7 +7,7 @@
 }
 
 .frame {
-  width: min(720px, 100%);
+  width: min(100%, calc(var(--app-frame-width) * 1px));
   margin: 0 auto;
   padding: 4px 4px 8px;
 }
