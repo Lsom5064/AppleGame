@@ -162,12 +162,13 @@ export function startRoomGame(room: RoomState, playerId: string, now: number): R
     throw new Error("방장만 게임을 시작할 수 있습니다.");
   }
 
-  if (normalizedRoom.phase !== "lobby") {
-    throw new Error("이미 시작된 게임입니다.");
+  if (normalizedRoom.phase === "playing") {
+    throw new Error("이미 진행 중인 게임입니다.");
   }
 
   return {
     ...normalizedRoom,
+    seed: `${normalizedRoom.code}-${now}`,
     phase: "playing",
     currentRoundIndex: 0,
     roundStartedAt: now,
@@ -230,13 +231,35 @@ export function forceRoomProgress(room: RoomState, now: number): RoomState {
 
   if (isLastRound) {
     nextRoom.phase = "finished";
+    nextRoom.roundStartedAt = null;
     return nextRoom;
   }
 
   nextRoom.currentRoundIndex += 1;
-  nextRoom.roundStartedAt = now;
+  nextRoom.roundStartedAt = null;
 
   return nextRoom;
+}
+
+export function startNextRound(room: RoomState, playerId: string, now: number): RoomState {
+  const normalizedRoom = normalizeRoomState(room);
+
+  if (normalizedRoom.hostId !== playerId) {
+    throw new Error("방장만 다음 게임을 시작할 수 있습니다.");
+  }
+
+  if (normalizedRoom.phase !== "playing") {
+    throw new Error("다음 라운드를 시작할 수 없는 상태입니다.");
+  }
+
+  if (normalizedRoom.roundStartedAt !== null) {
+    return normalizedRoom;
+  }
+
+  return {
+    ...normalizedRoom,
+    roundStartedAt: now
+  };
 }
 
 export function submitRoundScore(

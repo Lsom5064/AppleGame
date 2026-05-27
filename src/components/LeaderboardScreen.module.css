@@ -11,6 +11,14 @@
   gap: 8px;
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .title {
   margin: 0;
   font-size: 0.94rem;
@@ -24,6 +32,12 @@
   font-size: 0.76rem;
 }
 
+.notice {
+  margin: 0;
+  color: #6b5a46;
+  font-size: 0.76rem;
+}
+
 .button {
   padding: 6px 8px;
   border-radius: 0;
@@ -32,6 +46,16 @@
   color: #222;
   font: inherit;
   font-weight: 400;
+  cursor: pointer;
+}
+
+.primaryButton {
+  padding: 6px 10px;
+  border: 1px solid #9f7b1f;
+  background: #ffd361;
+  color: #3a2800;
+  font: inherit;
+  font-weight: 700;
   cursor: pointer;
 }
 

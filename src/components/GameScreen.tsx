@@ -11,6 +11,7 @@ interface GameScreenProps {
   room: RoomState;
   player: PlayerState;
   onLeaveRoom: () => void;
+  onStartNextRound: () => Promise<void>;
   onSubmitRound: (roundIndex: number, score: number, clearTimeMs: number | null) => Promise<void>;
   onForceProgress: () => Promise<void>;
 }
@@ -38,12 +39,18 @@ export function GameScreen({
   room,
   player,
   onLeaveRoom,
+  onStartNextRound,
   onSubmitRound,
   onForceProgress
 }: GameScreenProps) {
   const roundSeed = `${room.seed}:${room.currentRoundIndex}`;
   const roundKey = String(room.currentRoundIndex);
   const locked = Boolean(room.submissions[roundKey]?.[player.id]);
+  const roundPendingStart = room.roundStartedAt === null;
+  const completedRoundIndex = room.currentRoundIndex - 1;
+  const completedRoundKey = String(completedRoundIndex);
+  const lastRoundSubmission =
+    completedRoundIndex >= 0 ? room.submissions[completedRoundKey]?.[player.id] ?? null : null;
   const [apples, setApples] = useState<Apple[]>(() => generateApples(roundSeed));
   const [score, setScore] = useState(0);
   const [dragState, setDragState] = useState<DragState | null>(null);
@@ -100,15 +107,15 @@ export function GameScreen({
   }, [room.roundStartedAt, room.settings.roundDurationSec]);
 
   useEffect(() => {
-    if (remainingApples > 0 || locked) {
+    if (roundPendingStart || remainingApples > 0 || locked) {
       return;
     }
 
     void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
-  }, [clearTimeMs, locked, onSubmitRound, remainingApples, room.currentRoundIndex, score]);
+  }, [clearTimeMs, locked, onSubmitRound, remainingApples, room.currentRoundIndex, roundPendingStart, score]);
 
   useEffect(() => {
-    if (timeLeftMs > 0 || progressRequestedRef.current) {
+    if (roundPendingStart || timeLeftMs > 0 || progressRequestedRef.current) {
       return;
     }
 
@@ -120,7 +127,16 @@ export function GameScreen({
     }
 
     void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
-  }, [clearTimeMs, locked, onForceProgress, onSubmitRound, room.currentRoundIndex, score, timeLeftMs]);
+  }, [
+    clearTimeMs,
+    locked,
+    onForceProgress,
+    onSubmitRound,
+    room.currentRoundIndex,
+    roundPendingStart,
+    score,
+    timeLeftMs
+  ]);
 
   function resetSelection(): void {
     setDragState(null);
@@ -160,7 +176,7 @@ export function GameScreen({
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
-    if (locked || timeLeftMs <= 0) {
+    if (locked || roundPendingStart || timeLeftMs <= 0) {
       return;
     }
 
@@ -271,6 +287,9 @@ export function GameScreen({
         <div>
           <p className={styles.meta}>Room {room.code}</p>
           <p className={styles.player}>Player {player.nickname}</p>
+          <p className={styles.round}>
+            Round {room.currentRoundIndex + 1} / {room.settings.roundCount}
+          </p>
         </div>
         <div className={styles.controls}>
           {clearTimeMs !== null ? (
@@ -290,21 +309,50 @@ export function GameScreen({
         </div>
       </div>
 
-      <GameBoard
-        apples={apples}
-        locked={locked}
-        lightColors={lightColors}
-        score={score}
-        timeLeftMs={timeLeftMs}
-        roundDurationSec={room.settings.roundDurationSec}
-        selectionRect={selectionRect}
-        selectedAppleIds={selectedAppleIds}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-      />
+      {roundPendingStart ? (
+        <div className={styles.waitingCard}>
+          <p className={styles.waitingTitle}>
+            {room.currentRoundIndex === 0
+              ? "게임을 시작할 준비가 되었습니다."
+              : `${completedRoundIndex + 1}라운드가 끝났습니다.`}
+          </p>
+          {lastRoundSubmission ? (
+            <p className={styles.waitingSummary}>
+              이번 라운드 점수 {lastRoundSubmission.score}점 / 클리어{" "}
+              {lastRoundSubmission.clearTimeMs === null
+                ? "-"
+                : `${(lastRoundSubmission.clearTimeMs / 1000).toFixed(1)}s`}
+            </p>
+          ) : null}
+          {player.isHost ? (
+            <button className={styles.primaryButton} type="button" onClick={() => void onStartNextRound()}>
+              {room.currentRoundIndex === 0
+                ? "1라운드 시작"
+                : `${room.currentRoundIndex + 1}라운드 시작`}
+            </button>
+          ) : (
+            <p className={styles.waitingSummary}>방장이 다음 게임 시작 버튼을 누를 때까지 기다리는 중입니다.</p>
+          )}
+        </div>
+      ) : (
+        <>
+          <GameBoard
+            apples={apples}
+            locked={locked}
+            lightColors={lightColors}
+            score={score}
+            timeLeftMs={timeLeftMs}
+            roundDurationSec={room.settings.roundDurationSec}
+            selectionRect={selectionRect}
+            selectedAppleIds={selectedAppleIds}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+          />
 
-      <p className={styles.hint}>사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다.</p>
+          <p className={styles.hint}>사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다.</p>
+        </>
+      )}
     </div>
   );
 }

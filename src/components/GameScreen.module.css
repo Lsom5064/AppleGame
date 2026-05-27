@@ -13,6 +13,7 @@
 
 .meta,
 .player,
+.round,
 .clear,
 .hint {
   margin: 0;
@@ -28,6 +29,12 @@
 .player {
   color: #3f2e1f;
   font-size: 1rem;
+  font-weight: 700;
+}
+
+.round {
+  color: #7c694e;
+  font-size: 0.78rem;
   font-weight: 700;
 }
 
@@ -67,6 +74,44 @@
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
+}
+
+.primaryButton {
+  padding: 10px 14px;
+  border: 1px solid #8c6a1a;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffe38a 0%, #f4b321 100%);
+  color: #4c2f00;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.waitingCard {
+  display: grid;
+  gap: 10px;
+  padding: 18px 16px;
+  border: 1px solid #e3d0a7;
+  background: linear-gradient(180deg, #fff9ec 0%, #fff1cf 100%);
+  text-align: center;
+}
+
+.waitingTitle,
+.waitingSummary {
+  margin: 0;
+}
+
+.waitingTitle {
+  color: #493521;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.waitingSummary {
+  color: #6a5338;
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
 
 .hint {

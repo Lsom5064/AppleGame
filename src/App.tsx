@@ -225,13 +225,21 @@ export default function App() {
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
+            onStartNextRound={() =>
+              runWithBusy(() => realtimeService.startNextRound(room.code, player.id))
+            }
             onSubmitRound={(roundIndex, score, clearTimeMs) =>
               realtimeService.submitRoundScore(room.code, player.id, roundIndex, score, clearTimeMs)
             }
             onForceProgress={() => realtimeService.forceRoundProgress(room.code)}
           />
-        ) : room ? (
-          <LeaderboardScreen room={room} onLeaveRoom={() => void handleLeaveRoom()} />
+        ) : room && player ? (
+          <LeaderboardScreen
+            room={room}
+            player={player}
+            onLeaveRoom={() => void handleLeaveRoom()}
+            onRestartGame={() => runWithBusy(() => realtimeService.startGame(room.code, player.id))}
+          />
         ) : null}
 
         {isBusy ? <div className={styles.status}>동기화 중...</div> : null}

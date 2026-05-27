@@ -6,6 +6,7 @@ import {
   joinRoom,
   leaveRoom,
   normalizeRoomState,
+  startNextRound,
   startRoomGame,
   submitRoundScore,
   updateRoomSettings
@@ -41,7 +42,7 @@ describe("roomMutations", () => {
     ).toThrow("방장만 설정을 변경할 수 있습니다.");
   });
 
-  it("advances to the next round after every player submits", () => {
+  it("waits for the host to start the next round after every player submits", () => {
     const started = createStartedRoom();
     const afterHost = submitRoundScore(started, "host", 0, 6, 11000, 3000);
     const afterGuest = submitRoundScore(afterHost, "guest", 0, 4, null, 3500);
@@ -50,8 +51,19 @@ describe("roomMutations", () => {
     expect(afterGuest.currentRoundIndex).toBe(1);
     expect(afterGuest.players.host.roundScores["0"]).toBe(6);
     expect(afterGuest.players.guest.roundScores["0"]).toBe(4);
-    expect(afterGuest.roundStartedAt).toBe(3500);
+    expect(afterGuest.roundStartedAt).toBeNull();
     expect(afterGuest.submissions["0"].host.clearTimeMs).toBe(11000);
+  });
+
+  it("starts the next round only when the host requests it", () => {
+    const started = createStartedRoom();
+    const afterHost = submitRoundScore(started, "host", 0, 6, 11000, 3000);
+    const waiting = submitRoundScore(afterHost, "guest", 0, 4, null, 3500);
+    const nextRound = startNextRound(waiting, "host", 5000);
+
+    expect(nextRound.phase).toBe("playing");
+    expect(nextRound.currentRoundIndex).toBe(1);
+    expect(nextRound.roundStartedAt).toBe(5000);
   });
 
   it("fills missing submissions with zero after timeout and finishes the last round", () => {
@@ -69,6 +81,24 @@ describe("roomMutations", () => {
     expect(resolved.players.guest.roundScores["0"]).toBe(0);
     expect(resolved.submissions["0"].guest.score).toBe(0);
     expect(resolved.submissions["0"].guest.clearTimeMs).toBeNull();
+  });
+
+  it("allows the host to restart a finished game", () => {
+    const created = createInitialRoom("ROOM12", "host", "Host", 1000);
+    const joined = joinRoom(created, "guest", "Guest", 1500);
+    const configured = updateRoomSettings(joined, "host", {
+      roundCount: 1
+    });
+    const started = startRoomGame(configured, "host", 2000);
+    const finished = submitRoundScore(started, "host", 0, 8, null, 2100);
+    const restarted = startRoomGame(forceRoomProgress(finished, 2000 + started.settings.roundDurationSec * 1000 + 2000), "host", 9000);
+
+    expect(restarted.phase).toBe("playing");
+    expect(restarted.currentRoundIndex).toBe(0);
+    expect(restarted.roundStartedAt).toBe(9000);
+    expect(restarted.submissions).toEqual({});
+    expect(restarted.players.host.roundScores).toEqual({});
+    expect(restarted.players.guest.roundScores).toEqual({});
   });
 
   it("transfers host ownership to the earliest remaining player when the host leaves", () => {

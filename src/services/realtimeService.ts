@@ -8,6 +8,7 @@ import {
   joinRoom,
   leaveRoom,
   normalizeRoomState,
+  startNextRound,
   startRoomGame,
   submitRoundScore,
   updateRoomSettings
@@ -24,6 +25,7 @@ interface RealtimeService {
     settings: Partial<Pick<RoomState["settings"], "roundCount" | "leaderboardMode">>
   ): Promise<void>;
   startGame(roomCode: string, playerId: string): Promise<void>;
+  startNextRound(roomCode: string, playerId: string): Promise<void>;
   submitRoundScore(
     roomCode: string,
     playerId: string,
@@ -92,6 +94,13 @@ function createFirebaseService(): RealtimeService {
       await runTransaction(roomRef, (current) => {
         const room = current as RoomState | null;
         return startRoomGame(requireRoom(room), playerId, Date.now());
+      });
+    },
+    async startNextRound(roomCode, playerId) {
+      const roomRef = ref(database, getRoomPath(roomCode));
+      await runTransaction(roomRef, (current) => {
+        const room = current as RoomState | null;
+        return startNextRound(requireRoom(room), playerId, Date.now());
       });
     },
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
@@ -205,6 +214,9 @@ function createLocalService(): RealtimeService {
     },
     async startGame(roomCode, playerId) {
       withRoom(roomCode, (room) => startRoomGame(requireRoom(room), playerId, Date.now()));
+    },
+    async startNextRound(roomCode, playerId) {
+      withRoom(roomCode, (room) => startNextRound(requireRoom(room), playerId, Date.now()));
     },
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
       withRoom(roomCode, (room) =>

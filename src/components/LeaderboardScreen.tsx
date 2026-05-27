@@ -1,10 +1,12 @@
 import { buildLeaderboard } from "../utils/leaderboard";
-import type { RoomState } from "../types";
+import type { PlayerState, RoomState } from "../types";
 import styles from "./LeaderboardScreen.module.css";
 
 interface LeaderboardScreenProps {
   room: RoomState;
+  player: PlayerState;
   onLeaveRoom: () => void;
+  onRestartGame: () => Promise<void>;
 }
 
 function formatClearTime(clearTimeMs: number | null): string {
@@ -21,7 +23,7 @@ function getModeLabel(room: RoomState): string {
     : `${room.settings.roundCount}판 합계`;
 }
 
-export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps) {
+export function LeaderboardScreen({ room, player, onLeaveRoom, onRestartGame }: LeaderboardScreenProps) {
   const leaderboard = buildLeaderboard(room);
   const singleRound = room.settings.roundCount === 1;
 
@@ -32,9 +34,18 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
           <h1 className={styles.title}>Room {room.code}</h1>
           <p className={styles.description}>결과 / {getModeLabel(room)}</p>
         </div>
-        <button className={styles.button} type="button" onClick={onLeaveRoom}>
-          홈으로 나가기
-        </button>
+        <div className={styles.actions}>
+          {player.isHost ? (
+            <button className={styles.primaryButton} type="button" onClick={() => void onRestartGame()}>
+              재시작
+            </button>
+          ) : (
+            <p className={styles.notice}>방장이 재시작하면 새 게임이 시작됩니다.</p>
+          )}
+          <button className={styles.button} type="button" onClick={onLeaveRoom}>
+            홈으로 나가기
+          </button>
+        </div>
       </div>
 
       {singleRound ? (
