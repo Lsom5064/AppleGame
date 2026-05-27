@@ -57,6 +57,10 @@ function getNearbyRoomsPath(networkFingerprint: string): string {
   return `nearbyRooms/${networkFingerprint}`;
 }
 
+function getPublicNearbyRoomsPath(): string {
+  return "nearbyRoomsPublic";
+}
+
 function createNearbyRoomSummary(room: RoomState): NearbyRoomSummary {
   const host = room.players[room.hostId];
 
@@ -82,6 +86,44 @@ function requireRoom(room: RoomState | null): RoomState {
   return normalizeRoomState(room);
 }
 
+function readAnnouncements(snapshotValue: Record<string, NearbyRoomAnnouncement> | null): NearbyRoomSummary[] {
+  const announcements = snapshotValue ?? {};
+  const now = Date.now();
+
+  return Object.values(announcements)
+    .filter((announcement) => announcement.expiresAt > now)
+    .sort((left, right) => right.updatedAt - left.updatedAt)
+    .map(({ hostId: _hostId, expiresAt: _expiresAt, updatedAt: _updatedAt, ...room }) => room);
+}
+
+function mergeNearbyRoomLists(networkRooms: NearbyRoomSummary[], publicRooms: NearbyRoomSummary[]): NearbyRoomSummary[] {
+  const dedupedRooms = new Map<string, NearbyRoomSummary>();
+
+  for (const room of networkRooms) {
+    dedupedRooms.set(room.roomCode, room);
+  }
+
+  for (const room of publicRooms) {
+    if (!dedupedRooms.has(room.roomCode)) {
+      dedupedRooms.set(room.roomCode, room);
+    }
+  }
+
+  return Array.from(dedupedRooms.values()).sort((left, right) => right.createdAt - left.createdAt);
+}
+
+async function runRoomTransaction(
+  database: NonNullable<typeof firebaseDatabase>,
+  roomCode: string,
+  updater: (room: RoomState) => RoomState | null
+): Promise<void> {
+  const roomRef = ref(database, getRoomPath(roomCode));
+  const snapshot = await get(roomRef);
+  const fallbackRoom = requireRoom((snapshot.val() as RoomState | null) ?? null);
+
+  await runTransaction(roomRef, (current) => updater(requireRoom((current as RoomState | null) ?? fallbackRoom)));
+}
+
 function createFirebaseService(): RealtimeService {
   if (!firebaseDatabase) {
     throw new Error("Firebase is not configured.");
@@ -101,11 +143,7 @@ function createFirebaseService(): RealtimeService {
       return roomCode;
     },
     async joinRoom(roomCode, nickname, playerId) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      await runTransaction(roomRef, (current) => {
-        const room = current as RoomState | null;
-        return joinRoom(requireRoom(room), playerId, nickname, Date.now());
-      });
+      await runRoomTransaction(database, roomCode, (room) => joinRoom(room, playerId, nickname, Date.now()));
     },
     subscribeToRoom(roomCode, callback) {
       const roomRef = ref(database, getRoomPath(roomCode));
@@ -117,97 +155,76 @@ function createFirebaseService(): RealtimeService {
     },
     subscribeToNearbyRooms(callback) {
       let disposed = false;
-      let unsubscribe: (() => void) | null = null;
+      let unsubscribeFromPublic: (() => void) | null = null;
+      let unsubscribeFromNetwork: (() => void) | null = null;
+      let publicRooms: NearbyRoomSummary[] = [];
+      let networkRooms: NearbyRoomSummary[] = [];
+      let hasResolvedPublicRooms = false;
 
       callback({ status: "loading", rooms: [] });
 
+      const emit = () => {
+        if (disposed || !hasResolvedPublicRooms) {
+          return;
+        }
+
+        callback({
+          status: "ready",
+          rooms: mergeNearbyRoomLists(networkRooms, publicRooms)
+        });
+      };
+
+      unsubscribeFromPublic = onValue(ref(database, getPublicNearbyRoomsPath()), (snapshot) => {
+        publicRooms = readAnnouncements(snapshot.val() as Record<string, NearbyRoomAnnouncement> | null);
+        hasResolvedPublicRooms = true;
+        emit();
+      });
+
       void getNetworkFingerprint()
         .then((networkFingerprint) => {
-          if (disposed) {
-            return;
-          }
-
-          if (!networkFingerprint) {
-            callback({ status: "unavailable", rooms: [] });
+          if (disposed || !networkFingerprint) {
+            emit();
             return;
           }
 
           const nearbyRoomsRef = ref(database, getNearbyRoomsPath(networkFingerprint));
-          unsubscribe = onValue(nearbyRoomsRef, (snapshot) => {
-            const announcements =
-              (snapshot.val() as Record<string, NearbyRoomAnnouncement> | null) ?? {};
-            const now = Date.now();
-            const rooms = Object.values(announcements)
-              .filter((announcement) => announcement.expiresAt > now)
-              .sort((left, right) => right.updatedAt - left.updatedAt)
-              .map(({ hostId: _hostId, expiresAt: _expiresAt, updatedAt: _updatedAt, ...room }) => room);
-
-            callback({
-              status: "ready",
-              rooms
-            });
+          unsubscribeFromNetwork = onValue(nearbyRoomsRef, (snapshot) => {
+            networkRooms = readAnnouncements(snapshot.val() as Record<string, NearbyRoomAnnouncement> | null);
+            emit();
           });
         })
         .catch(() => {
-          if (!disposed) {
-            callback({ status: "unavailable", rooms: [] });
-          }
+          emit();
         });
 
       return () => {
         disposed = true;
-        unsubscribe?.();
+        unsubscribeFromPublic?.();
+        unsubscribeFromNetwork?.();
       };
     },
     async updateSettings(roomCode, playerId, settings) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      await runTransaction(roomRef, (current) => {
-        const room = current as RoomState | null;
-        return updateRoomSettings(requireRoom(room), playerId, settings);
-      });
+      await runRoomTransaction(database, roomCode, (room) => updateRoomSettings(room, playerId, settings));
     },
     async startGame(roomCode, playerId) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      await runTransaction(roomRef, (current) => {
-        const room = current as RoomState | null;
-        return startRoomGame(requireRoom(room), playerId, Date.now());
-      });
+      await runRoomTransaction(database, roomCode, (room) => startRoomGame(room, playerId, Date.now()));
     },
     async startNextRound(roomCode, playerId) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      await runTransaction(roomRef, (current) => {
-        const room = current as RoomState | null;
-        return startNextRound(requireRoom(room), playerId, Date.now());
-      });
+      await runRoomTransaction(database, roomCode, (room) => startNextRound(room, playerId, Date.now()));
     },
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      await runTransaction(roomRef, (current) => {
-        const room = current as RoomState | null;
-        return submitRoundScore(requireRoom(room), playerId, roundIndex, score, clearTimeMs, Date.now());
-      });
+      await runRoomTransaction(database, roomCode, (room) =>
+        submitRoundScore(room, playerId, roundIndex, score, clearTimeMs, Date.now())
+      );
     },
     async forceRoundProgress(roomCode) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      await runTransaction(roomRef, (current) => {
-        const room = current as RoomState | null;
-        return forceRoomProgress(requireRoom(room), Date.now());
-      });
+      await runRoomTransaction(database, roomCode, (room) => forceRoomProgress(room, Date.now()));
     },
     async leaveRoom(roomCode, playerId) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      await runTransaction(roomRef, (current) => {
-        const room = current as RoomState | null;
-        return leaveRoom(requireRoom(room), playerId);
-      });
+      await runRoomTransaction(database, roomCode, (room) => leaveRoom(room, playerId));
     },
     async publishLobbyRoom(room) {
       if (room.phase !== "lobby") {
-        return;
-      }
-
-      const networkFingerprint = await getNetworkFingerprint();
-      if (!networkFingerprint) {
         return;
       }
 
@@ -220,9 +237,18 @@ function createFirebaseService(): RealtimeService {
         updatedAt: timestamp
       };
 
+      await set(ref(database, `${getPublicNearbyRoomsPath()}/${room.code}`), announcement);
+
+      const networkFingerprint = await getNetworkFingerprint();
+      if (!networkFingerprint) {
+        return;
+      }
+
       await set(ref(database, `${getNearbyRoomsPath(networkFingerprint)}/${room.code}`), announcement);
     },
     async clearLobbyRoom(roomCode) {
+      await set(ref(database, `${getPublicNearbyRoomsPath()}/${roomCode}`), null);
+
       const networkFingerprint = await getNetworkFingerprint();
       if (!networkFingerprint) {
         return;

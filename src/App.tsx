@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { GameScreen } from "./components/GameScreen";
 import { HomeScreen } from "./components/HomeScreen";
@@ -32,6 +32,7 @@ export default function App() {
   });
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const publishedLobbyRoomCodeRef = useRef<string | null>(null);
 
   useEffect(() => {
     window.localStorage.setItem(NICKNAME_STORAGE_KEY, nickname);
@@ -129,9 +130,17 @@ export default function App() {
 
   useEffect(() => {
     if (!room || !player || !player.isHost || room.phase !== "lobby") {
+      const publishedRoomCode = publishedLobbyRoomCodeRef.current;
+      publishedLobbyRoomCodeRef.current = null;
+
+      if (publishedRoomCode) {
+        void realtimeService.clearLobbyRoom(publishedRoomCode);
+      }
+
       return;
     }
 
+    publishedLobbyRoomCodeRef.current = room.code;
     void realtimeService.publishLobbyRoom(room);
     const intervalId = window.setInterval(() => {
       void realtimeService.publishLobbyRoom(room);
@@ -139,7 +148,6 @@ export default function App() {
 
     return () => {
       window.clearInterval(intervalId);
-      void realtimeService.clearLobbyRoom(room.code);
     };
   }, [player, room]);
 

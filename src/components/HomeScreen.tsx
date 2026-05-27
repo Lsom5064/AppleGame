@@ -30,7 +30,7 @@ export function HomeScreen({
         <h1 className={styles.title}>Fruit Box Multiplayer</h1>
         <p className={styles.description}>숫자 합이 10이 되도록 사과를 드래그하세요.</p>
         <p className={styles.note}>방을 만들거나 방 코드로 입장해 같은 배치에서 동시에 플레이합니다.</p>
-        <p className={styles.note}>같은 공유기에 연결된 로비는 아래 근처 방 목록에 자동으로 나타납니다.</p>
+        <p className={styles.note}>같은 공유기 방은 우선적으로, 그 외 공개된 대기실은 보조적으로 자동 표시됩니다.</p>
       </section>
 
       <div className={styles.grid}>
@@ -71,22 +71,16 @@ export function HomeScreen({
         </section>
       </div>
 
-      <section className={styles.panel}>
-        <h2 className={styles.panelTitle}>근처 방</h2>
-        <p className={styles.panelText}>같은 공유기에서 열어둔 대기실을 자동으로 찾습니다.</p>
+        <section className={styles.panel}>
+          <h2 className={styles.panelTitle}>근처 방</h2>
+        <p className={styles.panelText}>같은 공유기 대기실을 우선 찾고, 필요하면 공개 대기실도 함께 표시합니다.</p>
 
         {nearbyRoomsState.status === "loading" ? (
           <p className={styles.nearbyMessage}>근처 방을 확인하는 중입니다.</p>
         ) : null}
 
-        {nearbyRoomsState.status === "unavailable" ? (
-          <p className={styles.nearbyMessage}>
-            현재 브라우저나 네트워크에서는 자동 방 찾기를 사용할 수 없습니다.
-          </p>
-        ) : null}
-
         {nearbyRoomsState.status === "ready" && !hasNearbyRooms ? (
-          <p className={styles.nearbyMessage}>지금 발견된 근처 방이 없습니다.</p>
+          <p className={styles.nearbyMessage}>지금 발견된 자동 공유 방이 없습니다.</p>
         ) : null}
 
         {hasNearbyRooms ? (
