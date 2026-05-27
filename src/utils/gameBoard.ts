@@ -1,7 +1,8 @@
 import {
   APPLE_COUNT,
   APPLE_HEIGHT,
-  APPLE_SPACING,
+  APPLE_SPACING_X,
+  APPLE_SPACING_Y,
   APPLE_START_X,
   APPLE_START_Y,
   APPLE_WIDTH,
@@ -26,8 +27,8 @@ export function getBoardSlots(): BoardSlot[] {
       slots.push({
         column,
         row,
-        x: APPLE_START_X + column * APPLE_SPACING,
-        y: APPLE_START_Y + row * APPLE_SPACING
+        x: APPLE_START_X + column * APPLE_SPACING_X,
+        y: APPLE_START_Y + row * APPLE_SPACING_Y
       });
     }
   }

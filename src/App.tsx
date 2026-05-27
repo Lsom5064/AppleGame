@@ -210,6 +210,9 @@ export default function App() {
             room={room}
             player={player}
             onLeaveRoom={() => void handleLeaveRoom()}
+            onUpdateSettings={(settings) =>
+              void runWithBusy(() => realtimeService.updateSettings(room.code, player.id, settings))
+            }
             onStartGame={() => void runWithBusy(() => realtimeService.startGame(room.code, player.id))}
           />
         ) : room && player && room.phase === "playing" ? (

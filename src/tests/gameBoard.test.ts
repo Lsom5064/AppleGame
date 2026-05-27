@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   APPLE_COUNT,
   APPLE_HEIGHT,
-  APPLE_SPACING,
+  APPLE_SPACING_X,
+  APPLE_SPACING_Y,
   APPLE_START_X,
   APPLE_START_Y,
   APPLE_WIDTH,
@@ -36,8 +37,8 @@ describe("generateApples", () => {
       expect(apple.value).toBeLessThanOrEqual(9);
       expect(apple.width).toBe(APPLE_WIDTH);
       expect(apple.height).toBe(APPLE_HEIGHT);
-      expect((apple.x - APPLE_START_X) % APPLE_SPACING).toBe(0);
-      expect((apple.y - APPLE_START_Y) % APPLE_SPACING).toBe(0);
+      expect((apple.x - APPLE_START_X) % APPLE_SPACING_X).toBe(0);
+      expect((apple.y - APPLE_START_Y) % APPLE_SPACING_Y).toBe(0);
       expect(apple.dropping).toBe(false);
       expect(apple.removed).toBe(false);
     }
@@ -62,7 +63,7 @@ describe("generateApples", () => {
     expect(slots[BOARD_GRID_COLUMNS - 1]).toMatchObject({
       column: BOARD_GRID_COLUMNS - 1,
       row: 0,
-      x: APPLE_START_X + (BOARD_GRID_COLUMNS - 1) * APPLE_SPACING,
+      x: APPLE_START_X + (BOARD_GRID_COLUMNS - 1) * APPLE_SPACING_X,
       y: APPLE_START_Y
     });
   });

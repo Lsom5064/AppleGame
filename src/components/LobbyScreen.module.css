@@ -108,6 +108,44 @@
   gap: 6px;
 }
 
+.settingBlock {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #ece4d4;
+}
+
+.settingLabel {
+  margin: 0;
+  color: #3f3127;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.optionRow,
+.optionColumn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.optionColumn {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #4b2e23;
+  font-size: 0.8rem;
+}
+
+.option input {
+  margin: 0;
+}
+
 .rule {
   margin: 0;
   color: #4b2e23;

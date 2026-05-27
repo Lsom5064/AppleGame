@@ -15,6 +15,12 @@ function formatClearTime(clearTimeMs: number | null): string {
   return `${(clearTimeMs / 1000).toFixed(1)}s`;
 }
 
+function getModeLabel(room: RoomState): string {
+  return room.settings.leaderboardMode === "best"
+    ? `${room.settings.roundCount}판 중 최고점`
+    : `${room.settings.roundCount}판 합계`;
+}
+
 export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps) {
   const leaderboard = buildLeaderboard(room);
   const singleRound = room.settings.roundCount === 1;
@@ -24,7 +30,7 @@ export function LeaderboardScreen({ room, onLeaveRoom }: LeaderboardScreenProps)
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Room {room.code}</h1>
-          <p className={styles.description}>결과</p>
+          <p className={styles.description}>결과 / {getModeLabel(room)}</p>
         </div>
         <button className={styles.button} type="button" onClick={onLeaveRoom}>
           홈으로 나가기

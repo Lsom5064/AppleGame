@@ -66,6 +66,7 @@ export function HomeScreen({
       <section className={styles.rules}>
         <p>제한시간은 120초입니다.</p>
         <p>사과 1개당 1점입니다.</p>
+        <p>방장은 로비에서 1판, 3판, 5판과 리더보드 기준을 정할 수 있습니다.</p>
         <p>모든 참가자는 같은 배치에서 동시에 플레이합니다.</p>
       </section>
     </div>

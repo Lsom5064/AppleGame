@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
 import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
@@ -170,7 +170,9 @@ export function GameScreen({
     const snapshot = getSelectionSnapshot(rect);
 
     setSelectionRect(rect);
-    setSelectedAppleIds(snapshot.ids);
+    startTransition(() => {
+      setSelectedAppleIds(snapshot.ids);
+    });
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>): void {
