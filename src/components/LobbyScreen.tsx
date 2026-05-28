@@ -75,7 +75,7 @@ export function LobbyScreen({
 
       <div className={styles.contentArea}>
         <div className={styles.grid}>
-          <section className={styles.panel}>
+          <section className={`${styles.panel} ${styles.playerPanel}`}>
             <h2 className={styles.panelTitle}>참가자</h2>
             <ul className={styles.list}>
               {players.map((member) => (
@@ -111,129 +111,138 @@ export function LobbyScreen({
             </ul>
           </section>
 
-          <section className={styles.panel}>
-          <h2 className={styles.panelTitle}>게임 모드</h2>
-          <div className={styles.settings}>
-            <div className={styles.settingBlock}>
-              <p className={styles.settingLabel}>대전 방식</p>
-              <div className={styles.optionColumn}>
-                <label className={styles.option}>
-                  <input
-                    checked={room.settings.gameMode === "solo"}
-                    disabled={!isHost}
-                    name="gameMode"
-                    type="radio"
-                    onChange={() => onUpdateSettings({ gameMode: "solo" })}
-                  />
-                  <span>개인전</span>
-                </label>
-                <label className={styles.option}>
-                  <input
-                    checked={room.settings.gameMode === "team"}
-                    disabled={!isHost}
-                    name="gameMode"
-                    type="radio"
-                    onChange={() => onUpdateSettings({ gameMode: "team" })}
-                  />
-                  <span>팀전</span>
-                </label>
-              </div>
-            </div>
-
-            <div className={styles.settingBlock}>
-              <p className={styles.settingLabel}>판 수</p>
-              <div className={styles.optionRow}>
-                {[1, 3, 5].map((roundCount) => (
-                  <label key={roundCount} className={styles.option}>
-                    <input
-                      checked={room.settings.roundCount === roundCount}
-                      disabled={!isHost}
-                      name="roundCount"
-                      type="radio"
-                      onChange={() =>
-                        onUpdateSettings({
-                          roundCount: roundCount as GameSettings["roundCount"]
-                        })
-                      }
-                    />
-                    <span>{roundCount}판</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className={styles.settingBlock}>
-              <p className={styles.settingLabel}>리더보드 기준</p>
-              <div className={styles.optionColumn}>
-                <label className={styles.option}>
-                  <input
-                    checked={room.settings.leaderboardMode === "sum"}
-                    disabled={!isHost}
-                    name="leaderboardMode"
-                    type="radio"
-                    onChange={() => onUpdateSettings({ leaderboardMode: "sum" })}
-                  />
-                  <span>N판 점수 합계</span>
-                </label>
-                <label className={styles.option}>
-                  <input
-                    checked={room.settings.leaderboardMode === "best"}
-                    disabled={!isHost}
-                    name="leaderboardMode"
-                    type="radio"
-                    onChange={() => onUpdateSettings({ leaderboardMode: "best" })}
-                  />
-                  <span>N판 중 최고점</span>
-                </label>
-              </div>
-            </div>
-
-            {isTeamMode ? (
-              <>
-                <div className={styles.settingBlock}>
-                  <p className={styles.settingLabel}>팀전 진행 방식</p>
-                  <div className={styles.optionColumn}>
-                    <label className={styles.option}>
-                      <input
-                        checked={room.settings.teamMode === "individual"}
-                        disabled={!isHost}
-                        name="teamMode"
-                        type="radio"
-                        onChange={() => onUpdateSettings({ teamMode: "individual" })}
-                      />
-                      <span>개별 화면</span>
-                    </label>
-                    <label className={styles.option}>
-                      <input
-                        checked={room.settings.teamMode === "shared"}
-                        disabled={!isHost}
-                        name="teamMode"
-                        type="radio"
-                        onChange={() => onUpdateSettings({ teamMode: "shared" })}
-                      />
-                      <span>단일 화면</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className={styles.settingBlock}>
-                  <p className={styles.settingLabel}>팀 수</p>
-                  <div className={styles.optionRow}>
-                    {[2, 3, 4, 5, 6].map((teamCount) => (
-                      <label key={teamCount} className={styles.option}>
+          <section className={`${styles.panel} ${styles.modePanel}`}>
+            <h2 className={styles.panelTitle}>게임 모드</h2>
+            <div className={styles.settings}>
+              <div className={styles.settingBlock}>
+                <p className={styles.settingLabel}>대전 방식</p>
+                <div className={styles.modeColumns}>
+                  <div className={styles.modeColumn}>
+                    <div className={styles.optionColumn}>
+                      <label className={styles.option}>
                         <input
-                          checked={room.settings.teamCount === teamCount}
+                          checked={room.settings.gameMode === "solo"}
                           disabled={!isHost}
-                          name="teamCount"
+                          name="gameMode"
                           type="radio"
-                          onChange={() => onUpdateSettings({ teamCount })}
+                          onChange={() => onUpdateSettings({ gameMode: "solo" })}
                         />
-                        <span>{teamCount}팀</span>
+                        <span>개인전</span>
                       </label>
-                    ))}
+                      <label className={styles.option}>
+                        <input
+                          checked={room.settings.gameMode === "team"}
+                          disabled={!isHost}
+                          name="gameMode"
+                          type="radio"
+                          onChange={() => onUpdateSettings({ gameMode: "team" })}
+                        />
+                        <span>팀전</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`${styles.modeColumn} ${!isTeamMode ? styles.modeColumnInactive : ""}`}
+                    aria-hidden={!isTeamMode}
+                  >
+                    {isTeamMode ? (
+                      <div className={styles.teamModeColumn}>
+                        <div className={styles.optionColumn}>
+                          <label className={styles.option}>
+                            <input
+                              checked={room.settings.teamMode === "individual"}
+                              disabled={!isHost}
+                              name="teamMode"
+                              type="radio"
+                              onChange={() => onUpdateSettings({ teamMode: "individual" })}
+                            />
+                            <span>개별 화면</span>
+                          </label>
+                          <label className={styles.option}>
+                            <input
+                              checked={room.settings.teamMode === "shared"}
+                              disabled={!isHost}
+                              name="teamMode"
+                              type="radio"
+                              onChange={() => onUpdateSettings({ teamMode: "shared" })}
+                            />
+                            <span>단일 화면</span>
+                          </label>
+                        </div>
+
+                        <label className={styles.selectField}>
+                          <span className={styles.teamLabel}>팀 수</span>
+                          <select
+                            className={styles.teamCountSelect}
+                            value={room.settings.teamCount}
+                            disabled={!isHost}
+                            onChange={(event) => onUpdateSettings({ teamCount: Number(event.target.value) })}
+                          >
+                            {[2, 3, 4, 5, 6].map((teamCount) => (
+                              <option key={teamCount} value={teamCount}>
+                                {teamCount}팀
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+                    ) : (
+                      <p className={styles.modePlaceholder}>팀전을 선택하면 추가 설정이 여기에 표시됩니다.</p>
+                    )}
                   </div>
                 </div>
+              </div>
 
+              <div className={styles.settingBlock}>
+                <p className={styles.settingLabel}>판 수</p>
+                <div className={styles.optionRow}>
+                  {[1, 3, 5].map((roundCount) => (
+                    <label key={roundCount} className={styles.option}>
+                      <input
+                        checked={room.settings.roundCount === roundCount}
+                        disabled={!isHost}
+                        name="roundCount"
+                        type="radio"
+                        onChange={() =>
+                          onUpdateSettings({
+                            roundCount: roundCount as GameSettings["roundCount"]
+                          })
+                        }
+                      />
+                      <span>{roundCount}판</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className={styles.settingBlock}>
+                <p className={styles.settingLabel}>리더보드 기준</p>
+                <div className={styles.optionColumn}>
+                  <label className={styles.option}>
+                    <input
+                      checked={room.settings.leaderboardMode === "sum"}
+                      disabled={!isHost}
+                      name="leaderboardMode"
+                      type="radio"
+                      onChange={() => onUpdateSettings({ leaderboardMode: "sum" })}
+                    />
+                    <span>N판 점수 합계</span>
+                  </label>
+                  <label className={styles.option}>
+                    <input
+                      checked={room.settings.leaderboardMode === "best"}
+                      disabled={!isHost}
+                      name="leaderboardMode"
+                      type="radio"
+                      onChange={() => onUpdateSettings({ leaderboardMode: "best" })}
+                    />
+                    <span>N판 중 최고점</span>
+                  </label>
+                </div>
+              </div>
+
+              {isTeamMode ? (
                 <div className={styles.settingBlock}>
                   <p className={styles.settingLabel}>팀 배정</p>
                   <div className={styles.teamActionRow}>
@@ -250,27 +259,26 @@ export function LobbyScreen({
                     </p>
                   </div>
                 </div>
-              </>
-            ) : null}
+              ) : null}
 
-            <p className={styles.rule}>
-              현재 설정: {getGameModeLabel(room)} / {room.settings.roundCount}판 /{" "}
-              {getLeaderboardModeLabel(room.settings.leaderboardMode)}
-            </p>
-            {isTeamMode && room.settings.teamMode === "shared" ? (
-              <p className={styles.hint}>같은 팀은 하나의 공용 보드와 점수를 공유합니다.</p>
-            ) : null}
-          </div>
+              <p className={styles.rule}>
+                현재 설정: {getGameModeLabel(room)} / {room.settings.roundCount}판 /{" "}
+                {getLeaderboardModeLabel(room.settings.leaderboardMode)}
+              </p>
+              {isTeamMode && room.settings.teamMode === "shared" ? (
+                <p className={styles.hint}>같은 팀은 하나의 공용 보드와 점수를 공유합니다.</p>
+              ) : null}
+            </div>
 
-          <h2 className={styles.panelTitle}>게임 규칙</h2>
-          <div className={styles.settings}>
-            <p className={styles.rule}>제한시간은 120초입니다.</p>
-            <p className={styles.rule}>드래그한 범위의 숫자 합이 10이면 사과가 제거됩니다.</p>
-            <p className={styles.rule}>사과 1개당 1점이며, 모두 제거하면 클리어 시간이 기록됩니다.</p>
-            <p className={styles.hint}>
-              {isHost ? "방장이 모드를 정하고 시작합니다." : "방장이 모드를 정할 때까지 대기합니다."}
-            </p>
-          </div>
+            <h2 className={styles.panelTitle}>게임 규칙</h2>
+            <div className={styles.settings}>
+              <p className={styles.rule}>제한시간은 120초입니다.</p>
+              <p className={styles.rule}>드래그한 범위의 숫자 합이 10이면 사과가 제거됩니다.</p>
+              <p className={styles.rule}>사과 1개당 1점이며, 모두 제거하면 클리어 시간이 기록됩니다.</p>
+              <p className={styles.hint}>
+                {isHost ? "방장이 모드를 정하고 시작합니다." : "방장이 모드를 정할 때까지 대기합니다."}
+              </p>
+            </div>
           </section>
         </div>
 
