@@ -142,6 +142,18 @@ describe("roomMutations", () => {
     expect(assigned.players.guest.teamId).toBe("team-1");
   });
 
+  it("assigns newly joined players to team-1 immediately in team mode", () => {
+    const created = createInitialRoom("ROOM12", "host", "Host", 1000);
+    const teamRoom = updateRoomSettings(created, "host", {
+      gameMode: "team",
+      teamMode: "individual",
+      teamCount: 2
+    });
+    const joined = joinRoom(teamRoom, "guest", "Guest", 1500);
+
+    expect(joined.players.guest.teamId).toBe("team-1");
+  });
+
   it("requires the correct password when joining a locked room", () => {
     const room = createInitialRoom("ROOM12", "host", "Host", 1000, {
       name: "잠금방",

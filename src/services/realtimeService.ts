@@ -1,4 +1,4 @@
-import { get, onValue, ref, runTransaction, set } from "firebase/database";
+import { get, onValue, ref, runTransaction, set, update } from "firebase/database";
 import { firebaseDatabase } from "../lib/firebase";
 import type { CreateRoomOptions, RoomDirectoryEntry, RoomDirectoryState, RoomState } from "../types";
 import { countConnectedPlayers } from "../utils/presence";
@@ -225,6 +225,7 @@ function createFirebaseService(): RealtimeService {
       const roomRef = ref(database, getRoomPath(roomCode));
       const snapshot = await get(roomRef);
       const room = requireRoom((snapshot.val() as RoomState | null) ?? null);
+      const now = Date.now();
       const nextRoom = active
         ? updateTeamPointer(
             room,
@@ -233,16 +234,27 @@ function createFirebaseService(): RealtimeService {
             x,
             y,
             active,
-            Date.now(),
+            now,
             dragging,
             selectionStartX,
             selectionStartY
           )
         : clearTeamPointer(room, playerId);
-      await set(
-        ref(database, `${getRoomPath(roomCode)}/teamPointers/${playerId}`),
-        nextRoom.teamPointers[playerId] ?? null
-      );
+
+      if (!nextRoom.players[playerId]) {
+        return;
+      }
+
+      await Promise.all([
+        set(
+          ref(database, `${getRoomPath(roomCode)}/teamPointers/${playerId}`),
+          nextRoom.teamPointers[playerId] ?? null
+        ),
+        update(ref(database, `${getRoomPath(roomCode)}/players/${playerId}`), {
+          connected: true,
+          lastSeenAt: now
+        })
+      ]);
     },
     async sendChatMessage(roomCode, playerId, text) {
       await runRoomTransaction(database, roomCode, (room) => addRoomChatMessage(room, playerId, text, Date.now()));

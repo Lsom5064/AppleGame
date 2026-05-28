@@ -436,7 +436,7 @@ export function joinRoom(
       lastSeenAt: now
     };
     delete nextRoom.teamPointers[playerId];
-    return nextRoom;
+    return nextRoom.settings.gameMode === "team" ? ensureTeamAssignments(nextRoom) : nextRoom;
   }
 
   if (nextRoom.phase !== "lobby") {
@@ -458,7 +458,7 @@ export function joinRoom(
     teamId: null
   };
 
-  return nextRoom;
+  return nextRoom.settings.gameMode === "team" ? ensureTeamAssignments(nextRoom) : nextRoom;
 }
 
 export function updateRoomSettings(
