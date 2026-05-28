@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "smoke:firebase": "node scripts/firebase.shared-board-smoke.mjs",
+    "smoke:lan": "node scripts/lan-http-smoke.mjs",
     "test": "vitest run"
   },
   "dependencies": {
