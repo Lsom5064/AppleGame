@@ -5,6 +5,7 @@ import { GameScreen } from "../components/GameScreen";
 import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
 import type { PlayerState, RoomState } from "../types";
 import { generateApples } from "../utils/gameBoard";
+import { setRealtimeClockOffset } from "../utils/realtimeClock";
 
 const player: PlayerState = {
   id: "host",
@@ -148,6 +149,7 @@ describe("GameScreen round transitions", () => {
       root.unmount();
     });
     container.remove();
+    setRealtimeClockOffset(0);
     vi.useRealTimers();
   });
 
@@ -225,6 +227,9 @@ describe("GameScreen round transitions", () => {
   });
 
   it("renders shared-team board progress plus teammate pointer and drag selection", async () => {
+    vi.setSystemTime(120000);
+    setRealtimeClockOffset(-117000);
+
     const apples = generateApples("ROOM12-seed:0");
     const removedAppleId = apples[0].id;
     const room = createSharedRoom({

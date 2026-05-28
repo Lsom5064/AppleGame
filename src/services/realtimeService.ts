@@ -2,6 +2,7 @@ import { get, onValue, ref, runTransaction, set, update } from "firebase/databas
 import { firebaseDatabase } from "../lib/firebase";
 import type { CreateRoomOptions, RoomDirectoryEntry, RoomDirectoryState, RoomState } from "../types";
 import { countConnectedPlayers } from "../utils/presence";
+import { getRealtimeNow, setRealtimeClockOffset } from "../utils/realtimeClock";
 import {
   addRoomChatMessage,
   applySharedTeamSelection,
@@ -84,6 +85,22 @@ function requireRoom(room: RoomState | null): RoomState {
   return normalizeRoomState(room);
 }
 
+function updateRealtimeClockOffset(offset: unknown): void {
+  if (typeof offset === "number") {
+    setRealtimeClockOffset(offset);
+  }
+}
+
+function initializeFirebaseClock(database: NonNullable<typeof firebaseDatabase>): void {
+  const offsetRef = ref(database, ".info/serverTimeOffset");
+
+  void get(offsetRef)
+    .then((snapshot) => updateRealtimeClockOffset(snapshot.val()))
+    .catch(() => {});
+
+  onValue(offsetRef, (snapshot) => updateRealtimeClockOffset(snapshot.val()));
+}
+
 function createRoomDirectoryEntry(room: RoomState): RoomDirectoryEntry {
   const normalizedRoom = normalizeRoomState(room);
   const host = normalizedRoom.players[normalizedRoom.hostId];
@@ -152,6 +169,8 @@ function createFirebaseService(): RealtimeService {
   }
 
   const database = firebaseDatabase;
+  const now = () => getRealtimeNow();
+  initializeFirebaseClock(database);
 
   return {
     providerName: "firebase",
@@ -160,13 +179,13 @@ function createFirebaseService(): RealtimeService {
       const snapshot = await get(roomsRef);
       const existingCodes = snapshot.exists() ? Object.keys(snapshot.val() as Record<string, unknown>) : [];
       const roomCode = createNewRoomCode(existingCodes);
-      const room = createInitialRoom(roomCode, playerId, nickname, Date.now(), options);
+      const room = createInitialRoom(roomCode, playerId, nickname, now(), options);
       await set(ref(database, getRoomPath(roomCode)), room);
       return roomCode;
     },
     async joinRoom(roomCode, nickname, playerId, password) {
       await runRoomTransaction(database, roomCode, (room) =>
-        joinRoom(room, playerId, nickname, Date.now(), password)
+        joinRoom(room, playerId, nickname, now(), password)
       );
     },
     subscribeToRoom(roomCode, callback) {
@@ -189,7 +208,7 @@ function createFirebaseService(): RealtimeService {
     },
     async randomizeTeams(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) =>
-        randomizeRoomTeams(room, playerId, Date.now())
+        randomizeRoomTeams(room, playerId, now())
       );
     },
     async assignPlayerTeam(roomCode, playerId, targetPlayerId, teamId) {
@@ -198,34 +217,34 @@ function createFirebaseService(): RealtimeService {
       );
     },
     async startGame(roomCode, playerId) {
-      await runRoomTransaction(database, roomCode, (room) => startRoomGame(room, playerId, Date.now()));
+      await runRoomTransaction(database, roomCode, (room) => startRoomGame(room, playerId, now()));
     },
     async startNextRound(roomCode, playerId) {
-      await runRoomTransaction(database, roomCode, (room) => startNextRound(room, playerId, Date.now()));
+      await runRoomTransaction(database, roomCode, (room) => startNextRound(room, playerId, now()));
     },
     async voteForNextRound(roomCode, playerId) {
-      await runRoomTransaction(database, roomCode, (room) => voteForNextRound(room, playerId, Date.now()));
+      await runRoomTransaction(database, roomCode, (room) => voteForNextRound(room, playerId, now()));
     },
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
       await runRoomTransaction(database, roomCode, (room) =>
-        submitRoundScore(room, playerId, roundIndex, score, clearTimeMs, Date.now())
+        submitRoundScore(room, playerId, roundIndex, score, clearTimeMs, now())
       );
     },
     async submitSharedSelection(roomCode, playerId, roundIndex, appleIds, clearTimeMs) {
       await runRoomTransaction(database, roomCode, (room) =>
-        applySharedTeamSelection(room, playerId, roundIndex, appleIds, clearTimeMs, Date.now())
+        applySharedTeamSelection(room, playerId, roundIndex, appleIds, clearTimeMs, now())
       );
     },
     async updatePresence(roomCode, playerId, connected) {
       await runRoomTransaction(database, roomCode, (room) =>
-        updatePlayerPresence(room, playerId, connected, Date.now())
+        updatePlayerPresence(room, playerId, connected, now())
       );
     },
     async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active, dragging, selectionStartX, selectionStartY) {
       const roomRef = ref(database, getRoomPath(roomCode));
       const snapshot = await get(roomRef);
       const room = requireRoom((snapshot.val() as RoomState | null) ?? null);
-      const now = Date.now();
+      const timestamp = now();
       const nextRoom = active
         ? updateTeamPointer(
             room,
@@ -234,7 +253,7 @@ function createFirebaseService(): RealtimeService {
             x,
             y,
             active,
-            now,
+            timestamp,
             dragging,
             selectionStartX,
             selectionStartY
@@ -245,22 +264,17 @@ function createFirebaseService(): RealtimeService {
         return;
       }
 
-      await Promise.all([
-        set(
-          ref(database, `${getRoomPath(roomCode)}/teamPointers/${playerId}`),
-          nextRoom.teamPointers[playerId] ?? null
-        ),
-        update(ref(database, `${getRoomPath(roomCode)}/players/${playerId}`), {
-          connected: true,
-          lastSeenAt: now
-        })
-      ]);
+      await update(ref(database, getRoomPath(roomCode)), {
+        [`teamPointers/${playerId}`]: nextRoom.teamPointers[playerId] ?? null,
+        [`players/${playerId}/connected`]: true,
+        [`players/${playerId}/lastSeenAt`]: timestamp
+      });
     },
     async sendChatMessage(roomCode, playerId, text) {
-      await runRoomTransaction(database, roomCode, (room) => addRoomChatMessage(room, playerId, text, Date.now()));
+      await runRoomTransaction(database, roomCode, (room) => addRoomChatMessage(room, playerId, text, now()));
     },
     async forceRoundProgress(roomCode) {
-      await runRoomTransaction(database, roomCode, (room) => forceRoomProgress(room, Date.now()));
+      await runRoomTransaction(database, roomCode, (room) => forceRoomProgress(room, now()));
     },
     async leaveRoom(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => leaveRoom(room, playerId));

@@ -4,6 +4,7 @@ import { BOARD_HEIGHT, BOARD_WIDTH, POINTER_STALE_MS } from "../constants";
 import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
 import { generateApples, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
 import { getConnectedPlayerIds, isPlayerConnected } from "../utils/presence";
+import { getRealtimeNow } from "../utils/realtimeClock";
 import { calculateSelectionScore } from "../utils/scoring";
 import { getTeamName } from "../utils/teams";
 import { GameBoard } from "./GameBoard";
@@ -93,7 +94,7 @@ export function GameScreen({
   const [timeLeftMs, setTimeLeftMs] = useState(room.settings.roundDurationSec * 1000);
   const [lightColors, setLightColors] = useState(false);
   const [clearTimeMs, setClearTimeMs] = useState<number | null>(null);
-  const [pointerNow, setPointerNow] = useState(() => Date.now());
+  const [pointerNow, setPointerNow] = useState(() => getRealtimeNow());
   const dropDirectionRef = useRef<-1 | 1>(1);
   const dropTimeoutsRef = useRef<number[]>([]);
   const pointerSyncRef = useRef<{
@@ -355,7 +356,7 @@ export function GameScreen({
       }
 
       const deadline = room.roundStartedAt + room.settings.roundDurationSec * 1000;
-      setTimeLeftMs(Math.max(0, deadline - Date.now()));
+      setTimeLeftMs(Math.max(0, deadline - getRealtimeNow()));
     }, 200);
 
     return () => window.clearInterval(interval);
@@ -367,7 +368,7 @@ export function GameScreen({
     }
 
     const interval = window.setInterval(() => {
-      setPointerNow(Date.now());
+      setPointerNow(getRealtimeNow());
     }, 250);
 
     return () => window.clearInterval(interval);
@@ -433,7 +434,7 @@ export function GameScreen({
       return null;
     }
 
-    return Math.max(0, Date.now() - room.roundStartedAt);
+    return Math.max(0, getRealtimeNow() - room.roundStartedAt);
   }
 
   function getPointerPosition(event: ReactPointerEvent<HTMLDivElement>): PointerPosition {
@@ -469,7 +470,7 @@ export function GameScreen({
     }
 
     const lastSync = pointerSyncRef.current;
-    const now = Date.now();
+    const now = getRealtimeNow();
 
     if (
       !force &&
