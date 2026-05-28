@@ -87,6 +87,14 @@ describe("generateApples", () => {
     expect(rightGap).toBe(PLAYFIELD_SIDE_MARGIN);
   });
 
+  it("uses the same total board width as the visual apple span plus equal side margins", () => {
+    const appleSpan = APPLE_WIDTH + APPLE_SPACING_X * (BOARD_GRID_COLUMNS - 1);
+
+    expect(BOARD_WIDTH).toBe(
+      PLAYFIELD_INSET_LEFT + PLAYFIELD_INSET_RIGHT + appleSpan + PLAYFIELD_SIDE_MARGIN * 2
+    );
+  });
+
   it("keeps the total board sum aligned to 10 without creating a single 10 apple", () => {
     const apples = generateApples("room-seed:4");
     const total = apples.reduce((sum, apple) => sum + apple.value, 0);

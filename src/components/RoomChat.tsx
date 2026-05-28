@@ -4,6 +4,7 @@ import type { PlayerState, RoomChatMessage } from "../types";
 import styles from "./RoomChat.module.css";
 
 interface RoomChatProps {
+  className?: string;
   player: PlayerState;
   messages: RoomChatMessage[];
   title: string;
@@ -17,7 +18,7 @@ function formatTime(timestamp: number): string {
   }).format(timestamp);
 }
 
-export function RoomChat({ player, messages, title, onSendMessage }: RoomChatProps) {
+export function RoomChat({ className, player, messages, title, onSendMessage }: RoomChatProps) {
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +49,7 @@ export function RoomChat({ player, messages, title, onSendMessage }: RoomChatPro
   }
 
   return (
-    <section className={styles.panel}>
+    <section className={className ? `${styles.panel} ${className}` : styles.panel}>
       <div className={styles.header}>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.notice}>{player.nickname}으로 전송</p>
