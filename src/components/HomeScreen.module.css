@@ -1,31 +1,65 @@
 .shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 10px;
+  gap: 14px;
 }
 
 .hero {
+  position: relative;
   display: grid;
   gap: 4px;
+  padding: 18px 20px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(189, 246, 210, 0.92) 0%, rgba(185, 233, 255, 0.88) 54%, rgba(255, 216, 77, 0.8) 100%),
+    repeating-linear-gradient(90deg, rgba(23, 33, 43, 0.05) 0 12px, transparent 12px 24px);
+  box-shadow: var(--shadow-hard);
+  overflow: hidden;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  right: 18px;
+  bottom: 12px;
+  width: 78px;
+  height: 78px;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 32%, #ff7f76 0 18%, transparent 19%),
+    linear-gradient(135deg, var(--apple), var(--apple-dark));
+  box-shadow: 4px 4px 0 rgba(23, 33, 43, 0.16);
+  opacity: 0.9;
 }
 
 .title {
+  position: relative;
+  z-index: 1;
+  max-width: calc(100% - 100px);
   margin: 0;
-  font-size: clamp(1.15rem, 2vw, 1.45rem);
-  line-height: 1.25;
-  color: #2a2018;
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  line-height: 1.08;
+  color: var(--ink);
+}
+
+.description,
+.note {
+  position: relative;
+  z-index: 1;
+  max-width: calc(100% - 110px);
+  margin: 0;
+  color: var(--ink);
 }
 
 .description {
-  margin: 0;
-  font-size: 0.84rem;
-  color: #5f5145;
+  font-size: 0.92rem;
+  font-weight: 800;
 }
 
 .note {
-  margin: 0;
-  font-size: 0.78rem;
-  color: #6a5a49;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
 }
 
 .splitGrid {
@@ -36,119 +70,145 @@
 
 .panel {
   display: grid;
-  gap: 8px;
-  padding: 8px 0 0;
-  border: 0;
-  background: transparent;
-  border-top: 1px solid #e4dccd;
+  gap: 10px;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: 4px 4px 0 rgba(23, 33, 43, 0.12);
 }
 
 .panelTitle {
-  margin: 0 0 6px;
-  font-size: 0.98rem;
-  color: #2f241b;
+  margin: 0;
+  font-size: 1.02rem;
+  color: var(--ink);
 }
 
 .panelText {
-  margin: 0 0 8px;
-  color: #64584e;
-  line-height: 1.4;
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.45;
   font-size: 0.84rem;
 }
 
-.label {
+.label,
+.inlineLabel {
   display: grid;
   gap: 6px;
-  margin-bottom: 8px;
-  font-size: 0.88rem;
-  color: #3f3127;
+  font-size: 0.86rem;
+  color: var(--ink);
+  font-weight: 800;
 }
 
 .checkboxRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
-  font-size: 0.88rem;
-  color: #3f3127;
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+
+.checkboxRow input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--leaf);
 }
 
 .input {
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 0;
-  border: 1px solid #999;
-  background: white;
+  padding: 10px 11px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
   font: inherit;
-  color: #222;
+  color: var(--ink);
+  box-shadow: inset 2px 2px 0 rgba(23, 33, 43, 0.06);
+}
+
+.input:focus {
+  outline: 3px solid rgba(255, 216, 77, 0.7);
+  outline-offset: 1px;
+}
+
+.button,
+.secondaryButton,
+.roomButton {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.2);
 }
 
 .button {
-  width: 100%;
-  padding: 7px 10px;
-  border: 1px solid #999;
-  border-radius: 0;
-  background: #f6f6f6;
-  color: #222;
-  font: inherit;
-  font-weight: 400;
-  cursor: pointer;
+  background: var(--banana);
 }
 
 .secondaryButton {
-  width: 100%;
-  padding: 7px 10px;
-  border: 1px solid #999;
-  border-radius: 0;
-  background: #f6f6f6;
-  color: #222;
-  font: inherit;
-  font-weight: 400;
-  cursor: pointer;
+  background: var(--mint);
 }
 
 .directoryMessage {
   margin: 0;
-  color: #64584e;
+  padding: 12px;
+  border: 2px dashed rgba(23, 33, 43, 0.3);
+  border-radius: var(--radius);
+  background: rgba(185, 233, 255, 0.22);
+  color: var(--ink-soft);
   line-height: 1.4;
   font-size: 0.84rem;
 }
 
 .roomList {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .roomCard {
   display: grid;
-  gap: 8px;
-  padding: 10px;
-  border: 1px solid #d3c5b2;
-  background: #fffaf1;
+  gap: 10px;
+  padding: 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(90deg, rgba(232, 68, 58, 0.08) 0 8px, transparent 8px),
+    #ffffff;
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.1);
 }
 
 .roomCardHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
 }
 
 .roomTitle {
   margin: 0;
-  font-size: 0.9rem;
-  color: #2f241b;
+  font-size: 0.98rem;
+  color: var(--ink);
 }
 
 .roomMeta {
-  margin: 3px 0 0;
+  margin: 4px 0 0;
   font-size: 0.78rem;
-  color: #6a5a49;
+  color: var(--ink-soft);
+  line-height: 1.45;
 }
 
 .roomPhase {
-  font-size: 0.76rem;
-  color: #7a6549;
+  flex: none;
+  padding: 5px 8px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--sky);
+  color: var(--ink);
+  font-size: 0.74rem;
+  font-weight: 900;
 }
 
 .roomBadges {
@@ -160,42 +220,34 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 7px;
-  border: 1px solid #d8cbb8;
-  background: #fff;
-  font-size: 0.76rem;
-  color: #584939;
-}
-
-.inlineLabel {
-  display: grid;
-  gap: 6px;
-  font-size: 0.84rem;
-  color: #3f3127;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--cream);
+  font-size: 0.74rem;
+  color: var(--ink);
+  font-weight: 800;
 }
 
 .roomButton {
-  padding: 8px 10px;
-  border: 1px solid #d3c5b2;
-  background: #f7efe1;
-  cursor: pointer;
-  font: inherit;
-  color: #2f241b;
+  background: var(--leaf);
+  color: white;
 }
 
 .roomButton:disabled {
   cursor: not-allowed;
-  color: #87735a;
-  background: #efe6d9;
+  color: var(--ink-soft);
+  background: #d7dde2;
+  box-shadow: none;
 }
 
 .rules {
-  display: grid;
-  gap: 4px;
-  font-size: 0.82rem;
-  color: #67584b;
-  padding-top: 8px;
-  border-top: 1px solid #e4dccd;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 4px 2px;
+  font-size: 0.76rem;
+  color: var(--ink-soft);
 }
 
 .rules p {
@@ -205,5 +257,16 @@
 @media (max-width: 720px) {
   .splitGrid {
     grid-template-columns: 1fr;
+  }
+
+  .hero::after {
+    width: 58px;
+    height: 58px;
+  }
+
+  .title,
+  .description,
+  .note {
+    max-width: calc(100% - 76px);
   }
 }

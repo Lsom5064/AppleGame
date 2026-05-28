@@ -1,14 +1,21 @@
 .layout {
   display: grid;
-  gap: 8px;
+  gap: 14px;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(255, 216, 77, 0.86), rgba(255, 159, 134, 0.72)),
+    repeating-linear-gradient(90deg, rgba(23, 33, 43, 0.05) 0 12px, transparent 12px 24px);
+  box-shadow: var(--shadow-hard);
 }
 
 .actions {
@@ -21,53 +28,54 @@
 
 .title {
   margin: 0;
-  font-size: 0.94rem;
-  color: #2d241c;
+  font-size: 1.3rem;
+  color: var(--ink);
 }
 
 .description {
   margin: 4px 0 0;
-  color: #67584b;
+  color: var(--ink-soft);
   line-height: 1.35;
-  font-size: 0.76rem;
+  font-size: 0.82rem;
 }
 
 .notice {
   margin: 0;
-  color: #6b5a46;
-  font-size: 0.76rem;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
 }
 
 .sectionTitle {
   margin: 0;
-  color: #3a2d1f;
-  font-size: 0.88rem;
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.button,
+.primaryButton {
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.18);
 }
 
 .button {
-  padding: 6px 8px;
-  border-radius: 0;
-  border: 1px solid #999;
-  background: #f6f6f6;
-  color: #222;
-  font: inherit;
-  font-weight: 400;
-  cursor: pointer;
+  padding: 8px 11px;
+  background: #ffffff;
+  color: var(--ink);
 }
 
 .primaryButton {
-  padding: 6px 10px;
-  border: 1px solid #9f7b1f;
-  background: #ffd361;
-  color: #3a2800;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
+  padding: 9px 13px;
+  background: var(--apple);
+  color: #ffffff;
 }
 
 .list {
   display: grid;
-  gap: 6px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -76,41 +84,49 @@
 .listItem {
   display: grid;
   grid-template-columns: auto 1fr auto auto;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
-  padding: 5px 0;
-  border-bottom: 1px solid #e4dccd;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.1);
 }
 
 .rank,
 .player,
 .score,
 .time {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
 }
 
 .rank {
-  color: #6a5a49;
+  color: var(--apple-dark);
+  font-weight: 900;
 }
 
 .player {
-  color: #2d241c;
+  color: var(--ink);
+  font-weight: 900;
 }
 
 .score,
 .time {
-  color: #5b4c3f;
+  color: var(--ink-soft);
 }
 
 .tableWrap {
   overflow-x: auto;
-  padding-top: 6px;
-  border-top: 1px solid #e4dccd;
+  padding: 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: 4px 4px 0 rgba(23, 33, 43, 0.1);
 }
 
 .teamSection {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .table {
@@ -120,45 +136,59 @@
 
 .table th,
 .table td {
-  padding: 7px 4px;
-  border-bottom: 1px solid #e4dccd;
+  padding: 9px 7px;
+  border-bottom: 2px solid rgba(23, 33, 43, 0.09);
   text-align: left;
   white-space: nowrap;
+  font-size: 0.82rem;
 }
 
 .table th {
-  color: #6a5a49;
-  font-size: 0.76rem;
-  font-weight: 700;
+  color: var(--ink);
+  font-weight: 900;
+  background: rgba(185, 233, 255, 0.36);
+}
+
+.table td {
+  color: var(--ink-soft);
 }
 
 .roundCell {
   display: grid;
-  gap: 4px;
+  gap: 3px;
+}
+
+.roundCell strong {
+  color: var(--ink);
 }
 
 .roundCell span {
   font-size: 0.74rem;
-  color: #6a4f45;
+  color: var(--ink-soft);
 }
 
 .teamCards {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
 }
 
 .teamCard {
   display: grid;
   gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid #e7dcc7;
-  background: #fffdf8;
+  padding: 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(90deg, rgba(47, 166, 106, 0.18) 0 9px, transparent 9px),
+    #ffffff;
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.1);
 }
 
 .teamTitle {
   margin: 0;
-  color: #3c2d1d;
-  font-size: 0.82rem;
+  color: var(--ink);
+  font-size: 0.9rem;
 }
 
 .memberList {
@@ -173,11 +203,26 @@
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  color: #5b4c3f;
-  font-size: 0.76rem;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
 }
 
 .winner {
-  font-weight: 700;
-  color: inherit;
+  font-weight: 900;
+}
+
+.winner td,
+.winner .player,
+.winner .score {
+  color: var(--apple-dark);
+}
+
+@media (max-width: 720px) {
+  .header {
+    padding: 12px;
+  }
+
+  .listItem {
+    grid-template-columns: auto 1fr;
+  }
 }

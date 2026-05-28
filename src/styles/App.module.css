@@ -1,64 +1,70 @@
 .app {
   min-height: 100vh;
-  padding: 14px 10px 24px;
+  padding: 18px 12px 28px;
   background:
-    radial-gradient(circle at top left, rgba(255, 223, 158, 0.38), transparent 28%),
-    radial-gradient(circle at top right, rgba(198, 236, 146, 0.22), transparent 22%),
-    linear-gradient(180deg, #fff9ef 0%, #f5e7cd 100%);
-  color: #2d241c;
+    linear-gradient(90deg, rgba(23, 33, 43, 0.035) 1px, transparent 1px),
+    linear-gradient(rgba(23, 33, 43, 0.035) 1px, transparent 1px),
+    linear-gradient(135deg, #e9fbff 0%, #fffaf0 38%, #fff2b8 100%);
+  background-size: 28px 28px, 28px 28px, auto;
+  color: var(--ink);
   font-family:
-    "Trebuchet MS",
-    "Avenir Next",
-    "Segoe UI",
+    "Jua",
+    "BM Jua",
+    "Gmarket Sans",
+    "SUIT Variable",
+    "Pretendard Variable",
     sans-serif;
 }
 
 .frame {
   width: min(100%, calc(var(--app-frame-width) * 1px));
   margin: 0 auto;
-  padding: 8px;
-  border-radius: 30px;
-  background: rgba(255, 252, 245, 0.56);
+  padding: 12px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 250, 240, 0.94)),
+    repeating-linear-gradient(45deg, rgba(232, 68, 58, 0.05) 0 10px, transparent 10px 20px);
   box-shadow:
-    0 24px 48px rgba(111, 79, 40, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(10px);
+    var(--shadow-hard),
+    var(--shadow-soft);
 }
 
 .status {
   margin-top: 12px;
   padding: 10px 12px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #fbf4e4 0%, #f5e7cd 100%);
-  color: #615346;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--cream);
+  color: var(--ink);
   font-size: 0.84rem;
-  border: 1px solid rgba(208, 189, 156, 0.7);
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.12);
 }
 
 .error {
   margin-bottom: 12px;
   padding: 10px 12px;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #fff1ea 0%, #ffe0d3 100%);
-  color: #7f2914;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffe0d9;
+  color: #8f231f;
   font-size: 0.86rem;
-  border: 1px solid rgba(214, 132, 101, 0.55);
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.12);
 }
 
 .loading {
   min-height: 50vh;
   display: grid;
   place-items: center;
-  color: #6a5a49;
+  color: var(--ink-soft);
 }
 
 @media (max-width: 720px) {
   .app {
-    padding: 8px 6px 16px;
+    padding: 10px 6px 18px;
   }
 
   .frame {
-    padding: 4px;
-    border-radius: 20px;
+    padding: 8px;
   }
 }

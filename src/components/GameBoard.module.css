@@ -11,15 +11,17 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: var(--radius);
   background:
-    radial-gradient(circle at top, rgba(255, 255, 255, 0.65), transparent 28%),
-    linear-gradient(180deg, #efe6b7 0%, #d6b679 100%);
+    linear-gradient(90deg, rgba(23, 33, 43, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(23, 33, 43, 0.07) 1px, transparent 1px),
+    linear-gradient(135deg, #b9e9ff 0%, #fff2b8 48%, #ff9f86 100%);
+  background-size: 26px 26px, 26px 26px, auto;
+  border: 3px solid var(--line);
   box-shadow:
-    inset 0 0 0 3px #f9f0cb,
-    inset 0 0 0 16px #a16c36,
-    inset 0 0 0 20px #d9aa69,
-    0 18px 30px rgba(95, 62, 28, 0.28);
+    inset 0 0 0 12px rgba(255, 255, 255, 0.5),
+    inset 0 0 0 18px rgba(23, 33, 43, 0.1),
+    5px 5px 0 rgba(23, 33, 43, 0.16);
 }
 
 .playfield {
@@ -29,19 +31,23 @@
     var(--playfield-inset-right)
     var(--playfield-inset-bottom)
     var(--playfield-inset-left);
-  border-radius: 14px;
+  border-radius: var(--radius);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)) top / 100% 28% no-repeat,
-    linear-gradient(180deg, #e4f7c8 0%, #c8ef9c 100%);
+    linear-gradient(90deg, rgba(47, 166, 106, 0.11) 1px, transparent 1px),
+    linear-gradient(rgba(47, 166, 106, 0.11) 1px, transparent 1px),
+    linear-gradient(180deg, #ecffe8 0%, #c7f6d6 100%);
+  background-size: 32px 32px, 32px 32px, auto;
   box-shadow:
-    inset 0 0 0 3px #effbcf,
-    inset 0 0 0 6px #7bb351;
+    inset 0 0 0 3px #ffffff,
+    inset 0 0 0 6px var(--leaf);
 }
 
 .lightColors .playfield {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0)) top / 100% 28% no-repeat,
-    linear-gradient(180deg, #f2fbdf 0%, #ddf4bd 100%);
+    linear-gradient(90deg, rgba(47, 166, 106, 0.08) 1px, transparent 1px),
+    linear-gradient(rgba(47, 166, 106, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, #fbfff2 0%, #e6fbd1 100%);
+  background-size: 32px 32px, 32px 32px, auto;
 }
 
 .scorePanel {
@@ -52,11 +58,12 @@
   align-items: baseline;
   gap: 10px;
   padding: 7px 18px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: 0 8px 20px rgba(98, 78, 28, 0.15);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  box-shadow: 3px 3px 0 rgba(23, 33, 43, 0.14);
   transform: translateX(-50%);
-  color: #7a4d19;
+  color: var(--ink);
 }
 
 .scoreLabel,
@@ -78,7 +85,7 @@
   display: grid;
   justify-items: center;
   gap: 8px;
-  color: #7a4d19;
+  color: var(--ink);
 }
 
 .timeRail {
@@ -87,15 +94,16 @@
   height: 248px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.45);
-  box-shadow: inset 0 0 0 2px rgba(126, 99, 49, 0.22);
+  border: 2px solid var(--line);
+  background: #ffffff;
+  box-shadow: inset 0 0 0 2px rgba(23, 33, 43, 0.08);
 }
 
 .timeFill {
   position: absolute;
   inset: 0;
   transform-origin: bottom;
-  background: linear-gradient(180deg, #ffeb79 0%, #73d447 100%);
+  background: linear-gradient(180deg, var(--banana) 0%, var(--leaf) 100%);
 }
 
 .timeValue {
@@ -221,9 +229,10 @@
   display: inline-block;
   margin-top: 4px;
   padding: 2px 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #3b2c1d;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--ink);
   font-size: 0.7rem;
   font-weight: 700;
   white-space: nowrap;
@@ -238,9 +247,9 @@
   inset: 0;
   display: grid;
   place-items: center;
-  border-radius: 18px;
-  background: rgba(61, 38, 18, 0.16);
-  color: #fff7e0;
+  border-radius: var(--radius);
+  background: rgba(23, 33, 43, 0.38);
+  color: #ffffff;
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.02em;

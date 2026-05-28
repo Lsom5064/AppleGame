@@ -1,12 +1,37 @@
 :root {
-  color: #1f1611;
-  font-family: "SUIT Variable", "Pretendard Variable", "Apple SD Gothic Neo", sans-serif;
+  color: var(--ink);
+  font-family:
+    "Jua",
+    "BM Jua",
+    "Gmarket Sans",
+    "SUIT Variable",
+    "Pretendard Variable",
+    "Apple SD Gothic Neo",
+    sans-serif;
   line-height: 1.5;
   font-weight: 500;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --ink: #17212b;
+  --ink-soft: #46525e;
+  --paper: #fffaf0;
+  --panel: #fffefd;
+  --panel-strong: #ffffff;
+  --line: #14212f;
+  --line-soft: rgba(20, 33, 47, 0.16);
+  --apple: #e8443a;
+  --apple-dark: #b72d2a;
+  --leaf: #2fa66a;
+  --mint: #bdf6d2;
+  --sky: #b9e9ff;
+  --banana: #ffd84d;
+  --cream: #fff2b8;
+  --coral: #ff9f86;
+  --shadow-hard: 5px 5px 0 rgba(20, 33, 47, 0.16);
+  --shadow-soft: 0 14px 28px rgba(23, 33, 43, 0.1);
+  --radius: 8px;
 }
 
 * {
@@ -27,9 +52,16 @@ select {
 }
 
 button {
-  transition: transform 140ms ease, box-shadow 140ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
 }
 
 button:hover {
-  transform: translateY(-1px);
+  transform: translate(-1px, -1px);
+}
+
+button:active {
+  transform: translate(0, 0);
 }
