@@ -300,6 +300,73 @@ describe("GameScreen round transitions", () => {
     expect(container.querySelectorAll("[style*='--pointer-hue']")).toHaveLength(2);
   });
 
+  it("keeps shared-team sync working even when the passed player prop has stale team data", async () => {
+    const apples = generateApples("ROOM12-seed:0");
+    const removedAppleId = apples[0].id;
+    const room = createSharedRoom({
+      seed: "ROOM12-seed",
+      sharedTeamBoards: {
+        "0": {
+          "team-1": {
+            teamId: "team-1",
+            removedAppleIds: [removedAppleId],
+            score: 1,
+            clearTimeMs: null,
+            submittedAt: null
+          },
+          "team-2": {
+            teamId: "team-2",
+            removedAppleIds: [],
+            score: 0,
+            clearTimeMs: null,
+            submittedAt: null
+          }
+        }
+      },
+      teamPointers: {
+        mate: {
+          playerId: "mate",
+          teamId: "team-1",
+          roundIndex: 0,
+          x: 160,
+          y: 180,
+          active: true,
+          dragging: true,
+          selectionStartX: 120,
+          selectionStartY: 140,
+          updatedAt: 3000
+        }
+      }
+    });
+
+    await act(async () => {
+      root.render(
+        <GameScreen
+          room={room}
+          player={{
+            ...room.players.host,
+            teamId: null
+          }}
+          onLeaveRoom={() => {}}
+          onVoteNextRound={() => Promise.resolve()}
+          onSendChatMessage={() => Promise.resolve()}
+          onSubmitRound={() => Promise.resolve()}
+          onSubmitSharedSelection={() => Promise.resolve()}
+          onUpdateTeamPointer={() => Promise.resolve()}
+          onForceProgress={() => Promise.resolve()}
+        />
+      );
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(10);
+    });
+
+    expect(container.textContent).toContain("Mate");
+    expect(container.querySelectorAll("img[alt='']")).toHaveLength(apples.length - 1);
+    expect(container.querySelectorAll("[style*='--pointer-hue']")).toHaveLength(2);
+  });
+
   it("sends shared pointer updates while dragging on the shared board", async () => {
     const onUpdateTeamPointer = vi.fn<(...args: unknown[]) => Promise<void>>().mockResolvedValue(undefined);
     const room = createSharedRoom({
@@ -383,5 +450,51 @@ describe("GameScreen round transitions", () => {
       120,
       140
     ]);
+  });
+
+  it("requests force progress when the final round times out after the local player already submitted", async () => {
+    const onForceProgress = vi.fn<() => Promise<void>>().mockResolvedValue(undefined);
+    const room = createRoom({
+      settings: {
+        roundCount: 1,
+        leaderboardMode: "sum",
+        roundDurationSec: 1,
+        gameMode: "solo",
+        teamMode: "individual",
+        teamCount: 2
+      },
+      submissions: {
+        "0": {
+          host: {
+            score: 7,
+            finishedAt: 1500,
+            clearTimeMs: null
+          }
+        }
+      },
+      roundStartedAt: 0
+    });
+
+    await act(async () => {
+      root.render(
+        <GameScreen
+          room={room}
+          player={room.players.host}
+          onLeaveRoom={() => {}}
+          onVoteNextRound={() => Promise.resolve()}
+          onSendChatMessage={() => Promise.resolve()}
+          onSubmitRound={() => Promise.resolve()}
+          onSubmitSharedSelection={() => Promise.resolve()}
+          onUpdateTeamPointer={() => Promise.resolve()}
+          onForceProgress={onForceProgress}
+        />
+      );
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(1250);
+    });
+
+    expect(onForceProgress).toHaveBeenCalledTimes(1);
   });
 });

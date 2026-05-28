@@ -28,7 +28,9 @@ function getGameModeLabel(room: RoomState): string {
     return "개인전";
   }
 
-  return room.settings.teamMode === "shared" ? `${room.settings.teamCount}팀 단일 화면` : `${room.settings.teamCount}팀 개별 화면`;
+  return room.settings.teamMode === "shared"
+    ? `${room.settings.teamCount}팀 보드 공유`
+    : `${room.settings.teamCount}팀 개인 보드`;
 }
 
 export function LobbyScreen({
@@ -92,9 +94,14 @@ export function LobbyScreen({
                         <span className={styles.teamLabel}>팀</span>
                         <select
                           className={styles.teamSelect}
-                          value={member.teamId ?? room.teams[0]?.id ?? ""}
+                          value={member.teamId ?? ""}
                           onChange={(event) => onAssignPlayerTeam(member.id, event.target.value)}
                         >
+                          {member.teamId === null ? (
+                            <option value="" disabled>
+                              팀 선택 필요
+                            </option>
+                          ) : null}
                           {room.teams.map((team) => (
                             <option key={team.id} value={team.id}>
                               {team.name}
@@ -158,7 +165,7 @@ export function LobbyScreen({
                                 type="radio"
                                 onChange={() => onUpdateSettings({ teamMode: "individual" })}
                               />
-                              <span>개별 화면</span>
+                              <span>개인 보드</span>
                             </label>
                             <label className={styles.option}>
                               <input
@@ -168,7 +175,7 @@ export function LobbyScreen({
                                 type="radio"
                                 onChange={() => onUpdateSettings({ teamMode: "shared" })}
                               />
-                              <span>단일 화면</span>
+                              <span>보드 공유</span>
                             </label>
                           </div>
 
@@ -267,7 +274,7 @@ export function LobbyScreen({
                   {getLeaderboardModeLabel(room.settings.leaderboardMode)}
                 </p>
                 {isTeamMode && room.settings.teamMode === "shared" ? (
-                  <p className={styles.hint}>같은 팀은 하나의 공용 보드와 점수를 공유합니다.</p>
+                  <p className={styles.hint}>같은 팀은 하나의 보드를 함께 플레이하고 점수도 공유합니다.</p>
                 ) : null}
               </div>
             </div>

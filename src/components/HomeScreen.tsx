@@ -186,8 +186,8 @@ export function HomeScreen({
                         방장 {room.hostNickname} · 코드 {room.roomCode} · {room.playerCount}명 · {room.roundCount}판 ·{" "}
                         {room.gameMode === "team"
                           ? room.teamMode === "shared"
-                            ? `${room.teamCount}팀 단일 화면`
-                            : `${room.teamCount}팀 개별 화면`
+                            ? `${room.teamCount}팀 보드 공유`
+                            : `${room.teamCount}팀 개인 보드`
                           : "개인전"}{" "}
                         · {room.leaderboardMode === "sum" ? "합계" : "최고점"}
                       </p>

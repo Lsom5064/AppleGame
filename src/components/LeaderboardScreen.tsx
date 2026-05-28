@@ -31,7 +31,7 @@ function getModeLabel(room: RoomState): string {
     return `개인전 / ${scoreLabel}`;
   }
 
-  const teamLabel = room.settings.teamMode === "shared" ? "단일 화면 팀전" : "개별 화면 팀전";
+  const teamLabel = room.settings.teamMode === "shared" ? "보드 공유 팀전" : "개인 보드 팀전";
   return `${teamLabel} / ${room.settings.teamCount}팀 / ${scoreLabel}`;
 }
 

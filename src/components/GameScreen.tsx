@@ -44,6 +44,9 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+const POINTER_SYNC_PIXEL_THRESHOLD = 2;
+const POINTER_SYNC_INTERVAL_MS = 16;
+
 interface PointerPosition {
   x: number;
   y: number;
@@ -457,11 +460,11 @@ export function GameScreen({
       lastSync &&
       lastSync.active === active &&
       lastSync.dragging === dragging &&
-      Math.abs(lastSync.x - boardX) < 8 &&
-      Math.abs(lastSync.y - boardY) < 8 &&
-      Math.abs(lastSync.selectionStartX - selectionStartX) < 8 &&
-      Math.abs(lastSync.selectionStartY - selectionStartY) < 8 &&
-      now - lastSync.sentAt < 45
+      Math.abs(lastSync.x - boardX) < POINTER_SYNC_PIXEL_THRESHOLD &&
+      Math.abs(lastSync.y - boardY) < POINTER_SYNC_PIXEL_THRESHOLD &&
+      Math.abs(lastSync.selectionStartX - selectionStartX) < POINTER_SYNC_PIXEL_THRESHOLD &&
+      Math.abs(lastSync.selectionStartY - selectionStartY) < POINTER_SYNC_PIXEL_THRESHOLD &&
+      now - lastSync.sentAt < POINTER_SYNC_INTERVAL_MS
     ) {
       return;
     }
@@ -628,8 +631,8 @@ export function GameScreen({
           <p className={styles.mode}>
             {room.settings.gameMode === "team"
               ? room.settings.teamMode === "shared"
-                ? `${room.settings.teamCount}팀 단일 화면`
-                : `${room.settings.teamCount}팀 개별 화면`
+                ? `${room.settings.teamCount}팀 보드 공유`
+                : `${room.settings.teamCount}팀 개인 보드`
               : "개인전"}
           </p>
         </div>

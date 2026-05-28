@@ -107,9 +107,10 @@ describe("roomMutations", () => {
     expect(updated.settings.teamMode).toBe("individual");
     expect(updated.settings.teamCount).toBe(4);
     expect(updated.teams.map((team) => team.name)).toEqual(["1팀", "2팀", "3팀", "4팀"]);
+    expect(updated.players.host.teamId).toBe("team-1");
   });
 
-  it("clamps team count changes and clears invalid assignments after shrinking teams", () => {
+  it("clamps team count changes and reassigns players to valid teams after shrinking teams", () => {
     const created = createInitialRoom("ROOM12", "host", "Host", 1000);
     const withGuest = joinRoom(created, "guest", "Guest", 1500);
     const expanded = updateRoomSettings(withGuest, "host", {
@@ -125,7 +126,20 @@ describe("roomMutations", () => {
     expect(expanded.teams).toHaveLength(6);
     expect(shrunk.settings.teamCount).toBe(2);
     expect(shrunk.teams).toHaveLength(2);
-    expect(shrunk.players.guest.teamId).toBeNull();
+    expect(shrunk.players.guest.teamId).toBe("team-1");
+  });
+
+  it("lets the host effectively assign team-1 from the lobby state", () => {
+    const created = createInitialRoom("ROOM12", "host", "Host", 1000);
+    const withGuest = joinRoom(created, "guest", "Guest", 1500);
+    const teamRoom = updateRoomSettings(withGuest, "host", {
+      gameMode: "team",
+      teamCount: 2
+    });
+    const assigned = assignRoomPlayerTeam(teamRoom, "host", "guest", "team-1");
+
+    expect(assigned.players.host.teamId).toBe("team-1");
+    expect(assigned.players.guest.teamId).toBe("team-1");
   });
 
   it("requires the correct password when joining a locked room", () => {

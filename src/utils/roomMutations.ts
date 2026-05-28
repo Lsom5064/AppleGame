@@ -490,7 +490,7 @@ export function updateRoomSettings(
     nextTeams
   );
 
-  return {
+  const nextRoom: RoomState = {
     ...normalizedRoom,
     settings: {
       ...normalizedRoom.settings,
@@ -502,6 +502,8 @@ export function updateRoomSettings(
     players: nextPlayers,
     teams: nextTeams
   };
+
+  return nextRoom.settings.gameMode === "team" ? ensureTeamAssignments(nextRoom) : nextRoom;
 }
 
 export function addRoomChatMessage(room: RoomState, playerId: string, text: string, now: number): RoomState {
