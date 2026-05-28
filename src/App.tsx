@@ -8,7 +8,7 @@ import { BOARD_WIDTH, PRESENCE_HEARTBEAT_MS } from "./constants";
 import { ensureFirebaseIdentity } from "./lib/firebase";
 import { realtimeService } from "./services/realtimeService";
 import styles from "./styles/App.module.css";
-import type { RoomDirectoryState, RoomState, SessionState } from "./types";
+import type { PlayerState, RoomDirectoryState, RoomState, SessionState } from "./types";
 import { clearStoredSession, getOrCreateClientId, loadStoredSession, storeSession } from "./utils/client";
 
 const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
@@ -24,6 +24,7 @@ export default function App() {
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [identityStatus, setIdentityStatus] = useState<IdentityStatus>("loading");
   const [session, setSession] = useState<SessionState | null>(null);
+  const [lastKnownPlayer, setLastKnownPlayer] = useState<PlayerState | null>(null);
   const [hasAttemptedSessionRestore, setHasAttemptedSessionRestore] = useState(false);
   const [room, setRoom] = useState<RoomState | null>(null);
   const [hasResolvedRoom, setHasResolvedRoom] = useState(false);
@@ -125,6 +126,7 @@ export default function App() {
   useEffect(() => {
     if (!session) {
       setRoom(null);
+      setLastKnownPlayer(null);
       setHasResolvedRoom(false);
       return;
     }
@@ -133,6 +135,10 @@ export default function App() {
     return realtimeService.subscribeToRoom(session.roomCode, (nextRoom) => {
       setHasResolvedRoom(true);
       setRoom(nextRoom);
+
+      if (nextRoom?.players[session.playerId]) {
+        setLastKnownPlayer(nextRoom.players[session.playerId]);
+      }
 
       if (!nextRoom) {
         setError("방이 존재하지 않거나 종료되었습니다.");
@@ -177,7 +183,10 @@ export default function App() {
     };
   }, [session]);
 
-  const player = session && room ? room.players[session.playerId] : null;
+  const player =
+    session && room
+      ? room.players[session.playerId] ?? (lastKnownPlayer?.id === session.playerId ? lastKnownPlayer : null)
+      : null;
 
   useEffect(() => {
     if (session) {
@@ -198,13 +207,13 @@ export default function App() {
       return;
     }
 
-    if (!room.players[session.playerId]) {
+    if (!room.players[session.playerId] && !lastKnownPlayer) {
       setError("현재 방에서 플레이어 정보를 찾을 수 없습니다.");
       setSession(null);
       setRoom(null);
       clearStoredSession();
     }
-  }, [hasResolvedRoom, room, session]);
+  }, [hasResolvedRoom, lastKnownPlayer, room, session]);
 
   async function runWithBusy(task: () => Promise<void>): Promise<void> {
     try {

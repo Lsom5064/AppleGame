@@ -70,16 +70,18 @@ export function GameScreen({
   onUpdateTeamPointer,
   onForceProgress
 }: GameScreenProps) {
+  const currentPlayer = room.players[player.id] ?? player;
   const roundSeed = `${room.seed}:${room.currentRoundIndex}`;
   const roundKey = String(room.currentRoundIndex);
   const sharedTeamMode = room.settings.gameMode === "team" && room.settings.teamMode === "shared";
-  const playerTeamId = player.teamId;
+  const playerTeamId = currentPlayer.teamId;
   const sharedTeamBoard =
     sharedTeamMode && playerTeamId ? room.sharedTeamBoards[roundKey]?.[playerTeamId] ?? null : null;
   const waitingForNextRound = room.phase === "between-rounds";
-  const locked = waitingForNextRound ? false : Boolean(room.submissions[roundKey]?.[player.id]);
+  const locked = waitingForNextRound ? false : Boolean(room.submissions[roundKey]?.[currentPlayer.id]);
   const activeRoundNumber = waitingForNextRound ? room.currentRoundIndex + 2 : room.currentRoundIndex + 1;
-  const lastRoundSubmission = waitingForNextRound ? room.submissions[roundKey]?.[player.id] ?? null : null;
+  const lastRoundSubmission =
+    waitingForNextRound ? room.submissions[roundKey]?.[currentPlayer.id] ?? null : null;
   const [apples, setApples] = useState<Apple[]>(() => generateApples(roundSeed));
   const [score, setScore] = useState(0);
   const [dragState, setDragState] = useState<DragState | null>(null);
@@ -111,7 +113,7 @@ export function GameScreen({
   const consensusPlayerIds = connectedPlayerIds.length > 0 ? connectedPlayerIds : Object.keys(room.players);
   const voteCount = consensusPlayerIds.filter((id) => room.nextRoundVotes[id]).length;
   const playerIds = Object.keys(room.players);
-  const hasVotedForNextRound = Boolean(room.nextRoundVotes[player.id]);
+  const hasVotedForNextRound = Boolean(room.nextRoundVotes[currentPlayer.id]);
   const voters = playerIds
     .filter((id) => room.nextRoundVotes[id])
     .map((id) => room.players[id]?.nickname ?? id);
@@ -121,7 +123,7 @@ export function GameScreen({
         ? Object.values(room.teamPointers)
             .filter(
               (pointer) =>
-                pointer.playerId !== player.id &&
+                pointer.playerId !== currentPlayer.id &&
                 pointer.teamId === playerTeamId &&
                 pointer.roundIndex === room.currentRoundIndex &&
                 pointer.active &&
@@ -143,7 +145,15 @@ export function GameScreen({
                 : null
             }))
         : [],
-    [player.id, playerTeamId, pointerNow, room.currentRoundIndex, room.players, room.teamPointers, sharedTeamMode]
+    [
+      currentPlayer.id,
+      playerTeamId,
+      pointerNow,
+      room.currentRoundIndex,
+      room.players,
+      room.teamPointers,
+      sharedTeamMode
+    ]
   );
   const liveScoreboard = useMemo<LiveScoreEntry[]>(() => {
     const roundCount = room.settings.roundCount;
@@ -174,7 +184,7 @@ export function GameScreen({
             return room.sharedTeamBoards[String(currentRoundIndex)]?.[member.teamId]?.score ?? 0;
           }
 
-          if (member.id === player.id) {
+          if (member.id === currentPlayer.id) {
             return score;
           }
 
@@ -203,7 +213,7 @@ export function GameScreen({
         return leftPlayer.joinedAt - rightPlayer.joinedAt;
       });
   }, [
-    player.id,
+    currentPlayer.id,
     room.currentRoundIndex,
     room.players,
     room.settings.gameMode,
@@ -242,8 +252,12 @@ export function GameScreen({
         : apple
     );
     setApples(nextApples);
-    setScore(room.submissions[roundKey]?.[player.id]?.score ?? 0);
-    setClearTimeMs(sharedTeamMode ? sharedTeamBoard?.clearTimeMs ?? null : room.submissions[roundKey]?.[player.id]?.clearTimeMs ?? null);
+    setScore(room.submissions[roundKey]?.[currentPlayer.id]?.score ?? 0);
+    setClearTimeMs(
+      sharedTeamMode
+        ? sharedTeamBoard?.clearTimeMs ?? null
+        : room.submissions[roundKey]?.[currentPlayer.id]?.clearTimeMs ?? null
+    );
     setDragState(null);
     setSelectionRect(null);
     setSelectedAppleIds(new Set());
@@ -251,7 +265,8 @@ export function GameScreen({
     progressRequestedRef.current = false;
     pointerSyncRef.current = null;
   }, [
-    player.id,
+    currentPlayer.id,
+    playerTeamId,
     room.phase,
     room.roundStartedAt,
     room.settings.roundDurationSec,
