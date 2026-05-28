@@ -21,6 +21,14 @@ function formatClearTime(clearTimeMs: number | null): string {
   return `${(clearTimeMs / 1000).toFixed(1)}s`;
 }
 
+function formatOptionalClearTime(clearTimeMs: number | null): string | null {
+  if (clearTimeMs === null) {
+    return null;
+  }
+
+  return `${(clearTimeMs / 1000).toFixed(1)}s`;
+}
+
 function getModeLabel(room: RoomState): string {
   const scoreLabel =
     room.settings.leaderboardMode === "best"
@@ -161,14 +169,18 @@ export function LeaderboardScreen({
                     {!isPlayerConnected(room.players[entry.id]) ? " (오프라인)" : ""}
                   </td>
                   {isTeamMode ? <td>{getTeamName(room.teams, entry.teamId)}</td> : null}
-                  {entry.roundScores.map((score, roundIndex) => (
-                    <td key={roundIndex}>
-                      <div className={styles.roundCell}>
-                        <strong>{score}</strong>
-                        <span>{formatClearTime(entry.clearTimes[roundIndex])}</span>
-                      </div>
-                    </td>
-                  ))}
+                  {entry.roundScores.map((score, roundIndex) => {
+                    const clearTimeLabel = formatOptionalClearTime(entry.clearTimes[roundIndex]);
+
+                    return (
+                      <td key={roundIndex}>
+                        <div className={styles.roundCell}>
+                          <strong>{score}</strong>
+                          {clearTimeLabel ? <span>{clearTimeLabel}</span> : null}
+                        </div>
+                      </td>
+                    );
+                  })}
                   <td>{entry.finalScore}</td>
                 </tr>
               ))}

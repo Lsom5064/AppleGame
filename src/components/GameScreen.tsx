@@ -94,7 +94,6 @@ export function GameScreen({
   const [lightColors, setLightColors] = useState(false);
   const [clearTimeMs, setClearTimeMs] = useState<number | null>(null);
   const [pointerNow, setPointerNow] = useState(() => Date.now());
-  const progressRequestedRef = useRef(false);
   const dropDirectionRef = useRef<-1 | 1>(1);
   const dropTimeoutsRef = useRef<number[]>([]);
   const pointerSyncRef = useRef<{
@@ -230,6 +229,17 @@ export function GameScreen({
   ]);
   const scoreboardTitle = waitingForNextRound ? "전체 점수판" : "현재 점수판";
   const chatTitle = waitingForNextRound ? "라운드 대기 채팅" : "게임 채팅";
+  const boardModeDescription =
+    room.settings.gameMode === "team"
+      ? sharedTeamMode
+        ? "보드 공유 모드: 같은 팀은 하나의 보드를 함께 사용하고, 팀원의 포인터와 드래그 범위, 제거 결과가 실시간으로 반영됩니다."
+        : "개인 보드 모드: 각자 보드에서 플레이하고, 라운드 종료 후 팀 점수가 합산됩니다."
+      : "사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다.";
+  const scoreboardMeta = sharedTeamMode
+    ? "보드 공유 점수 반영"
+    : room.settings.gameMode === "team"
+      ? "개인 보드 라운드별 실시간 집계"
+      : "라운드별 실시간 집계";
 
   useEffect(() => {
     return () => {
@@ -265,7 +275,6 @@ export function GameScreen({
     setSelectionRect(null);
     setSelectedAppleIds(new Set());
     setTimeLeftMs(room.settings.roundDurationSec * 1000);
-    progressRequestedRef.current = false;
     pointerSyncRef.current = null;
   }, [
     currentPlayer.id,
@@ -382,18 +391,25 @@ export function GameScreen({
   ]);
 
   useEffect(() => {
-    if (waitingForNextRound || timeLeftMs > 0 || progressRequestedRef.current) {
+    if (waitingForNextRound || timeLeftMs > 0) {
       return;
     }
 
-    progressRequestedRef.current = true;
+    const requestProgress = () => {
+      if (sharedTeamMode || locked) {
+        void onForceProgress();
+        return;
+      }
 
-    if (sharedTeamMode || locked) {
-      void onForceProgress();
-      return;
-    }
+      void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
+    };
 
-    void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
+    requestProgress();
+    const retryId = window.setInterval(requestProgress, 1000);
+
+    return () => {
+      window.clearInterval(retryId);
+    };
   }, [
     clearTimeMs,
     locked,
@@ -707,11 +723,7 @@ export function GameScreen({
                 />
               </div>
               <div className={styles.boardNote}>
-                <p className={styles.hint}>
-                  {sharedTeamMode
-                    ? "같은 팀은 공용 보드를 공유하며, 팀원의 포인터와 드래그 범위, 제거 결과가 실시간으로 반영됩니다."
-                    : "사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다."}
-                </p>
+                <p className={styles.hint}>{boardModeDescription}</p>
               </div>
             </>
           )}
@@ -721,9 +733,7 @@ export function GameScreen({
           <section className={styles.scoreboardPanel}>
             <div className={styles.panelHeader}>
               <h2 className={styles.scoreboardTitle}>{scoreboardTitle}</h2>
-              <p className={styles.panelMeta}>
-                {sharedTeamMode ? "팀 공용 점수 반영" : "라운드별 실시간 집계"}
-              </p>
+              <p className={styles.panelMeta}>{scoreboardMeta}</p>
             </div>
             <div className={styles.scoreboardWrap}>
               <table className={styles.scoreboardTable}>

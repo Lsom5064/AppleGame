@@ -295,6 +295,7 @@ describe("GameScreen round transitions", () => {
       vi.advanceTimersByTime(10);
     });
 
+    expect(container.textContent).toContain("보드 공유 모드");
     expect(container.textContent).toContain("Mate");
     expect(container.querySelectorAll("img[alt='']")).toHaveLength(apples.length - 1);
     expect(container.querySelectorAll("[style*='--pointer-hue']")).toHaveLength(2);
@@ -496,5 +497,11 @@ describe("GameScreen round transitions", () => {
     });
 
     expect(onForceProgress).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(1100);
+    });
+
+    expect(onForceProgress).toHaveBeenCalledTimes(2);
   });
 });
