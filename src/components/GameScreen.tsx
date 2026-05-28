@@ -36,10 +36,8 @@ interface GameScreenProps {
 
 interface DragState {
   pointerId: number;
-  startBoardX: number;
-  startBoardY: number;
-  startDisplayX: number;
-  startDisplayY: number;
+  startX: number;
+  startY: number;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -47,10 +45,8 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 interface PointerPosition {
-  boardX: number;
-  boardY: number;
-  displayX: number;
-  displayY: number;
+  x: number;
+  y: number;
 }
 
 interface LiveScoreEntry {
@@ -408,13 +404,9 @@ export function GameScreen({
 
   function getPointerPosition(event: ReactPointerEvent<HTMLDivElement>): PointerPosition {
     const rect = event.currentTarget.getBoundingClientRect();
-    const displayX = clamp(event.clientX - rect.left, 0, rect.width);
-    const displayY = clamp(event.clientY - rect.top, 0, rect.height);
-    const scaleX = BOARD_WIDTH / rect.width;
-    const scaleY = BOARD_HEIGHT / rect.height;
-    const boardX = clamp(displayX * scaleX, 0, BOARD_WIDTH);
-    const boardY = clamp(displayY * scaleY, 0, BOARD_HEIGHT);
-    return { boardX, boardY, displayX, displayY };
+    const x = clamp(event.clientX - rect.left, 0, BOARD_WIDTH);
+    const y = clamp(event.clientY - rect.top, 0, BOARD_HEIGHT);
+    return { x, y };
   }
 
   function getSelectionSnapshot(rect: SelectionRect): { ids: Set<string>; apples: Apple[]; sum: number } {
@@ -484,66 +476,62 @@ export function GameScreen({
       return;
     }
 
-    const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
-    syncTeamPointer(boardX, boardY, true, true, boardX, boardY, true);
+    const { x, y } = getPointerPosition(event);
+    syncTeamPointer(x, y, true, true, x, y, true);
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragState({
       pointerId: event.pointerId,
-      startBoardX: boardX,
-      startBoardY: boardY,
-      startDisplayX: displayX,
-      startDisplayY: displayY
+      startX: x,
+      startY: y
     });
-    setSelectionRect(normalizeSelectionRect(displayX, displayY, displayX, displayY));
+    setSelectionRect(normalizeSelectionRect(x, y, x, y));
     setSelectedAppleIds(new Set());
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>): void {
-    const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
+    const { x, y } = getPointerPosition(event);
 
     if (!dragState || dragState.pointerId !== event.pointerId) {
-      syncTeamPointer(boardX, boardY, true, false, boardX, boardY);
+      syncTeamPointer(x, y, true, false, x, y);
       return;
     }
 
     syncTeamPointer(
-      boardX,
-      boardY,
+      x,
+      y,
       true,
       true,
-      dragState.startBoardX,
-      dragState.startBoardY
+      dragState.startX,
+      dragState.startY
     );
 
     const boardRect = normalizeSelectionRect(
-      dragState.startBoardX,
-      dragState.startBoardY,
-      boardX,
-      boardY
+      dragState.startX,
+      dragState.startY,
+      x,
+      y
     );
     const snapshot = getSelectionSnapshot(boardRect);
 
-    setSelectionRect(
-      normalizeSelectionRect(dragState.startDisplayX, dragState.startDisplayY, displayX, displayY)
-    );
+    setSelectionRect(boardRect);
     startTransition(() => {
       setSelectedAppleIds(snapshot.ids);
     });
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>): void {
-    const { boardX, boardY } = getPointerPosition(event);
-    syncTeamPointer(boardX, boardY, false, false, boardX, boardY, true);
+    const { x, y } = getPointerPosition(event);
+    syncTeamPointer(x, y, false, false, x, y, true);
 
     if (!dragState || dragState.pointerId !== event.pointerId) {
       return;
     }
 
     const rect = normalizeSelectionRect(
-      dragState.startBoardX,
-      dragState.startBoardY,
-      boardX,
-      boardY
+      dragState.startX,
+      dragState.startY,
+      x,
+      y
     );
     const snapshot = getSelectionSnapshot(rect);
 
@@ -609,8 +597,8 @@ export function GameScreen({
   }
 
   function handlePointerLeave(event: ReactPointerEvent<HTMLDivElement>): void {
-    const { boardX, boardY } = getPointerPosition(event);
-    syncTeamPointer(boardX, boardY, false, false, boardX, boardY, true);
+    const { x, y } = getPointerPosition(event);
+    syncTeamPointer(x, y, false, false, x, y, true);
   }
 
   return (

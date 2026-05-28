@@ -138,9 +138,10 @@
 
 .gameArea {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 348px);
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: calc(var(--game-board-width) * 1px + 20px) minmax(320px, 360px);
+  justify-content: center;
+  gap: 18px;
+  align-items: stretch;
 }
 
 .primaryColumn,
@@ -151,6 +152,7 @@
 .primaryColumn {
   display: grid;
   gap: 12px;
+  overflow-x: auto;
 }
 
 .sidebar {
@@ -160,6 +162,8 @@
 }
 
 .boardCard {
+  box-sizing: border-box;
+  width: calc(var(--game-board-width) * 1px + 20px);
   padding: 10px;
   border-radius: 28px;
   background:
@@ -278,9 +282,13 @@
   border-bottom: 0;
 }
 
-@media (max-width: 1220px) {
+@media (max-width: 1320px) {
   .gameArea {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .primaryColumn {
+    justify-items: center;
   }
 
   .sidebar {
@@ -301,11 +309,19 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .primaryColumn {
+    justify-items: start;
+  }
+
   .waitingCard,
   .scoreboardPanel,
   .boardCard {
     padding-left: 12px;
     padding-right: 12px;
+  }
+
+  .boardCard {
+    width: calc(var(--game-board-width) * 1px + 24px);
   }
 
   .panelHeader {

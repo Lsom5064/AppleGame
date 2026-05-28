@@ -33,10 +33,16 @@ export default function App() {
   });
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
-  const appFrameWidth =
-    room && (room.phase === "playing" || room.phase === "between-rounds") ? BOARD_WIDTH + 360 : BOARD_WIDTH;
+  const appFrameWidth = room
+    ? room.phase === "lobby"
+      ? BOARD_WIDTH + 460
+      : room.phase === "playing" || room.phase === "between-rounds"
+        ? BOARD_WIDTH + 460
+        : BOARD_WIDTH + 360
+    : BOARD_WIDTH;
   const frameStyle = {
-    "--app-frame-width": appFrameWidth
+    "--app-frame-width": appFrameWidth,
+    "--game-board-width": BOARD_WIDTH
   } as CSSProperties;
 
   useEffect(() => {

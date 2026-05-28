@@ -1,7 +1,7 @@
 .shell {
   position: relative;
-  width: min(100%, calc(var(--board-width) * 1px));
-  aspect-ratio: var(--board-width) / var(--board-height);
+  width: calc(var(--board-width) * 1px);
+  height: calc(var(--board-height) * 1px);
   margin: 0 auto;
   touch-action: none;
   user-select: none;

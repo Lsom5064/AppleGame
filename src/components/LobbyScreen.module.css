@@ -111,15 +111,15 @@
 
 .contentArea {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 380px);
+  gap: 18px;
   align-items: start;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  gap: 14px;
+  grid-template-columns: minmax(300px, 0.92fr) minmax(360px, 1.08fr);
+  gap: 18px;
 }
 
 .panel {
@@ -370,7 +370,7 @@
   line-height: 1.45;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 1240px) {
   .contentArea,
   .grid,
   .modeColumns {

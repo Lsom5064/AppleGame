@@ -9,6 +9,7 @@ import {
   APPLE_WIDTH,
   BOARD_GRID_COLUMNS,
   BOARD_GRID_ROWS,
+  BOARD_HEIGHT,
   BOARD_WIDTH,
   PLAYFIELD_INSET_LEFT,
   PLAYFIELD_INSET_RIGHT,
@@ -93,6 +94,17 @@ describe("generateApples", () => {
     expect(BOARD_WIDTH).toBe(
       PLAYFIELD_INSET_LEFT + PLAYFIELD_INSET_RIGHT + appleSpan + PLAYFIELD_SIDE_MARGIN * 2
     );
+  });
+
+  it("keeps every apple fully inside the configured board bounds", () => {
+    const apples = generateApples("room-seed:bounds");
+
+    for (const apple of apples) {
+      expect(apple.x - apple.width / 2).toBeGreaterThanOrEqual(0);
+      expect(apple.x + apple.width / 2).toBeLessThanOrEqual(BOARD_WIDTH);
+      expect(apple.y - apple.height / 2).toBeGreaterThanOrEqual(0);
+      expect(apple.y + apple.height / 2).toBeLessThanOrEqual(BOARD_HEIGHT);
+    }
   });
 
   it("keeps the total board sum aligned to 10 without creating a single 10 apple", () => {
