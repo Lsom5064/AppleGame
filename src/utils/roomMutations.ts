@@ -206,6 +206,88 @@ function createAppleValueMap(room: RoomState, roundIndex: number): Map<string, n
   return new Map(generateApples(getRoundSeed(room, roundIndex)).map((apple) => [apple.id, apple.value]));
 }
 
+export function getSharedTeamSelectionTarget(
+  room: RoomState,
+  playerId: string,
+  roundIndex: number
+): { roundKey: string; teamId: string } | null {
+  const normalizedRoom = normalizeRoomState(room);
+  const player = normalizedRoom.players[playerId];
+
+  if (!player || player.teamId === null) {
+    return null;
+  }
+
+  if (normalizedRoom.phase !== "playing") {
+    return null;
+  }
+
+  if (normalizedRoom.settings.gameMode !== "team" || normalizedRoom.settings.teamMode !== "shared") {
+    return null;
+  }
+
+  if (roundIndex !== normalizedRoom.currentRoundIndex) {
+    return null;
+  }
+
+  return {
+    roundKey: String(roundIndex),
+    teamId: player.teamId
+  };
+}
+
+export function applySharedTeamBoardSelection(
+  room: RoomState,
+  teamId: string,
+  roundIndex: number,
+  board: Partial<SharedTeamBoardState> | null,
+  appleIds: string[],
+  clearTimeMs: number | null
+): SharedTeamBoardState {
+  const normalizedRoom = normalizeRoomState(room);
+  const currentBoard = normalizeSharedBoardState(board ?? undefined, teamId);
+  const uniqueAppleIds = Array.from(new Set(appleIds));
+
+  if (currentBoard.submittedAt !== null || uniqueAppleIds.length === 0) {
+    return currentBoard;
+  }
+
+  const removedAppleIds = new Set(currentBoard.removedAppleIds);
+
+  if (uniqueAppleIds.some((appleId) => removedAppleIds.has(appleId))) {
+    return currentBoard;
+  }
+
+  const appleValues = createAppleValueMap(normalizedRoom, roundIndex);
+  let sum = 0;
+
+  for (const appleId of uniqueAppleIds) {
+    const value = appleValues.get(appleId);
+
+    if (value === undefined) {
+      return currentBoard;
+    }
+
+    sum += value;
+  }
+
+  if (sum !== 10) {
+    return currentBoard;
+  }
+
+  const nextRemovedAppleIds = [...currentBoard.removedAppleIds, ...uniqueAppleIds];
+
+  return {
+    ...currentBoard,
+    removedAppleIds: nextRemovedAppleIds,
+    score: currentBoard.score + calculateSelectionScore(uniqueAppleIds.length),
+    clearTimeMs:
+      nextRemovedAppleIds.length >= APPLE_COUNT && currentBoard.clearTimeMs === null
+        ? clearTimeMs
+        : currentBoard.clearTimeMs
+  };
+}
+
 function submitSharedBoardForTeam(
   room: RoomState,
   roundIndex: number,
@@ -532,6 +614,15 @@ export function addRoomChatMessage(room: RoomState, playerId: string, text: stri
   return nextRoom;
 }
 
+export function submitCompletedSharedTeamBoard(
+  room: RoomState,
+  roundIndex: number,
+  teamId: string,
+  now: number
+): RoomState {
+  return forceRoomProgress(submitSharedBoardForTeam(room, roundIndex, teamId, now), now);
+}
+
 export function randomizeRoomTeams(room: RoomState, playerId: string, now: number): RoomState {
   const normalizedRoom = normalizeRoomState(room);
 
@@ -720,35 +811,23 @@ export function applySharedTeamSelection(
     return room;
   }
 
-  const removedAppleIds = new Set(board.removedAppleIds);
+  const nextBoard = applySharedTeamBoardSelection(
+    nextRoom,
+    player.teamId,
+    roundIndex,
+    board,
+    uniqueAppleIds,
+    clearTimeMs
+  );
 
-  if (uniqueAppleIds.some((appleId) => removedAppleIds.has(appleId))) {
+  if (nextBoard === board || nextBoard.removedAppleIds.length === board.removedAppleIds.length) {
     return room;
   }
 
-  const appleValues = createAppleValueMap(nextRoom, roundIndex);
-  let sum = 0;
+  nextRoom.sharedTeamBoards[roundKey][player.teamId] = nextBoard;
 
-  for (const appleId of uniqueAppleIds) {
-    const value = appleValues.get(appleId);
-
-    if (value === undefined) {
-      return room;
-    }
-
-    sum += value;
-  }
-
-  if (sum !== 10) {
-    return room;
-  }
-
-  board.removedAppleIds.push(...uniqueAppleIds);
-  board.score += calculateSelectionScore(uniqueAppleIds.length);
-
-  if (board.removedAppleIds.length >= APPLE_COUNT && board.clearTimeMs === null) {
-    board.clearTimeMs = clearTimeMs;
-    return forceRoomProgress(submitSharedBoardForTeam(nextRoom, roundIndex, player.teamId, now), now);
+  if (nextBoard.removedAppleIds.length >= APPLE_COUNT && board.submittedAt === null) {
+    return submitCompletedSharedTeamBoard(nextRoom, roundIndex, player.teamId, now);
   }
 
   return nextRoom;

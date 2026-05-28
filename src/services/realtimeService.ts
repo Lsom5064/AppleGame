@@ -1,22 +1,26 @@
 import { get, onValue, ref, runTransaction, set, update } from "firebase/database";
+import { APPLE_COUNT } from "../constants";
 import { firebaseDatabase } from "../lib/firebase";
 import type { CreateRoomOptions, RoomDirectoryEntry, RoomDirectoryState, RoomState } from "../types";
 import { countConnectedPlayers } from "../utils/presence";
 import { getRealtimeNow, setRealtimeClockOffset } from "../utils/realtimeClock";
 import {
   addRoomChatMessage,
+  applySharedTeamBoardSelection,
   applySharedTeamSelection,
   assignRoomPlayerTeam,
   clearTeamPointer,
   createInitialRoom,
   createNewRoomCode,
   forceRoomProgress,
+  getSharedTeamSelectionTarget,
   joinRoom,
   leaveRoom,
   normalizeRoomState,
   randomizeRoomTeams,
   startNextRound,
   startRoomGame,
+  submitCompletedSharedTeamBoard,
   submitRoundScore,
   updatePlayerPresence,
   updateTeamPointer,
@@ -231,9 +235,42 @@ function createFirebaseService(): RealtimeService {
       );
     },
     async submitSharedSelection(roomCode, playerId, roundIndex, appleIds, clearTimeMs) {
-      await runRoomTransaction(database, roomCode, (room) =>
-        applySharedTeamSelection(room, playerId, roundIndex, appleIds, clearTimeMs, now())
+      const roomRef = ref(database, getRoomPath(roomCode));
+      const snapshot = await get(roomRef);
+      const room = requireRoom((snapshot.val() as RoomState | null) ?? null);
+      const target = getSharedTeamSelectionTarget(room, playerId, roundIndex);
+
+      if (!target) {
+        return;
+      }
+
+      const timestamp = now();
+      const boardRef = ref(
+        database,
+        `${getRoomPath(roomCode)}/sharedTeamBoards/${target.roundKey}/${target.teamId}`
       );
+      const result = await runTransaction(boardRef, (current) =>
+        applySharedTeamBoardSelection(
+          room,
+          target.teamId,
+          roundIndex,
+          current,
+          appleIds,
+          clearTimeMs
+        )
+      );
+      const nextBoard = result.snapshot.val() as RoomState["sharedTeamBoards"][string][string] | null;
+
+      await update(ref(database, getRoomPath(roomCode)), {
+        [`players/${playerId}/connected`]: true,
+        [`players/${playerId}/lastSeenAt`]: timestamp
+      });
+
+      if (nextBoard && nextBoard.removedAppleIds.length >= APPLE_COUNT && nextBoard.submittedAt === null) {
+        await runRoomTransaction(database, roomCode, (nextRoom) =>
+          submitCompletedSharedTeamBoard(nextRoom, roundIndex, target.teamId, timestamp)
+        );
+      }
     },
     async updatePresence(roomCode, playerId, connected) {
       await runRoomTransaction(database, roomCode, (room) =>

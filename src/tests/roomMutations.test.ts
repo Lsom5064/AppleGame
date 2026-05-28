@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { RoomState } from "../types";
 import {
   addRoomChatMessage,
+  applySharedTeamBoardSelection,
   applySharedTeamSelection,
   assignRoomPlayerTeam,
   clearTeamPointer,
@@ -365,6 +366,37 @@ describe("roomMutations", () => {
     expect(afterFirst.sharedTeamBoards["0"]["team-1"].score).toBe(3);
     expect(afterSecond.sharedTeamBoards["0"]["team-1"].score).toBe(3);
     expect(afterSecond.sharedTeamBoards["0"]["team-1"].removedAppleIds).toHaveLength(3);
+  });
+
+  it("applies shared-team board selections at team-board scope", () => {
+    const started = createSharedModeRoom();
+    const apples = generateApples(`${started.seed}:0`);
+    const selected = [
+      apples.find((apple) => apple.value === 1)!,
+      apples.find((apple) => apple.value === 2)!,
+      apples.find((apple) => apple.value === 7)!
+    ];
+    const board = started.sharedTeamBoards["0"]["team-1"];
+    const nextBoard = applySharedTeamBoardSelection(
+      started,
+      "team-1",
+      0,
+      board,
+      selected.map((apple) => apple.id),
+      null
+    );
+    const duplicateBoard = applySharedTeamBoardSelection(
+      started,
+      "team-1",
+      0,
+      nextBoard,
+      selected.map((apple) => apple.id),
+      null
+    );
+
+    expect(nextBoard.score).toBe(3);
+    expect(nextBoard.removedAppleIds).toHaveLength(3);
+    expect(duplicateBoard).toEqual(nextBoard);
   });
 
   it("keeps shared-team progress isolated per team when two teams remove apples in the same round", () => {
