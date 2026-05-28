@@ -62,7 +62,10 @@ interface RealtimeService {
     roundIndex: number,
     x: number,
     y: number,
-    active: boolean
+    active: boolean,
+    dragging?: boolean,
+    selectionStartX?: number,
+    selectionStartY?: number
   ): Promise<void>;
   sendChatMessage(roomCode: string, playerId: string, text: string): Promise<void>;
   forceRoundProgress(roomCode: string): Promise<void>;
@@ -218,12 +221,23 @@ function createFirebaseService(): RealtimeService {
         updatePlayerPresence(room, playerId, connected, Date.now())
       );
     },
-    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active) {
+    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active, dragging, selectionStartX, selectionStartY) {
       const roomRef = ref(database, getRoomPath(roomCode));
       const snapshot = await get(roomRef);
       const room = requireRoom((snapshot.val() as RoomState | null) ?? null);
       const nextRoom = active
-        ? updateTeamPointer(room, playerId, roundIndex, x, y, active, Date.now())
+        ? updateTeamPointer(
+            room,
+            playerId,
+            roundIndex,
+            x,
+            y,
+            active,
+            Date.now(),
+            dragging,
+            selectionStartX,
+            selectionStartY
+          )
         : clearTeamPointer(room, playerId);
       await set(
         ref(database, `${getRoomPath(roomCode)}/teamPointers/${playerId}`),
@@ -399,11 +413,22 @@ function createLocalService(): RealtimeService {
         updatePlayerPresence(requireRoom(room), playerId, connected, Date.now())
       );
     },
-    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active) {
+    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active, dragging, selectionStartX, selectionStartY) {
       withRoom(roomCode, (room) => {
         const currentRoom = requireRoom(room);
         return active
-          ? updateTeamPointer(currentRoom, playerId, roundIndex, x, y, active, Date.now())
+          ? updateTeamPointer(
+              currentRoom,
+              playerId,
+              roundIndex,
+              x,
+              y,
+              active,
+              Date.now(),
+              dragging,
+              selectionStartX,
+              selectionStartY
+            )
           : clearTeamPointer(currentRoom, playerId);
       });
     },

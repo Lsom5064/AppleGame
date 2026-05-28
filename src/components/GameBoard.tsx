@@ -1,4 +1,4 @@
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { Fragment, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
 import type { Apple, SelectionRect } from "../types";
 import appleImage from "../../apple.png";
@@ -18,6 +18,7 @@ interface GameBoardProps {
     nickname: string;
     x: number;
     y: number;
+    selectionRect: SelectionRect | null;
   }>;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -121,20 +122,35 @@ export function GameBoard({
           const hue = (index * 79 + 18) % 360;
 
           return (
-            <div
-              key={pointer.playerId}
-              className={styles.pointer}
-              style={
-                {
-                  left: pointer.x,
-                  top: pointer.y,
-                  "--pointer-color": `hsl(${hue} 80% 52%)`
-                } as CSSProperties
-              }
-            >
-              <span className={styles.pointerDot} />
-              <span className={styles.pointerLabel}>{pointer.nickname}</span>
-            </div>
+            <Fragment key={pointer.playerId}>
+              {pointer.selectionRect ? (
+                <div
+                  className={`${styles.selection} ${styles.teammateSelection}`}
+                  style={
+                    {
+                      left: pointer.selectionRect.left,
+                      top: pointer.selectionRect.top,
+                      width: pointer.selectionRect.width,
+                      height: pointer.selectionRect.height,
+                      "--pointer-hue": hue
+                    } as CSSProperties
+                  }
+                />
+              ) : null}
+              <div
+                className={styles.pointer}
+                style={
+                  {
+                    left: pointer.x,
+                    top: pointer.y,
+                    "--pointer-hue": hue
+                  } as CSSProperties
+                }
+              >
+                <span className={styles.pointerDot} />
+                <span className={styles.pointerLabel}>{pointer.nickname}</span>
+              </div>
+            </Fragment>
           );
         })}
 

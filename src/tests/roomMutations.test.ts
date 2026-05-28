@@ -179,7 +179,7 @@ describe("roomMutations", () => {
       null,
       2300
     );
-    const pointed = updateTeamPointer(progressed, "guest", 0, 120, 160, true, 2400);
+    const pointed = updateTeamPointer(progressed, "guest", 0, 120, 160, true, 2400, true, 90, 110);
     const rejoined = joinRoom(pointed, "guest", "Guest Reloaded", 2600);
 
     expect(rejoined.players.guest.nickname).toBe("Guest Reloaded");
@@ -187,12 +187,17 @@ describe("roomMutations", () => {
     expect(rejoined.players.guest.connected).toBe(true);
     expect(rejoined.sharedTeamBoards["0"]["team-1"].score).toBe(3);
     expect(rejoined.sharedTeamBoards["0"]["team-1"].removedAppleIds).toHaveLength(3);
+    expect(pointed.teamPointers.guest).toMatchObject({
+      dragging: true,
+      selectionStartX: 90,
+      selectionStartY: 110
+    });
     expect(rejoined.teamPointers.guest).toBeUndefined();
   });
 
   it("updates presence and removes team pointers when a player goes offline", () => {
     const started = createSharedModeRoom();
-    const pointed = updateTeamPointer(started, "guest", 0, 150, 150, true, 2100);
+    const pointed = updateTeamPointer(started, "guest", 0, 150, 150, true, 2100, false, 150, 150);
     const offline = updatePlayerPresence(pointed, "guest", false, 2200);
     const online = updatePlayerPresence(offline, "guest", true, 2300);
 

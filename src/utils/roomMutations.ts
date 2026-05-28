@@ -177,6 +177,9 @@ function normalizeTeamPointers(
           x: pointer.x ?? 0,
           y: pointer.y ?? 0,
           active: pointer.active ?? false,
+          dragging: pointer.dragging ?? false,
+          selectionStartX: pointer.selectionStartX ?? pointer.x ?? 0,
+          selectionStartY: pointer.selectionStartY ?? pointer.y ?? 0,
           updatedAt: pointer.updatedAt ?? 0
         }
       ])
@@ -600,7 +603,10 @@ export function updateTeamPointer(
   x: number,
   y: number,
   active: boolean,
-  now: number
+  now: number,
+  dragging = false,
+  selectionStartX = x,
+  selectionStartY = y
 ): RoomState {
   const normalizedRoom = normalizeRoomState(room);
   const player = normalizedRoom.players[playerId];
@@ -622,6 +628,9 @@ export function updateTeamPointer(
     x,
     y,
     active,
+    dragging,
+    selectionStartX,
+    selectionStartY,
     updatedAt: now
   };
 

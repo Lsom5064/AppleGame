@@ -62,6 +62,9 @@ export interface TeamPointerState {
   x: number;
   y: number;
   active: boolean;
+  dragging: boolean;
+  selectionStartX: number;
+  selectionStartY: number;
   updatedAt: number;
 }
 

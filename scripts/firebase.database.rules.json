@@ -143,7 +143,7 @@
         },
         "teamPointers": {
           "$playerId": {
-            ".validate": "newData.hasChildren(['playerId', 'teamId', 'roundIndex', 'x', 'y', 'active', 'updatedAt']) && newData.child('playerId').val() == $playerId && newData.parent().parent().child('players').child($playerId).exists()",
+            ".validate": "newData.hasChildren(['playerId', 'teamId', 'roundIndex', 'x', 'y', 'active', 'dragging', 'selectionStartX', 'selectionStartY', 'updatedAt']) && newData.child('playerId').val() == $playerId && newData.parent().parent().child('players').child($playerId).exists()",
             "playerId": {
               ".validate": "newData.isString() && newData.val() == $playerId"
             },
@@ -161,6 +161,15 @@
             },
             "active": {
               ".validate": "newData.isBoolean()"
+            },
+            "dragging": {
+              ".validate": "newData.isBoolean()"
+            },
+            "selectionStartX": {
+              ".validate": "newData.isNumber()"
+            },
+            "selectionStartY": {
+              ".validate": "newData.isNumber()"
             },
             "updatedAt": {
               ".validate": "newData.isNumber()"

@@ -26,7 +26,10 @@ interface GameScreenProps {
     roundIndex: number,
     x: number,
     y: number,
-    active: boolean
+    active: boolean,
+    dragging: boolean,
+    selectionStartX: number,
+    selectionStartY: number
   ) => Promise<void>;
   onForceProgress: () => Promise<void>;
 }
@@ -93,7 +96,15 @@ export function GameScreen({
   const progressRequestedRef = useRef(false);
   const dropDirectionRef = useRef<-1 | 1>(1);
   const dropTimeoutsRef = useRef<number[]>([]);
-  const pointerSyncRef = useRef<{ sentAt: number; x: number; y: number; active: boolean } | null>(null);
+  const pointerSyncRef = useRef<{
+    sentAt: number;
+    x: number;
+    y: number;
+    active: boolean;
+    dragging: boolean;
+    selectionStartX: number;
+    selectionStartY: number;
+  } | null>(null);
 
   const remainingApples = useMemo(
     () => apples.filter((apple) => !apple.removed && !apple.dropping).length,
@@ -125,7 +136,15 @@ export function GameScreen({
               playerId: pointer.playerId,
               nickname: room.players[pointer.playerId]?.nickname ?? pointer.playerId,
               x: pointer.x,
-              y: pointer.y
+              y: pointer.y,
+              selectionRect: pointer.dragging
+                ? normalizeSelectionRect(
+                    pointer.selectionStartX,
+                    pointer.selectionStartY,
+                    pointer.x,
+                    pointer.y
+                  )
+                : null
             }))
         : [],
     [player.id, playerTeamId, pointerNow, room.currentRoundIndex, room.players, room.teamPointers, sharedTeamMode]
@@ -408,7 +427,15 @@ export function GameScreen({
     };
   }
 
-  function syncTeamPointer(boardX: number, boardY: number, active: boolean, force = false): void {
+  function syncTeamPointer(
+    boardX: number,
+    boardY: number,
+    active: boolean,
+    dragging: boolean,
+    selectionStartX: number,
+    selectionStartY: number,
+    force = false
+  ): void {
     if (!sharedTeamMode || playerTeamId === null || waitingForNextRound) {
       return;
     }
@@ -420,8 +447,11 @@ export function GameScreen({
       !force &&
       lastSync &&
       lastSync.active === active &&
+      lastSync.dragging === dragging &&
       Math.abs(lastSync.x - boardX) < 8 &&
       Math.abs(lastSync.y - boardY) < 8 &&
+      Math.abs(lastSync.selectionStartX - selectionStartX) < 8 &&
+      Math.abs(lastSync.selectionStartY - selectionStartY) < 8 &&
       now - lastSync.sentAt < 45
     ) {
       return;
@@ -431,9 +461,20 @@ export function GameScreen({
       sentAt: now,
       x: boardX,
       y: boardY,
-      active
+      active,
+      dragging,
+      selectionStartX,
+      selectionStartY
     };
-    void onUpdateTeamPointer(room.currentRoundIndex, boardX, boardY, active);
+    void onUpdateTeamPointer(
+      room.currentRoundIndex,
+      boardX,
+      boardY,
+      active,
+      dragging,
+      selectionStartX,
+      selectionStartY
+    );
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
@@ -442,7 +483,7 @@ export function GameScreen({
     }
 
     const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
-    syncTeamPointer(boardX, boardY, true, true);
+    syncTeamPointer(boardX, boardY, true, true, boardX, boardY, true);
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragState({
       pointerId: event.pointerId,
@@ -457,11 +498,20 @@ export function GameScreen({
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>): void {
     const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
-    syncTeamPointer(boardX, boardY, true);
 
     if (!dragState || dragState.pointerId !== event.pointerId) {
+      syncTeamPointer(boardX, boardY, true, false, boardX, boardY);
       return;
     }
+
+    syncTeamPointer(
+      boardX,
+      boardY,
+      true,
+      true,
+      dragState.startBoardX,
+      dragState.startBoardY
+    );
 
     const boardRect = normalizeSelectionRect(
       dragState.startBoardX,
@@ -481,7 +531,7 @@ export function GameScreen({
 
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>): void {
     const { boardX, boardY } = getPointerPosition(event);
-    syncTeamPointer(boardX, boardY, false, true);
+    syncTeamPointer(boardX, boardY, false, false, boardX, boardY, true);
 
     if (!dragState || dragState.pointerId !== event.pointerId) {
       return;
@@ -558,7 +608,7 @@ export function GameScreen({
 
   function handlePointerLeave(event: ReactPointerEvent<HTMLDivElement>): void {
     const { boardX, boardY } = getPointerPosition(event);
-    syncTeamPointer(boardX, boardY, false, true);
+    syncTeamPointer(boardX, boardY, false, false, boardX, boardY, true);
   }
 
   return (
