@@ -1,75 +1,173 @@
 import { describe, expect, it } from "vitest";
 import type { RoomState } from "../types";
-import { buildLeaderboard } from "../utils/leaderboard";
+import { buildLeaderboard, buildTeamLeaderboard } from "../utils/leaderboard";
 
-const room: RoomState = {
-  code: "ABC123",
-  name: "리더보드 방",
-  hostId: "host",
-  seed: "seed",
-  createdAt: 0,
-  phase: "finished",
-  settings: {
-    roundCount: 3,
-    leaderboardMode: "sum",
-    roundDurationSec: 120
-  },
-  access: {
-    password: null,
-    isPublic: true
-  },
-  nextRoundVotes: {},
-  chatMessages: [],
-  currentRoundIndex: 2,
-  roundStartedAt: 0,
-  submissions: {
-    "0": {
-      host: { score: 3, finishedAt: 1, clearTimeMs: null },
-      guest: { score: 9, finishedAt: 2, clearTimeMs: 18400 }
+function createTeamRoom(): RoomState {
+  return {
+    code: "ROOM12",
+    name: "팀전 테스트",
+    hostId: "host",
+    seed: "ROOM12-seed",
+    createdAt: 1000,
+    phase: "finished",
+    settings: {
+      roundCount: 3,
+      leaderboardMode: "sum",
+      roundDurationSec: 120,
+      gameMode: "team",
+      teamMode: "individual",
+      teamCount: 2
     },
-    "1": {
-      host: { score: 4, finishedAt: 3, clearTimeMs: 52600 }
+    access: {
+      password: null,
+      isPublic: true
     },
-    "2": {
-      host: { score: 5, finishedAt: 4, clearTimeMs: 70400 }
-    }
-  },
-  players: {
-    host: {
-      id: "host",
-      nickname: "Host",
-      joinedAt: 1,
-      isHost: true,
-      roundScores: { "0": 3, "1": 4, "2": 5 }
+    currentRoundIndex: 2,
+    roundStartedAt: null,
+    teams: [
+      { id: "team-1", name: "1팀" },
+      { id: "team-2", name: "2팀" }
+    ],
+    sharedTeamBoards: {},
+    teamPointers: {},
+    players: {
+      host: {
+        id: "host",
+        nickname: "Host",
+        joinedAt: 1000,
+        isHost: true,
+        connected: true,
+        lastSeenAt: 1000,
+        roundScores: { "0": 5, "1": 7, "2": 3 },
+        teamId: "team-1"
+      },
+      guest: {
+        id: "guest",
+        nickname: "Guest",
+        joinedAt: 1100,
+        isHost: false,
+        connected: true,
+        lastSeenAt: 1100,
+        roundScores: { "0": 4, "1": 5, "2": 4 },
+        teamId: "team-1"
+      },
+      third: {
+        id: "third",
+        nickname: "Third",
+        joinedAt: 1200,
+        isHost: false,
+        connected: true,
+        lastSeenAt: 1200,
+        roundScores: { "0": 8, "1": 4, "2": 2 },
+        teamId: "team-2"
+      }
     },
-    guest: {
-      id: "guest",
-      nickname: "Guest",
-      joinedAt: 2,
-      isHost: false,
-      roundScores: { "0": 9, "1": 0, "2": 0 }
-    }
-  }
-};
+    submissions: {
+      "0": {},
+      "1": {},
+      "2": {}
+    },
+    nextRoundVotes: {},
+    chatMessages: []
+  };
+}
 
-describe("buildLeaderboard", () => {
-  it("sorts by sum mode", () => {
+describe("leaderboard", () => {
+  it("includes team ids in the player leaderboard", () => {
+    const room = createTeamRoom();
     const leaderboard = buildLeaderboard(room);
-    expect(leaderboard[0].nickname).toBe("Host");
-    expect(leaderboard[0].finalScore).toBe(12);
-    expect(leaderboard[0].clearTimes).toEqual([null, 52600, 70400]);
+
+    expect(leaderboard[0].teamId).toBeDefined();
+    expect(leaderboard.map((entry) => entry.teamId)).toContain("team-1");
   });
 
-  it("sorts by best mode", () => {
-    const leaderboard = buildLeaderboard({
-      ...room,
-      settings: {
-        ...room.settings,
-        leaderboardMode: "best"
-      }
-    });
+  it("aggregates player scores into a team leaderboard", () => {
+    const room = createTeamRoom();
+    const teamLeaderboard = buildTeamLeaderboard(room);
 
-    expect(leaderboard[0].nickname).toBe("Guest");
-    expect(leaderboard[0].finalScore).toBe(9);
+    expect(teamLeaderboard).toHaveLength(2);
+    expect(teamLeaderboard[0]).toMatchObject({
+      id: "team-1",
+      finalScore: 28,
+      roundScores: [9, 12, 7]
+    });
+    expect(teamLeaderboard[1]).toMatchObject({
+      id: "team-2",
+      finalScore: 14,
+      roundScores: [8, 4, 2]
+    });
+  });
+
+  it("uses shared-board scores once per team in shared mode", () => {
+    const room: RoomState = {
+      ...createTeamRoom(),
+      settings: {
+        ...createTeamRoom().settings,
+        teamMode: "shared"
+      },
+      sharedTeamBoards: {
+        "0": {
+          "team-1": {
+            teamId: "team-1",
+            removedAppleIds: ["a"],
+            score: 6,
+            clearTimeMs: null,
+            submittedAt: 10
+          },
+          "team-2": {
+            teamId: "team-2",
+            removedAppleIds: ["b"],
+            score: 4,
+            clearTimeMs: null,
+            submittedAt: 10
+          }
+        },
+        "1": {
+          "team-1": {
+            teamId: "team-1",
+            removedAppleIds: ["c"],
+            score: 8,
+            clearTimeMs: null,
+            submittedAt: 20
+          },
+          "team-2": {
+            teamId: "team-2",
+            removedAppleIds: ["d"],
+            score: 3,
+            clearTimeMs: null,
+            submittedAt: 20
+          }
+        },
+        "2": {
+          "team-1": {
+            teamId: "team-1",
+            removedAppleIds: ["e"],
+            score: 5,
+            clearTimeMs: null,
+            submittedAt: 30
+          },
+          "team-2": {
+            teamId: "team-2",
+            removedAppleIds: ["f"],
+            score: 2,
+            clearTimeMs: null,
+            submittedAt: 30
+          }
+        }
+      }
+    };
+
+    const teamLeaderboard = buildTeamLeaderboard(room);
+
+    expect(teamLeaderboard[0]).toMatchObject({
+      id: "team-1",
+      finalScore: 19,
+      roundScores: [6, 8, 5]
+    });
+    expect(teamLeaderboard[1]).toMatchObject({
+      id: "team-2",
+      finalScore: 9,
+      roundScores: [4, 3, 2]
+    });
   });
 });

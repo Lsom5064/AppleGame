@@ -38,6 +38,12 @@
   font-size: 0.76rem;
 }
 
+.sectionTitle {
+  margin: 0;
+  color: #3a2d1f;
+  font-size: 0.88rem;
+}
+
 .button {
   padding: 6px 8px;
   border-radius: 0;
@@ -102,6 +108,11 @@
   border-top: 1px solid #e4dccd;
 }
 
+.teamSection {
+  display: grid;
+  gap: 10px;
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -129,6 +140,41 @@
 .roundCell span {
   font-size: 0.74rem;
   color: #6a4f45;
+}
+
+.teamCards {
+  display: grid;
+  gap: 10px;
+}
+
+.teamCard {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e7dcc7;
+  background: #fffdf8;
+}
+
+.teamTitle {
+  margin: 0;
+  color: #3c2d1d;
+  font-size: 0.82rem;
+}
+
+.memberList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.memberRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #5b4c3f;
+  font-size: 0.76rem;
 }
 
 .winner {

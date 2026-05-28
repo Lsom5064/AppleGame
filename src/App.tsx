@@ -4,7 +4,7 @@ import { GameScreen } from "./components/GameScreen";
 import { HomeScreen } from "./components/HomeScreen";
 import { LeaderboardScreen } from "./components/LeaderboardScreen";
 import { LobbyScreen } from "./components/LobbyScreen";
-import { BOARD_WIDTH } from "./constants";
+import { BOARD_WIDTH, PRESENCE_HEARTBEAT_MS } from "./constants";
 import { ensureFirebaseIdentity } from "./lib/firebase";
 import { realtimeService } from "./services/realtimeService";
 import styles from "./styles/App.module.css";
@@ -132,6 +132,41 @@ export default function App() {
         clearStoredSession();
       }
     });
+  }, [session]);
+
+  useEffect(() => {
+    if (!session) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const sendPresence = (connected: boolean) => {
+      if (cancelled) {
+        return;
+      }
+
+      void realtimeService.updatePresence(session.roomCode, session.playerId, connected).catch(() => {});
+    };
+
+    sendPresence(true);
+
+    const heartbeat = window.setInterval(() => {
+      sendPresence(true);
+    }, PRESENCE_HEARTBEAT_MS);
+
+    const handleVisibility = () => {
+      sendPresence(document.visibilityState === "visible");
+    };
+
+    window.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(heartbeat);
+      window.removeEventListener("visibilitychange", handleVisibility);
+      void realtimeService.updatePresence(session.roomCode, session.playerId, false).catch(() => {});
+    };
   }, [session]);
 
   const player = session && room ? room.players[session.playerId] : null;
@@ -297,6 +332,12 @@ export default function App() {
             onUpdateSettings={(settings) =>
               void runWithBusy(() => realtimeService.updateSettings(room.code, player.id, settings))
             }
+            onRandomizeTeams={() => void runWithBusy(() => realtimeService.randomizeTeams(room.code, player.id))}
+            onAssignPlayerTeam={(targetPlayerId, teamId) =>
+              void runWithBusy(() =>
+                realtimeService.assignPlayerTeam(room.code, player.id, targetPlayerId, teamId)
+              )
+            }
             onStartGame={() => void runWithBusy(() => realtimeService.startGame(room.code, player.id))}
           />
         ) : room && player && (room.phase === "playing" || room.phase === "between-rounds") ? (
@@ -309,6 +350,12 @@ export default function App() {
             onSendChatMessage={(text) => realtimeService.sendChatMessage(room.code, player.id, text)}
             onSubmitRound={(roundIndex, score, clearTimeMs) =>
               realtimeService.submitRoundScore(room.code, player.id, roundIndex, score, clearTimeMs)
+            }
+            onSubmitSharedSelection={(roundIndex, appleIds, clearTimeMs) =>
+              realtimeService.submitSharedSelection(room.code, player.id, roundIndex, appleIds, clearTimeMs)
+            }
+            onUpdateTeamPointer={(roundIndex, x, y, active) =>
+              realtimeService.updateTeamPointer(room.code, player.id, roundIndex, x, y, active)
             }
             onForceProgress={() => realtimeService.forceRoundProgress(room.code)}
           />

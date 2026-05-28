@@ -9,7 +9,10 @@ const player: PlayerState = {
   nickname: "Host",
   joinedAt: 1000,
   isHost: true,
-  roundScores: { "0": 7 }
+  connected: true,
+  lastSeenAt: 1000,
+  roundScores: { "0": 7 },
+  teamId: null
 };
 
 function createRoom(overrides: Partial<RoomState>): RoomState {
@@ -23,7 +26,10 @@ function createRoom(overrides: Partial<RoomState>): RoomState {
     settings: {
       roundCount: 3,
       leaderboardMode: "sum",
-      roundDurationSec: 1
+      roundDurationSec: 1,
+      gameMode: "solo",
+      teamMode: "individual",
+      teamCount: 2
     },
     access: {
       password: null,
@@ -39,6 +45,12 @@ function createRoom(overrides: Partial<RoomState>): RoomState {
         roundScores: { ...player.roundScores }
       }
     },
+    teams: [
+      { id: "team-1", name: "1팀" },
+      { id: "team-2", name: "2팀" }
+    ],
+    sharedTeamBoards: {},
+    teamPointers: {},
     submissions: {
       "0": {
         host: {
@@ -87,6 +99,8 @@ describe("GameScreen round transitions", () => {
             onVoteNextRound={() => Promise.resolve()}
             onSendChatMessage={() => Promise.resolve()}
             onSubmitRound={onSubmitRound}
+            onSubmitSharedSelection={() => Promise.resolve()}
+            onUpdateTeamPointer={() => Promise.resolve()}
             onForceProgress={onForceProgress}
           />
         );

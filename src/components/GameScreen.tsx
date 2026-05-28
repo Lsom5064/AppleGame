@@ -1,9 +1,11 @@
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
+import { BOARD_HEIGHT, BOARD_WIDTH, POINTER_STALE_MS } from "../constants";
 import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
 import { generateApples, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
+import { getConnectedPlayerIds, isPlayerConnected } from "../utils/presence";
 import { calculateSelectionScore } from "../utils/scoring";
+import { getTeamName } from "../utils/teams";
 import { GameBoard } from "./GameBoard";
 import { RoomChat } from "./RoomChat";
 import styles from "./GameScreen.module.css";
@@ -15,6 +17,17 @@ interface GameScreenProps {
   onVoteNextRound: () => Promise<void>;
   onSendChatMessage: (text: string) => Promise<void>;
   onSubmitRound: (roundIndex: number, score: number, clearTimeMs: number | null) => Promise<void>;
+  onSubmitSharedSelection: (
+    roundIndex: number,
+    appleIds: string[],
+    clearTimeMs: number | null
+  ) => Promise<void>;
+  onUpdateTeamPointer: (
+    roundIndex: number,
+    x: number,
+    y: number,
+    active: boolean
+  ) => Promise<void>;
   onForceProgress: () => Promise<void>;
 }
 
@@ -41,6 +54,8 @@ interface LiveScoreEntry {
   id: string;
   nickname: string;
   isHost: boolean;
+  connected: boolean;
+  teamName: string | null;
   roundScores: Array<number | null>;
   totalScore: number;
 }
@@ -52,10 +67,16 @@ export function GameScreen({
   onVoteNextRound,
   onSendChatMessage,
   onSubmitRound,
+  onSubmitSharedSelection,
+  onUpdateTeamPointer,
   onForceProgress
 }: GameScreenProps) {
   const roundSeed = `${room.seed}:${room.currentRoundIndex}`;
   const roundKey = String(room.currentRoundIndex);
+  const sharedTeamMode = room.settings.gameMode === "team" && room.settings.teamMode === "shared";
+  const playerTeamId = player.teamId;
+  const sharedTeamBoard =
+    sharedTeamMode && playerTeamId ? room.sharedTeamBoards[roundKey]?.[playerTeamId] ?? null : null;
   const waitingForNextRound = room.phase === "between-rounds";
   const locked = waitingForNextRound ? false : Boolean(room.submissions[roundKey]?.[player.id]);
   const activeRoundNumber = waitingForNextRound ? room.currentRoundIndex + 2 : room.currentRoundIndex + 1;
@@ -68,20 +89,47 @@ export function GameScreen({
   const [timeLeftMs, setTimeLeftMs] = useState(room.settings.roundDurationSec * 1000);
   const [lightColors, setLightColors] = useState(false);
   const [clearTimeMs, setClearTimeMs] = useState<number | null>(null);
+  const [pointerNow, setPointerNow] = useState(() => Date.now());
   const progressRequestedRef = useRef(false);
   const dropDirectionRef = useRef<-1 | 1>(1);
   const dropTimeoutsRef = useRef<number[]>([]);
+  const pointerSyncRef = useRef<{ sentAt: number; x: number; y: number; active: boolean } | null>(null);
 
   const remainingApples = useMemo(
     () => apples.filter((apple) => !apple.removed && !apple.dropping).length,
     [apples]
   );
-  const voteCount = Object.keys(room.nextRoundVotes).length;
+  const displayedScore = sharedTeamMode ? sharedTeamBoard?.score ?? 0 : score;
+  const connectedPlayerIds = getConnectedPlayerIds(room);
+  const consensusPlayerIds = connectedPlayerIds.length > 0 ? connectedPlayerIds : Object.keys(room.players);
+  const voteCount = consensusPlayerIds.filter((id) => room.nextRoundVotes[id]).length;
   const playerIds = Object.keys(room.players);
   const hasVotedForNextRound = Boolean(room.nextRoundVotes[player.id]);
   const voters = playerIds
     .filter((id) => room.nextRoundVotes[id])
     .map((id) => room.players[id]?.nickname ?? id);
+  const teamPointers = useMemo(
+    () =>
+      sharedTeamMode && playerTeamId
+        ? Object.values(room.teamPointers)
+            .filter(
+              (pointer) =>
+                pointer.playerId !== player.id &&
+                pointer.teamId === playerTeamId &&
+                pointer.roundIndex === room.currentRoundIndex &&
+                pointer.active &&
+                pointerNow - pointer.updatedAt <= POINTER_STALE_MS &&
+                isPlayerConnected(room.players[pointer.playerId], pointerNow)
+            )
+            .map((pointer) => ({
+              playerId: pointer.playerId,
+              nickname: room.players[pointer.playerId]?.nickname ?? pointer.playerId,
+              x: pointer.x,
+              y: pointer.y
+            }))
+        : [],
+    [player.id, playerTeamId, pointerNow, room.currentRoundIndex, room.players, room.teamPointers, sharedTeamMode]
+  );
   const liveScoreboard = useMemo<LiveScoreEntry[]>(() => {
     const roundCount = room.settings.roundCount;
     const currentRoundIndex = room.currentRoundIndex;
@@ -107,6 +155,10 @@ export function GameScreen({
             return room.submissions[String(currentRoundIndex)]?.[member.id]?.score ?? 0;
           }
 
+          if (sharedTeamMode && member.teamId) {
+            return room.sharedTeamBoards[String(currentRoundIndex)]?.[member.teamId]?.score ?? 0;
+          }
+
           if (member.id === player.id) {
             return score;
           }
@@ -120,6 +172,8 @@ export function GameScreen({
           id: member.id,
           nickname: member.nickname,
           isHost: member.isHost,
+          connected: isPlayerConnected(member),
+          teamName: room.settings.gameMode === "team" ? getTeamName(room.teams, member.teamId) : null,
           roundScores,
           totalScore
         };
@@ -133,7 +187,19 @@ export function GameScreen({
         const rightPlayer = room.players[right.id];
         return leftPlayer.joinedAt - rightPlayer.joinedAt;
       });
-  }, [player.id, room.currentRoundIndex, room.players, room.settings.roundCount, room.submissions, score, waitingForNextRound]);
+  }, [
+    player.id,
+    room.currentRoundIndex,
+    room.players,
+    room.settings.gameMode,
+    room.settings.roundCount,
+    room.sharedTeamBoards,
+    room.submissions,
+    room.teams,
+    score,
+    sharedTeamMode,
+    waitingForNextRound
+  ]);
 
   useEffect(() => {
     return () => {
@@ -150,15 +216,93 @@ export function GameScreen({
 
     dropTimeoutsRef.current = [];
     dropDirectionRef.current = 1;
-    setApples(generateApples(roundSeed));
+    const nextApples = generateApples(roundSeed).map((apple) =>
+      sharedTeamMode && sharedTeamBoard?.removedAppleIds.includes(apple.id)
+        ? {
+            ...apple,
+            removed: true
+          }
+        : apple
+    );
+    setApples(nextApples);
     setScore(room.submissions[roundKey]?.[player.id]?.score ?? 0);
-    setClearTimeMs(room.submissions[roundKey]?.[player.id]?.clearTimeMs ?? null);
+    setClearTimeMs(sharedTeamMode ? sharedTeamBoard?.clearTimeMs ?? null : room.submissions[roundKey]?.[player.id]?.clearTimeMs ?? null);
     setDragState(null);
     setSelectionRect(null);
     setSelectedAppleIds(new Set());
     setTimeLeftMs(room.settings.roundDurationSec * 1000);
     progressRequestedRef.current = false;
-  }, [player.id, room.phase, room.roundStartedAt, room.settings.roundDurationSec, roundKey, roundSeed]);
+    pointerSyncRef.current = null;
+  }, [
+    player.id,
+    room.phase,
+    room.roundStartedAt,
+    room.settings.roundDurationSec,
+    roundKey,
+    roundSeed,
+    sharedTeamMode
+  ]);
+
+  useEffect(() => {
+    if (!sharedTeamMode || !sharedTeamBoard) {
+      return;
+    }
+
+    setClearTimeMs(sharedTeamBoard.clearTimeMs);
+
+    const removedSet = new Set(sharedTeamBoard.removedAppleIds);
+    const currentVisibleIds = new Set(
+      apples.filter((apple) => apple.removed || apple.dropping).map((apple) => apple.id)
+    );
+    const newRemovedIds = sharedTeamBoard.removedAppleIds.filter((appleId) => !currentVisibleIds.has(appleId));
+
+    if (newRemovedIds.length === 0) {
+      return;
+    }
+
+    let nextDirection = dropDirectionRef.current;
+    const selectedIds = new Set(newRemovedIds);
+
+    setApples((current) =>
+      current.map((apple) => {
+        if (!selectedIds.has(apple.id) || apple.removed || apple.dropping) {
+          return removedSet.has(apple.id) && !apple.dropping
+            ? {
+                ...apple,
+                removed: true
+              }
+            : apple;
+        }
+
+        nextDirection = nextDirection === 1 ? -1 : 1;
+
+        return {
+          ...apple,
+          dropping: true,
+          dropDirection: nextDirection
+        };
+      })
+    );
+
+    dropDirectionRef.current = nextDirection;
+
+    const timeoutId = window.setTimeout(() => {
+      setApples((current) =>
+        current.map((apple) =>
+          removedSet.has(apple.id)
+            ? {
+                ...apple,
+                dropping: false,
+                removed: true
+              }
+            : apple
+        )
+      );
+      dropTimeoutsRef.current = dropTimeoutsRef.current.filter((value) => value !== timeoutId);
+    }, 520);
+
+    dropTimeoutsRef.current.push(timeoutId);
+  }, [apples, sharedTeamBoard, sharedTeamMode]);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -174,12 +318,33 @@ export function GameScreen({
   }, [room.roundStartedAt, room.settings.roundDurationSec]);
 
   useEffect(() => {
-    if (waitingForNextRound || remainingApples > 0 || locked) {
+    if (!sharedTeamMode) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setPointerNow(Date.now());
+    }, 250);
+
+    return () => window.clearInterval(interval);
+  }, [sharedTeamMode]);
+
+  useEffect(() => {
+    if (sharedTeamMode || waitingForNextRound || remainingApples > 0 || locked) {
       return;
     }
 
     void onSubmitRound(room.currentRoundIndex, score, clearTimeMs);
-  }, [clearTimeMs, locked, onSubmitRound, remainingApples, room.currentRoundIndex, score, waitingForNextRound]);
+  }, [
+    clearTimeMs,
+    locked,
+    onSubmitRound,
+    remainingApples,
+    room.currentRoundIndex,
+    score,
+    sharedTeamMode,
+    waitingForNextRound
+  ]);
 
   useEffect(() => {
     if (waitingForNextRound || timeLeftMs > 0 || progressRequestedRef.current) {
@@ -188,7 +353,7 @@ export function GameScreen({
 
     progressRequestedRef.current = true;
 
-    if (locked) {
+    if (sharedTeamMode || locked) {
       void onForceProgress();
       return;
     }
@@ -201,6 +366,7 @@ export function GameScreen({
     onSubmitRound,
     room.currentRoundIndex,
     score,
+    sharedTeamMode,
     timeLeftMs,
     waitingForNextRound
   ]);
@@ -242,12 +408,41 @@ export function GameScreen({
     };
   }
 
+  function syncTeamPointer(boardX: number, boardY: number, active: boolean, force = false): void {
+    if (!sharedTeamMode || playerTeamId === null || waitingForNextRound) {
+      return;
+    }
+
+    const lastSync = pointerSyncRef.current;
+    const now = Date.now();
+
+    if (
+      !force &&
+      lastSync &&
+      lastSync.active === active &&
+      Math.abs(lastSync.x - boardX) < 8 &&
+      Math.abs(lastSync.y - boardY) < 8 &&
+      now - lastSync.sentAt < 45
+    ) {
+      return;
+    }
+
+    pointerSyncRef.current = {
+      sentAt: now,
+      x: boardX,
+      y: boardY,
+      active
+    };
+    void onUpdateTeamPointer(room.currentRoundIndex, boardX, boardY, active);
+  }
+
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
     if (locked || waitingForNextRound || timeLeftMs <= 0) {
       return;
     }
 
     const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
+    syncTeamPointer(boardX, boardY, true, true);
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragState({
       pointerId: event.pointerId,
@@ -261,11 +456,13 @@ export function GameScreen({
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>): void {
+    const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
+    syncTeamPointer(boardX, boardY, true);
+
     if (!dragState || dragState.pointerId !== event.pointerId) {
       return;
     }
 
-    const { boardX, boardY, displayX, displayY } = getPointerPosition(event);
     const boardRect = normalizeSelectionRect(
       dragState.startBoardX,
       dragState.startBoardY,
@@ -283,11 +480,13 @@ export function GameScreen({
   }
 
   function handlePointerUp(event: ReactPointerEvent<HTMLDivElement>): void {
+    const { boardX, boardY } = getPointerPosition(event);
+    syncTeamPointer(boardX, boardY, false, true);
+
     if (!dragState || dragState.pointerId !== event.pointerId) {
       return;
     }
 
-    const { boardX, boardY } = getPointerPosition(event);
     const rect = normalizeSelectionRect(
       dragState.startBoardX,
       dragState.startBoardY,
@@ -298,47 +497,56 @@ export function GameScreen({
 
     if (snapshot.sum === 10 && snapshot.apples.length > 0 && timeLeftMs > 0 && !locked) {
       const selectedIds = snapshot.ids;
-      let nextDirection = dropDirectionRef.current;
+      const nextClearTimeMs = snapshot.apples.length === remainingApples ? getElapsedRoundMs() : null;
 
-      setApples((current) =>
-        current.map((apple) => {
-          if (!selectedIds.has(apple.id)) {
-            return apple;
-          }
-
-          nextDirection = nextDirection === 1 ? -1 : 1;
-
-          return {
-            ...apple,
-            dropping: true,
-            dropDirection: nextDirection
-          };
-        })
-      );
-
-      dropDirectionRef.current = nextDirection;
-      setScore((current) => current + calculateSelectionScore(snapshot.apples.length));
-
-      if (snapshot.apples.length === remainingApples) {
-        setClearTimeMs(getElapsedRoundMs());
-      }
-
-      const timeoutId = window.setTimeout(() => {
-        setApples((current) =>
-          current.map((apple) =>
-            selectedIds.has(apple.id)
-              ? {
-                  ...apple,
-                  dropping: false,
-                  removed: true
-                }
-              : apple
-          )
+      if (sharedTeamMode) {
+        void onSubmitSharedSelection(
+          room.currentRoundIndex,
+          Array.from(selectedIds),
+          nextClearTimeMs
         );
-        dropTimeoutsRef.current = dropTimeoutsRef.current.filter((value) => value !== timeoutId);
-      }, 520);
+      } else {
+        let nextDirection = dropDirectionRef.current;
 
-      dropTimeoutsRef.current.push(timeoutId);
+        setApples((current) =>
+          current.map((apple) => {
+            if (!selectedIds.has(apple.id)) {
+              return apple;
+            }
+
+            nextDirection = nextDirection === 1 ? -1 : 1;
+
+            return {
+              ...apple,
+              dropping: true,
+              dropDirection: nextDirection
+            };
+          })
+        );
+
+        dropDirectionRef.current = nextDirection;
+        setScore((current) => current + calculateSelectionScore(snapshot.apples.length));
+
+        if (snapshot.apples.length === remainingApples) {
+          setClearTimeMs(nextClearTimeMs);
+        }
+        const timeoutId = window.setTimeout(() => {
+          setApples((current) =>
+            current.map((apple) =>
+              selectedIds.has(apple.id)
+                ? {
+                    ...apple,
+                    dropping: false,
+                    removed: true
+                  }
+                : apple
+            )
+          );
+          dropTimeoutsRef.current = dropTimeoutsRef.current.filter((value) => value !== timeoutId);
+        }, 520);
+
+        dropTimeoutsRef.current.push(timeoutId);
+      }
     }
 
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -346,6 +554,11 @@ export function GameScreen({
     }
 
     resetSelection();
+  }
+
+  function handlePointerLeave(event: ReactPointerEvent<HTMLDivElement>): void {
+    const { boardX, boardY } = getPointerPosition(event);
+    syncTeamPointer(boardX, boardY, false, true);
   }
 
   return (
@@ -356,6 +569,13 @@ export function GameScreen({
           <p className={styles.player}>Player {player.nickname}</p>
           <p className={styles.round}>
             Round {activeRoundNumber} / {room.settings.roundCount}
+          </p>
+          <p className={styles.mode}>
+            {room.settings.gameMode === "team"
+              ? room.settings.teamMode === "shared"
+                ? `${room.settings.teamCount}팀 단일 화면`
+                : `${room.settings.teamCount}팀 개별 화면`
+              : "개인전"}
           </p>
         </div>
         <div className={styles.controls}>
@@ -389,7 +609,7 @@ export function GameScreen({
               </p>
             ) : null}
             <p className={styles.waitingSummary}>
-              다음 라운드 찬성 {voteCount} / {playerIds.length}
+              다음 라운드 찬성 {voteCount} / {consensusPlayerIds.length}
             </p>
             <p className={styles.voteList}>
               {voters.length > 0 ? `찬성 완료: ${voters.join(", ")}` : "아직 찬성한 사람이 없습니다."}
@@ -402,7 +622,9 @@ export function GameScreen({
             >
               {hasVotedForNextRound ? "찬성 완료" : `${room.currentRoundIndex + 2}라운드 찬성하기`}
             </button>
-            <p className={styles.waitingSummary}>모든 인원이 찬성하면 자동으로 다음 라운드가 시작됩니다.</p>
+            <p className={styles.waitingSummary}>
+              현재 접속 중인 인원이 모두 찬성하면 자동으로 다음 라운드가 시작됩니다.
+            </p>
           </div>
 
           <RoomChat
@@ -418,14 +640,16 @@ export function GameScreen({
             apples={apples}
             locked={locked}
             lightColors={lightColors}
-            score={score}
+            score={displayedScore}
             timeLeftMs={timeLeftMs}
             roundDurationSec={room.settings.roundDurationSec}
             selectionRect={selectionRect}
             selectedAppleIds={selectedAppleIds}
+            teamPointers={teamPointers}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerLeave}
           />
 
           <section className={styles.scoreboardPanel}>
@@ -435,6 +659,7 @@ export function GameScreen({
                 <thead>
                   <tr>
                     <th>플레이어</th>
+                    {room.settings.gameMode === "team" ? <th>팀</th> : null}
                     {Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
                       <th key={roundIndex}>R{roundIndex + 1}</th>
                     ))}
@@ -447,7 +672,9 @@ export function GameScreen({
                       <td>
                         {entry.nickname}
                         {entry.isHost ? " (방장)" : ""}
+                        {!entry.connected ? " (오프라인)" : ""}
                       </td>
+                      {room.settings.gameMode === "team" ? <td>{entry.teamName}</td> : null}
                       {entry.roundScores.map((roundScore, roundIndex) => (
                         <td key={roundIndex}>{roundScore === null ? "-" : roundScore}</td>
                       ))}
@@ -459,7 +686,11 @@ export function GameScreen({
             </div>
           </section>
 
-          <p className={styles.hint}>사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다.</p>
+          <p className={styles.hint}>
+            {sharedTeamMode
+              ? "같은 팀은 공용 보드를 공유하며, 팀원의 포인터와 제거 결과가 실시간으로 반영됩니다."
+              : "사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다."}
+          </p>
         </>
       )}
 
@@ -471,6 +702,7 @@ export function GameScreen({
               <thead>
                 <tr>
                   <th>플레이어</th>
+                  {room.settings.gameMode === "team" ? <th>팀</th> : null}
                   {Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
                     <th key={roundIndex}>R{roundIndex + 1}</th>
                   ))}
@@ -483,7 +715,9 @@ export function GameScreen({
                     <td>
                       {entry.nickname}
                       {entry.isHost ? " (방장)" : ""}
+                      {!entry.connected ? " (오프라인)" : ""}
                     </td>
+                    {room.settings.gameMode === "team" ? <td>{entry.teamName}</td> : null}
                     {entry.roundScores.map((roundScore, roundIndex) => (
                       <td key={roundIndex}>{roundScore === null ? "-" : roundScore}</td>
                     ))}

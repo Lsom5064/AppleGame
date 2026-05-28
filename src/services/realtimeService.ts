@@ -1,17 +1,24 @@
 import { get, onValue, ref, runTransaction, set } from "firebase/database";
 import { firebaseDatabase } from "../lib/firebase";
 import type { CreateRoomOptions, RoomDirectoryEntry, RoomDirectoryState, RoomState } from "../types";
+import { countConnectedPlayers } from "../utils/presence";
 import {
   addRoomChatMessage,
+  applySharedTeamSelection,
+  assignRoomPlayerTeam,
+  clearTeamPointer,
   createInitialRoom,
   createNewRoomCode,
   forceRoomProgress,
   joinRoom,
   leaveRoom,
   normalizeRoomState,
+  randomizeRoomTeams,
   startNextRound,
   startRoomGame,
   submitRoundScore,
+  updatePlayerPresence,
+  updateTeamPointer,
   updateRoomSettings,
   voteForNextRound
 } from "../utils/roomMutations";
@@ -25,8 +32,12 @@ interface RealtimeService {
   updateSettings(
     roomCode: string,
     playerId: string,
-    settings: Partial<Pick<RoomState["settings"], "roundCount" | "leaderboardMode">>
+    settings: Partial<
+      Pick<RoomState["settings"], "roundCount" | "leaderboardMode" | "gameMode" | "teamMode" | "teamCount">
+    >
   ): Promise<void>;
+  randomizeTeams(roomCode: string, playerId: string): Promise<void>;
+  assignPlayerTeam(roomCode: string, playerId: string, targetPlayerId: string, teamId: string | null): Promise<void>;
   startGame(roomCode: string, playerId: string): Promise<void>;
   startNextRound(roomCode: string, playerId: string): Promise<void>;
   voteForNextRound(roomCode: string, playerId: string): Promise<void>;
@@ -36,6 +47,22 @@ interface RealtimeService {
     roundIndex: number,
     score: number,
     clearTimeMs: number | null
+  ): Promise<void>;
+  submitSharedSelection(
+    roomCode: string,
+    playerId: string,
+    roundIndex: number,
+    appleIds: string[],
+    clearTimeMs: number | null
+  ): Promise<void>;
+  updatePresence(roomCode: string, playerId: string, connected: boolean): Promise<void>;
+  updateTeamPointer(
+    roomCode: string,
+    playerId: string,
+    roundIndex: number,
+    x: number,
+    y: number,
+    active: boolean
   ): Promise<void>;
   sendChatMessage(roomCode: string, playerId: string, text: string): Promise<void>;
   forceRoundProgress(roomCode: string): Promise<void>;
@@ -66,11 +93,14 @@ function createRoomDirectoryEntry(room: RoomState): RoomDirectoryEntry {
     roomCode: normalizedRoom.code,
     roomName: normalizedRoom.name,
     hostNickname: host.nickname,
-    playerCount: Object.keys(normalizedRoom.players).length,
+    playerCount: countConnectedPlayers(normalizedRoom) || Object.keys(normalizedRoom.players).length,
     createdAt: normalizedRoom.createdAt,
     phase: normalizedRoom.phase,
     roundCount: normalizedRoom.settings.roundCount,
     leaderboardMode: normalizedRoom.settings.leaderboardMode,
+    gameMode: normalizedRoom.settings.gameMode,
+    teamMode: normalizedRoom.settings.teamMode,
+    teamCount: normalizedRoom.settings.teamCount,
     isPublic: normalizedRoom.access.isPublic,
     requiresPassword: Boolean(normalizedRoom.access.password)
   };
@@ -81,7 +111,7 @@ function createRoomDirectoryState(roomsByCode: Record<string, RoomState> | null)
     .filter((room) => {
       try {
         const normalizedRoom = normalizeRoomState(room);
-        return normalizedRoom.phase === "lobby" && Object.keys(normalizedRoom.players).length > 0;
+        return normalizedRoom.phase === "lobby" && countConnectedPlayers(normalizedRoom) > 0;
       } catch {
         return false;
       }
@@ -154,6 +184,16 @@ function createFirebaseService(): RealtimeService {
     async updateSettings(roomCode, playerId, settings) {
       await runRoomTransaction(database, roomCode, (room) => updateRoomSettings(room, playerId, settings));
     },
+    async randomizeTeams(roomCode, playerId) {
+      await runRoomTransaction(database, roomCode, (room) =>
+        randomizeRoomTeams(room, playerId, Date.now())
+      );
+    },
+    async assignPlayerTeam(roomCode, playerId, targetPlayerId, teamId) {
+      await runRoomTransaction(database, roomCode, (room) =>
+        assignRoomPlayerTeam(room, playerId, targetPlayerId, teamId)
+      );
+    },
     async startGame(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => startRoomGame(room, playerId, Date.now()));
     },
@@ -166,6 +206,28 @@ function createFirebaseService(): RealtimeService {
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
       await runRoomTransaction(database, roomCode, (room) =>
         submitRoundScore(room, playerId, roundIndex, score, clearTimeMs, Date.now())
+      );
+    },
+    async submitSharedSelection(roomCode, playerId, roundIndex, appleIds, clearTimeMs) {
+      await runRoomTransaction(database, roomCode, (room) =>
+        applySharedTeamSelection(room, playerId, roundIndex, appleIds, clearTimeMs, Date.now())
+      );
+    },
+    async updatePresence(roomCode, playerId, connected) {
+      await runRoomTransaction(database, roomCode, (room) =>
+        updatePlayerPresence(room, playerId, connected, Date.now())
+      );
+    },
+    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active) {
+      const roomRef = ref(database, getRoomPath(roomCode));
+      const snapshot = await get(roomRef);
+      const room = requireRoom((snapshot.val() as RoomState | null) ?? null);
+      const nextRoom = active
+        ? updateTeamPointer(room, playerId, roundIndex, x, y, active, Date.now())
+        : clearTeamPointer(room, playerId);
+      await set(
+        ref(database, `${getRoomPath(roomCode)}/teamPointers/${playerId}`),
+        nextRoom.teamPointers[playerId] ?? null
       );
     },
     async sendChatMessage(roomCode, playerId, text) {
@@ -234,7 +296,7 @@ function createLocalService(): RealtimeService {
       .map((roomCode) => loadRoom(roomCode))
       .filter(
         (room): room is RoomState =>
-          room !== null && room.phase === "lobby" && Object.keys(room.players).length > 0
+          room !== null && room.phase === "lobby" && countConnectedPlayers(room) > 0
       )
       .map((room) => createRoomDirectoryEntry(room))
       .sort((left, right) => right.createdAt - left.createdAt);
@@ -305,6 +367,14 @@ function createLocalService(): RealtimeService {
     async updateSettings(roomCode, playerId, settings) {
       withRoom(roomCode, (room) => updateRoomSettings(requireRoom(room), playerId, settings));
     },
+    async randomizeTeams(roomCode, playerId) {
+      withRoom(roomCode, (room) => randomizeRoomTeams(requireRoom(room), playerId, Date.now()));
+    },
+    async assignPlayerTeam(roomCode, playerId, targetPlayerId, teamId) {
+      withRoom(roomCode, (room) =>
+        assignRoomPlayerTeam(requireRoom(room), playerId, targetPlayerId, teamId)
+      );
+    },
     async startGame(roomCode, playerId) {
       withRoom(roomCode, (room) => startRoomGame(requireRoom(room), playerId, Date.now()));
     },
@@ -318,6 +388,24 @@ function createLocalService(): RealtimeService {
       withRoom(roomCode, (room) =>
         submitRoundScore(requireRoom(room), playerId, roundIndex, score, clearTimeMs, Date.now())
       );
+    },
+    async submitSharedSelection(roomCode, playerId, roundIndex, appleIds, clearTimeMs) {
+      withRoom(roomCode, (room) =>
+        applySharedTeamSelection(requireRoom(room), playerId, roundIndex, appleIds, clearTimeMs, Date.now())
+      );
+    },
+    async updatePresence(roomCode, playerId, connected) {
+      withRoom(roomCode, (room) =>
+        updatePlayerPresence(requireRoom(room), playerId, connected, Date.now())
+      );
+    },
+    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active) {
+      withRoom(roomCode, (room) => {
+        const currentRoom = requireRoom(room);
+        return active
+          ? updateTeamPointer(currentRoom, playerId, roundIndex, x, y, active, Date.now())
+          : clearTeamPointer(currentRoom, playerId);
+      });
     },
     async sendChatMessage(roomCode, playerId, text) {
       withRoom(roomCode, (room) => addRoomChatMessage(requireRoom(room), playerId, text, Date.now()));

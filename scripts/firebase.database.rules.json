@@ -1,8 +1,226 @@
 {
   "rules": {
     "rooms": {
-      ".read": "auth != null",
-      ".write": "auth != null"
+      "$roomCode": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "!newData.exists() || (newData.hasChildren(['code', 'name', 'hostId', 'seed', 'createdAt', 'phase', 'settings', 'access', 'currentRoundIndex', 'roundStartedAt', 'players', 'teams', 'sharedTeamBoards', 'teamPointers', 'submissions', 'nextRoundVotes', 'chatMessages']) && newData.child('code').val() == $roomCode)",
+        "code": {
+          ".validate": "newData.isString() && newData.val() == $roomCode"
+        },
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30"
+        },
+        "hostId": {
+          ".validate": "newData.isString() && newData.parent().child('players').child(newData.val()).exists()"
+        },
+        "seed": {
+          ".validate": "newData.isString() && newData.val().length > 0"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "phase": {
+          ".validate": "newData.isString() && (newData.val() == 'lobby' || newData.val() == 'playing' || newData.val() == 'between-rounds' || newData.val() == 'finished')"
+        },
+        "settings": {
+          ".validate": "newData.hasChildren(['roundCount', 'leaderboardMode', 'roundDurationSec', 'gameMode', 'teamMode', 'teamCount'])",
+          "roundCount": {
+            ".validate": "newData.isNumber() && (newData.val() == 1 || newData.val() == 3 || newData.val() == 5)"
+          },
+          "leaderboardMode": {
+            ".validate": "newData.isString() && (newData.val() == 'sum' || newData.val() == 'best')"
+          },
+          "roundDurationSec": {
+            ".validate": "newData.isNumber() && newData.val() >= 30 && newData.val() <= 300"
+          },
+          "gameMode": {
+            ".validate": "newData.isString() && (newData.val() == 'solo' || newData.val() == 'team')"
+          },
+          "teamMode": {
+            ".validate": "newData.isString() && (newData.val() == 'individual' || newData.val() == 'shared')"
+          },
+          "teamCount": {
+            ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 6"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "access": {
+          ".validate": "newData.hasChildren(['password', 'isPublic'])",
+          "password": {
+            ".validate": "newData.val() == null || (newData.isString() && newData.val().length <= 20)"
+          },
+          "isPublic": {
+            ".validate": "newData.isBoolean()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "currentRoundIndex": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "roundStartedAt": {
+          ".validate": "newData.val() == null || newData.isNumber()"
+        },
+        "players": {
+          ".validate": "newData.hasChildren()",
+          "$playerId": {
+            ".validate": "newData.hasChildren(['id', 'nickname', 'joinedAt', 'isHost', 'connected', 'lastSeenAt', 'roundScores', 'teamId']) && newData.child('id').val() == $playerId",
+            "id": {
+              ".validate": "newData.isString() && newData.val() == $playerId"
+            },
+            "nickname": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+            },
+            "joinedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "isHost": {
+              ".validate": "newData.isBoolean()"
+            },
+            "connected": {
+              ".validate": "newData.isBoolean()"
+            },
+            "lastSeenAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "roundScores": {
+              "$roundKey": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              }
+            },
+            "teamId": {
+              ".validate": "newData.val() == null || (newData.isString() && newData.val().length > 0 && newData.val().length <= 20)"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "teams": {
+          "$teamIndex": {
+            ".validate": "newData.hasChildren(['id', 'name'])",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "sharedTeamBoards": {
+          "$roundKey": {
+            "$teamId": {
+              ".validate": "newData.hasChildren(['teamId', 'removedAppleIds', 'score', 'clearTimeMs', 'submittedAt']) && newData.child('teamId').val() == $teamId",
+              "teamId": {
+                ".validate": "newData.isString() && newData.val() == $teamId"
+              },
+              "removedAppleIds": {
+                "$appleIndex": {
+                  ".validate": "newData.isString() && newData.val().length > 0"
+                }
+              },
+              "score": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "clearTimeMs": {
+                ".validate": "newData.val() == null || (newData.isNumber() && newData.val() >= 0)"
+              },
+              "submittedAt": {
+                ".validate": "newData.val() == null || newData.isNumber()"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
+        "teamPointers": {
+          "$playerId": {
+            ".validate": "newData.hasChildren(['playerId', 'teamId', 'roundIndex', 'x', 'y', 'active', 'updatedAt']) && newData.child('playerId').val() == $playerId && newData.parent().parent().child('players').child($playerId).exists()",
+            "playerId": {
+              ".validate": "newData.isString() && newData.val() == $playerId"
+            },
+            "teamId": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+            },
+            "roundIndex": {
+              ".validate": "newData.isNumber() && newData.val() >= 0"
+            },
+            "x": {
+              ".validate": "newData.isNumber()"
+            },
+            "y": {
+              ".validate": "newData.isNumber()"
+            },
+            "active": {
+              ".validate": "newData.isBoolean()"
+            },
+            "updatedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "submissions": {
+          "$roundKey": {
+            "$playerId": {
+              ".validate": "newData.hasChildren(['score', 'finishedAt', 'clearTimeMs']) && newData.parent().parent().parent().child('players').child($playerId).exists()",
+              "score": {
+                ".validate": "newData.isNumber() && newData.val() >= 0"
+              },
+              "finishedAt": {
+                ".validate": "newData.isNumber()"
+              },
+              "clearTimeMs": {
+                ".validate": "newData.val() == null || (newData.isNumber() && newData.val() >= 0)"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
+        "nextRoundVotes": {
+          "$playerId": {
+            ".validate": "newData.isBoolean() && newData.parent().parent().child('players').child($playerId).exists()"
+          }
+        },
+        "chatMessages": {
+          "$messageIndex": {
+            ".validate": "newData.hasChildren(['id', 'playerId', 'nickname', 'text', 'createdAt'])",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length > 0"
+            },
+            "playerId": {
+              ".validate": "newData.isString() && newData.parent().parent().parent().child('players').child(newData.val()).exists()"
+            },
+            "nickname": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+            },
+            "text": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 300"
+            },
+            "createdAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
     }
   }
 }

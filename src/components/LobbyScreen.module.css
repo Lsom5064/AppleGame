@@ -94,6 +94,12 @@
   border-bottom: 1px solid #ece4d4;
 }
 
+.playerMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .badge {
   padding: 0;
   border-radius: 0;
@@ -101,6 +107,37 @@
   color: #444;
   font-size: 0.72rem;
   font-weight: 400;
+}
+
+.offlineBadge {
+  color: #9c4d3f;
+  font-size: 0.72rem;
+}
+
+.teamBadge {
+  color: #5f4d37;
+  font-size: 0.76rem;
+}
+
+.teamSelectWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.teamLabel {
+  color: #6a5a49;
+  font-size: 0.74rem;
+}
+
+.teamSelect {
+  min-width: 84px;
+  padding: 4px 6px;
+  border: 1px solid #cdbda3;
+  background: #fffdf8;
+  color: #3f3127;
+  font: inherit;
+  font-size: 0.76rem;
 }
 
 .settings {
@@ -146,6 +183,20 @@
   margin: 0;
 }
 
+.secondaryButton {
+  padding: 6px 8px;
+  border: 1px solid #c29d48;
+  background: #fff6db;
+  color: #65480d;
+  font: inherit;
+  cursor: pointer;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .rule {
   margin: 0;
   color: #4b2e23;
@@ -157,4 +208,9 @@
   color: #6a5a49;
   font-size: 0.76rem;
   line-height: 1.4;
+}
+
+.teamActionRow {
+  display: grid;
+  gap: 8px;
 }

@@ -184,7 +184,12 @@ export function HomeScreen({
                       <p className={styles.roomTitle}>{room.roomName}</p>
                       <p className={styles.roomMeta}>
                         방장 {room.hostNickname} · 코드 {room.roomCode} · {room.playerCount}명 · {room.roundCount}판 ·{" "}
-                        {room.leaderboardMode === "sum" ? "합계" : "최고점"}
+                        {room.gameMode === "team"
+                          ? room.teamMode === "shared"
+                            ? `${room.teamCount}팀 단일 화면`
+                            : `${room.teamCount}팀 개별 화면`
+                          : "개인전"}{" "}
+                        · {room.leaderboardMode === "sum" ? "합계" : "최고점"}
                       </p>
                     </div>
                     <span className={styles.roomPhase}>{getPhaseLabel(room.phase)}</span>
@@ -232,7 +237,7 @@ export function HomeScreen({
       <section className={styles.rules}>
         <p>제한시간은 120초입니다.</p>
         <p>사과 1개당 1점입니다.</p>
-        <p>방장은 로비에서 1판, 3판, 5판과 리더보드 기준을 정할 수 있습니다.</p>
+        <p>방장은 로비에서 개인전/팀전, 판 수, 리더보드 기준, 팀 배정을 정할 수 있습니다.</p>
         <p>진행 중이거나 종료됐거나 삭제된 방은 목록에서 자동으로 빠집니다.</p>
       </section>
     </div>

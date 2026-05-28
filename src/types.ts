@@ -1,4 +1,6 @@
 export type LeaderboardMode = "sum" | "best";
+export type GameMode = "solo" | "team";
+export type TeamMode = "individual" | "shared";
 export type RoomPhase = "lobby" | "playing" | "between-rounds" | "finished";
 
 export interface RoomAccessSettings {
@@ -10,6 +12,9 @@ export interface GameSettings {
   roundCount: 1 | 3 | 5;
   leaderboardMode: LeaderboardMode;
   roundDurationSec: number;
+  gameMode: GameMode;
+  teamMode: TeamMode;
+  teamCount: number;
 }
 
 export interface RoundSubmission {
@@ -31,7 +36,33 @@ export interface PlayerState {
   nickname: string;
   joinedAt: number;
   isHost: boolean;
+  connected: boolean;
+  lastSeenAt: number;
   roundScores: Record<string, number>;
+  teamId: string | null;
+}
+
+export interface TeamState {
+  id: string;
+  name: string;
+}
+
+export interface SharedTeamBoardState {
+  teamId: string;
+  removedAppleIds: string[];
+  score: number;
+  clearTimeMs: number | null;
+  submittedAt: number | null;
+}
+
+export interface TeamPointerState {
+  playerId: string;
+  teamId: string;
+  roundIndex: number;
+  x: number;
+  y: number;
+  active: boolean;
+  updatedAt: number;
 }
 
 export interface RoomState {
@@ -46,6 +77,9 @@ export interface RoomState {
   currentRoundIndex: number;
   roundStartedAt: number | null;
   players: Record<string, PlayerState>;
+  teams: TeamState[];
+  sharedTeamBoards: Record<string, Record<string, SharedTeamBoardState>>;
+  teamPointers: Record<string, TeamPointerState>;
   submissions: Record<string, Record<string, RoundSubmission>>;
   nextRoundVotes: Record<string, boolean>;
   chatMessages: RoomChatMessage[];
@@ -65,6 +99,9 @@ export interface RoomDirectoryEntry {
   phase: RoomPhase;
   roundCount: GameSettings["roundCount"];
   leaderboardMode: LeaderboardMode;
+  gameMode: GameMode;
+  teamMode: TeamMode;
+  teamCount: number;
   isPublic: boolean;
   requiresPassword: boolean;
 }
@@ -88,6 +125,15 @@ export interface LeaderboardEntry {
   clearTimes: Array<number | null>;
   finalScore: number;
   joinedAt: number;
+  teamId: string | null;
+}
+
+export interface TeamLeaderboardEntry {
+  id: string;
+  name: string;
+  roundScores: number[];
+  finalScore: number;
+  members: LeaderboardEntry[];
 }
 
 export interface Apple {

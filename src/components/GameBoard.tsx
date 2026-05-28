@@ -13,9 +13,16 @@ interface GameBoardProps {
   roundDurationSec: number;
   selectionRect: SelectionRect | null;
   selectedAppleIds: Set<string>;
+  teamPointers: Array<{
+    playerId: string;
+    nickname: string;
+    x: number;
+    y: number;
+  }>;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onPointerLeave: (event: ReactPointerEvent<HTMLDivElement>) => void;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -31,9 +38,11 @@ export function GameBoard({
   roundDurationSec,
   selectionRect,
   selectedAppleIds,
+  teamPointers,
   onPointerDown,
   onPointerMove,
-  onPointerUp
+  onPointerUp,
+  onPointerLeave
 }: GameBoardProps) {
   const timeRatio = clamp(timeLeftMs / (roundDurationSec * 1000), 0, 1);
   const visibleApples = apples.filter((apple) => !apple.removed);
@@ -50,6 +59,7 @@ export function GameBoard({
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onPointerLeave={onPointerLeave}
     >
       <div className={styles.boardFrame}>
         <div className={styles.playfield} />
@@ -106,6 +116,27 @@ export function GameBoard({
             }}
           />
         ) : null}
+
+        {teamPointers.map((pointer, index) => {
+          const hue = (index * 79 + 18) % 360;
+
+          return (
+            <div
+              key={pointer.playerId}
+              className={styles.pointer}
+              style={
+                {
+                  left: pointer.x,
+                  top: pointer.y,
+                  "--pointer-color": `hsl(${hue} 80% 52%)`
+                } as CSSProperties
+              }
+            >
+              <span className={styles.pointerDot} />
+              <span className={styles.pointerLabel}>{pointer.nickname}</span>
+            </div>
+          );
+        })}
 
       </div>
 
