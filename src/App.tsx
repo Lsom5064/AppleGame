@@ -15,9 +15,6 @@ const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
 type IdentityStatus = "loading" | "ready" | "error";
 
 export default function App() {
-  const frameStyle = {
-    "--app-frame-width": BOARD_WIDTH
-  } as CSSProperties;
   const [nickname, setNickname] = useState(() => window.localStorage.getItem(NICKNAME_STORAGE_KEY) ?? "");
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
@@ -36,6 +33,11 @@ export default function App() {
   });
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const appFrameWidth =
+    room && (room.phase === "playing" || room.phase === "between-rounds") ? BOARD_WIDTH + 360 : BOARD_WIDTH;
+  const frameStyle = {
+    "--app-frame-width": appFrameWidth
+  } as CSSProperties;
 
   useEffect(() => {
     window.localStorage.setItem(NICKNAME_STORAGE_KEY, nickname);

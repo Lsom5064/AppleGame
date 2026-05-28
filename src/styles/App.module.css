@@ -1,33 +1,48 @@
 .app {
   min-height: 100vh;
-  padding: 8px 6px 16px;
-  background: #fff8ea;
+  padding: 14px 10px 24px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 223, 158, 0.38), transparent 28%),
+    radial-gradient(circle at top right, rgba(198, 236, 146, 0.22), transparent 22%),
+    linear-gradient(180deg, #fff9ef 0%, #f5e7cd 100%);
   color: #2d241c;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    "Trebuchet MS",
+    "Avenir Next",
+    "Segoe UI",
+    sans-serif;
 }
 
 .frame {
   width: min(100%, calc(var(--app-frame-width) * 1px));
   margin: 0 auto;
-  padding: 4px 4px 8px;
+  padding: 8px;
+  border-radius: 30px;
+  background: rgba(255, 252, 245, 0.56);
+  box-shadow:
+    0 24px 48px rgba(111, 79, 40, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
 }
 
 .status {
   margin-top: 12px;
-  padding: 6px 8px;
-  background: #fbf4e4;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fbf4e4 0%, #f5e7cd 100%);
   color: #615346;
   font-size: 0.84rem;
-  border: 1px solid #e8dcc3;
+  border: 1px solid rgba(208, 189, 156, 0.7);
 }
 
 .error {
   margin-bottom: 12px;
-  padding: 8px 10px;
-  background: #fff1ea;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fff1ea 0%, #ffe0d3 100%);
   color: #7f2914;
   font-size: 0.86rem;
-  border: 1px solid #e5baa8;
+  border: 1px solid rgba(214, 132, 101, 0.55);
 }
 
 .loading {
@@ -38,7 +53,12 @@
 }
 
 @media (max-width: 720px) {
+  .app {
+    padding: 8px 6px 16px;
+  }
+
   .frame {
-    padding: 2px;
+    padding: 4px;
+    border-radius: 20px;
   }
 }

@@ -219,6 +219,8 @@ export function GameScreen({
     sharedTeamMode,
     waitingForNextRound
   ]);
+  const scoreboardTitle = waitingForNextRound ? "전체 점수판" : "현재 점수판";
+  const chatTitle = waitingForNextRound ? "라운드 대기 채팅" : "게임 채팅";
 
   useEffect(() => {
     return () => {
@@ -614,7 +616,7 @@ export function GameScreen({
   return (
     <div className={styles.layout}>
       <div className={styles.header}>
-        <div>
+        <div className={styles.headerPrimary}>
           <p className={styles.meta}>Room {room.code}</p>
           <p className={styles.player}>Player {player.nickname}</p>
           <p className={styles.round}>
@@ -646,64 +648,77 @@ export function GameScreen({
         </div>
       </div>
 
-      {waitingForNextRound ? (
-        <div className={styles.waitingLayout}>
-          <div className={styles.waitingCard}>
-            <p className={styles.waitingTitle}>{room.currentRoundIndex + 1}라운드가 끝났습니다.</p>
-            {lastRoundSubmission ? (
-              <p className={styles.waitingSummary}>
-                이번 라운드 점수 {lastRoundSubmission.score}점 / 클리어{" "}
-                {lastRoundSubmission.clearTimeMs === null
-                  ? "-"
-                  : `${(lastRoundSubmission.clearTimeMs / 1000).toFixed(1)}s`}
-              </p>
-            ) : null}
-            <p className={styles.waitingSummary}>
-              다음 라운드 찬성 {voteCount} / {consensusPlayerIds.length}
-            </p>
-            <p className={styles.voteList}>
-              {voters.length > 0 ? `찬성 완료: ${voters.join(", ")}` : "아직 찬성한 사람이 없습니다."}
-            </p>
-            <button
-              className={styles.primaryButton}
-              type="button"
-              disabled={hasVotedForNextRound}
-              onClick={() => void onVoteNextRound()}
-            >
-              {hasVotedForNextRound ? "찬성 완료" : `${room.currentRoundIndex + 2}라운드 찬성하기`}
-            </button>
-            <p className={styles.waitingSummary}>
-              현재 접속 중인 인원이 모두 찬성하면 자동으로 다음 라운드가 시작됩니다.
-            </p>
-          </div>
-
-          <RoomChat
-            player={player}
-            messages={room.chatMessages}
-            title="라운드 대기 채팅"
-            onSendMessage={onSendChatMessage}
-          />
+      <div className={styles.gameArea}>
+        <div className={styles.primaryColumn}>
+          {waitingForNextRound ? (
+            <div className={styles.waitingLayout}>
+              <div className={styles.waitingCard}>
+                <p className={styles.waitingTitle}>{room.currentRoundIndex + 1}라운드가 끝났습니다.</p>
+                {lastRoundSubmission ? (
+                  <p className={styles.waitingSummary}>
+                    이번 라운드 점수 {lastRoundSubmission.score}점 / 클리어{" "}
+                    {lastRoundSubmission.clearTimeMs === null
+                      ? "-"
+                      : `${(lastRoundSubmission.clearTimeMs / 1000).toFixed(1)}s`}
+                  </p>
+                ) : null}
+                <p className={styles.waitingSummary}>
+                  다음 라운드 찬성 {voteCount} / {consensusPlayerIds.length}
+                </p>
+                <p className={styles.voteList}>
+                  {voters.length > 0 ? `찬성 완료: ${voters.join(", ")}` : "아직 찬성한 사람이 없습니다."}
+                </p>
+                <button
+                  className={styles.primaryButton}
+                  type="button"
+                  disabled={hasVotedForNextRound}
+                  onClick={() => void onVoteNextRound()}
+                >
+                  {hasVotedForNextRound ? "찬성 완료" : `${room.currentRoundIndex + 2}라운드 찬성하기`}
+                </button>
+                <p className={styles.waitingSummary}>
+                  현재 접속 중인 인원이 모두 찬성하면 자동으로 다음 라운드가 시작됩니다.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className={styles.boardCard}>
+                <GameBoard
+                  apples={apples}
+                  locked={locked}
+                  lightColors={lightColors}
+                  score={displayedScore}
+                  timeLeftMs={timeLeftMs}
+                  roundDurationSec={room.settings.roundDurationSec}
+                  selectionRect={selectionRect}
+                  selectedAppleIds={selectedAppleIds}
+                  teamPointers={teamPointers}
+                  onPointerDown={handlePointerDown}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={handlePointerUp}
+                  onPointerLeave={handlePointerLeave}
+                />
+              </div>
+              <div className={styles.boardNote}>
+                <p className={styles.hint}>
+                  {sharedTeamMode
+                    ? "같은 팀은 공용 보드를 공유하며, 팀원의 포인터와 드래그 범위, 제거 결과가 실시간으로 반영됩니다."
+                    : "사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다."}
+                </p>
+              </div>
+            </>
+          )}
         </div>
-      ) : (
-        <>
-          <GameBoard
-            apples={apples}
-            locked={locked}
-            lightColors={lightColors}
-            score={displayedScore}
-            timeLeftMs={timeLeftMs}
-            roundDurationSec={room.settings.roundDurationSec}
-            selectionRect={selectionRect}
-            selectedAppleIds={selectedAppleIds}
-            teamPointers={teamPointers}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerLeave={handlePointerLeave}
-          />
 
+        <aside className={styles.sidebar}>
           <section className={styles.scoreboardPanel}>
-            <h2 className={styles.scoreboardTitle}>현재 점수판</h2>
+            <div className={styles.panelHeader}>
+              <h2 className={styles.scoreboardTitle}>{scoreboardTitle}</h2>
+              <p className={styles.panelMeta}>
+                {sharedTeamMode ? "팀 공용 점수 반영" : "라운드별 실시간 집계"}
+              </p>
+            </div>
             <div className={styles.scoreboardWrap}>
               <table className={styles.scoreboardTable}>
                 <thead>
@@ -736,49 +751,14 @@ export function GameScreen({
             </div>
           </section>
 
-          <p className={styles.hint}>
-            {sharedTeamMode
-              ? "같은 팀은 공용 보드를 공유하며, 팀원의 포인터와 제거 결과가 실시간으로 반영됩니다."
-              : "사과를 정확히 감싸서 숫자 합이 10이 되면 아래로 떨어집니다."}
-          </p>
-        </>
-      )}
-
-      {waitingForNextRound ? (
-        <section className={styles.scoreboardPanel}>
-          <h2 className={styles.scoreboardTitle}>전체 점수판</h2>
-          <div className={styles.scoreboardWrap}>
-            <table className={styles.scoreboardTable}>
-              <thead>
-                <tr>
-                  <th>플레이어</th>
-                  {room.settings.gameMode === "team" ? <th>팀</th> : null}
-                  {Array.from({ length: room.settings.roundCount }, (_, roundIndex) => (
-                    <th key={roundIndex}>R{roundIndex + 1}</th>
-                  ))}
-                  <th>합계</th>
-                </tr>
-              </thead>
-              <tbody>
-                {liveScoreboard.map((entry) => (
-                  <tr key={entry.id}>
-                    <td>
-                      {entry.nickname}
-                      {entry.isHost ? " (방장)" : ""}
-                      {!entry.connected ? " (오프라인)" : ""}
-                    </td>
-                    {room.settings.gameMode === "team" ? <td>{entry.teamName}</td> : null}
-                    {entry.roundScores.map((roundScore, roundIndex) => (
-                      <td key={roundIndex}>{roundScore === null ? "-" : roundScore}</td>
-                    ))}
-                    <td>{entry.totalScore}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : null}
+          <RoomChat
+            player={player}
+            messages={room.chatMessages}
+            title={chatTitle}
+            onSendMessage={onSendChatMessage}
+          />
+        </aside>
+      </div>
     </div>
   );
 }
