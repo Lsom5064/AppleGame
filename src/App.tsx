@@ -371,10 +371,11 @@ export default function App() {
             onSubmitSharedSelection={(roundIndex, appleIds, clearTimeMs) =>
               realtimeService.submitSharedSelection(room.code, player.id, roundIndex, appleIds, clearTimeMs)
             }
-            onUpdateTeamPointer={(roundIndex, x, y, active, dragging, selectionStartX, selectionStartY) =>
+            onUpdateTeamPointer={(teamId, roundIndex, x, y, active, dragging, selectionStartX, selectionStartY) =>
               realtimeService.updateTeamPointer(
                 room.code,
                 player.id,
+                teamId,
                 roundIndex,
                 x,
                 y,

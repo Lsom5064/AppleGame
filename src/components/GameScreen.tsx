@@ -5,6 +5,7 @@ import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
 import { generateApples, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
 import { getConnectedPlayerIds, isPlayerConnected } from "../utils/presence";
 import { getRealtimeNow } from "../utils/realtimeClock";
+import { getRoundCountdownMs, getRoundElapsedPlayMs, getRoundTimeLeftMs } from "../utils/roundTiming";
 import { calculateSelectionScore } from "../utils/scoring";
 import { getTeamName } from "../utils/teams";
 import { GameBoard } from "./GameBoard";
@@ -24,6 +25,7 @@ interface GameScreenProps {
     clearTimeMs: number | null
   ) => Promise<void>;
   onUpdateTeamPointer: (
+    teamId: string,
     roundIndex: number,
     x: number,
     y: number,
@@ -91,7 +93,10 @@ export function GameScreen({
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [selectionRect, setSelectionRect] = useState<SelectionRect | null>(null);
   const [selectedAppleIds, setSelectedAppleIds] = useState<Set<string>>(() => new Set());
-  const [timeLeftMs, setTimeLeftMs] = useState(room.settings.roundDurationSec * 1000);
+  const [timeLeftMs, setTimeLeftMs] = useState(() =>
+    getRoundTimeLeftMs(room.roundStartedAt, room.settings.roundDurationSec, getRealtimeNow())
+  );
+  const [countdownMs, setCountdownMs] = useState(() => getRoundCountdownMs(room.roundStartedAt, getRealtimeNow()));
   const [lightColors, setLightColors] = useState(false);
   const [clearTimeMs, setClearTimeMs] = useState<number | null>(null);
   const [pointerNow, setPointerNow] = useState(() => getRealtimeNow());
@@ -111,6 +116,7 @@ export function GameScreen({
     () => apples.filter((apple) => !apple.removed && !apple.dropping).length,
     [apples]
   );
+  const isCountingDown = room.phase === "playing" && countdownMs > 0;
   const displayedScore = sharedTeamMode ? sharedTeamBoard?.score ?? 0 : score;
   const connectedPlayerIds = getConnectedPlayerIds(room);
   const consensusPlayerIds = connectedPlayerIds.length > 0 ? connectedPlayerIds : Object.keys(room.players);
@@ -275,7 +281,9 @@ export function GameScreen({
     setDragState(null);
     setSelectionRect(null);
     setSelectedAppleIds(new Set());
-    setTimeLeftMs(room.settings.roundDurationSec * 1000);
+    const now = getRealtimeNow();
+    setCountdownMs(getRoundCountdownMs(room.roundStartedAt, now));
+    setTimeLeftMs(getRoundTimeLeftMs(room.roundStartedAt, room.settings.roundDurationSec, now));
     pointerSyncRef.current = null;
   }, [
     currentPlayer.id,
@@ -355,8 +363,9 @@ export function GameScreen({
         return;
       }
 
-      const deadline = room.roundStartedAt + room.settings.roundDurationSec * 1000;
-      setTimeLeftMs(Math.max(0, deadline - getRealtimeNow()));
+      const now = getRealtimeNow();
+      setCountdownMs(getRoundCountdownMs(room.roundStartedAt, now));
+      setTimeLeftMs(getRoundTimeLeftMs(room.roundStartedAt, room.settings.roundDurationSec, now));
     }, 200);
 
     return () => window.clearInterval(interval);
@@ -392,7 +401,7 @@ export function GameScreen({
   ]);
 
   useEffect(() => {
-    if (waitingForNextRound || timeLeftMs > 0) {
+    if (waitingForNextRound || isCountingDown || timeLeftMs > 0) {
       return;
     }
 
@@ -419,6 +428,7 @@ export function GameScreen({
     room.currentRoundIndex,
     score,
     sharedTeamMode,
+    isCountingDown,
     timeLeftMs,
     waitingForNextRound
   ]);
@@ -434,7 +444,7 @@ export function GameScreen({
       return null;
     }
 
-    return Math.max(0, getRealtimeNow() - room.roundStartedAt);
+    return getRoundElapsedPlayMs(room.roundStartedAt, getRealtimeNow());
   }
 
   function getPointerPosition(event: ReactPointerEvent<HTMLDivElement>): PointerPosition {
@@ -465,7 +475,7 @@ export function GameScreen({
     selectionStartY: number,
     force = false
   ): void {
-    if (!sharedTeamMode || playerTeamId === null || waitingForNextRound) {
+    if (!sharedTeamMode || playerTeamId === null || waitingForNextRound || isCountingDown) {
       return;
     }
 
@@ -496,6 +506,7 @@ export function GameScreen({
       selectionStartY
     };
     void onUpdateTeamPointer(
+      playerTeamId,
       room.currentRoundIndex,
       boardX,
       boardY,
@@ -507,7 +518,7 @@ export function GameScreen({
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
-    if (locked || waitingForNextRound || timeLeftMs <= 0) {
+    if (locked || waitingForNextRound || isCountingDown || timeLeftMs <= 0) {
       return;
     }
 
@@ -712,6 +723,7 @@ export function GameScreen({
                   locked={locked}
                   lightColors={lightColors}
                   score={displayedScore}
+                  countdownMs={countdownMs}
                   timeLeftMs={timeLeftMs}
                   roundDurationSec={room.settings.roundDurationSec}
                   selectionRect={selectionRect}

@@ -15,6 +15,7 @@ import type {
 import { generateApples } from "./gameBoard";
 import { createSeededRandom } from "./random";
 import { getConnectedPlayerIds } from "./presence";
+import { getRoundDeadlineAt } from "./roundTiming";
 import { generateRoomCode } from "./roomCode";
 import { calculateSelectionScore } from "./scoring";
 import { clampTeamCount, createTeams, isValidTeamId, sortPlayersByJoinOrder } from "./teams";
@@ -883,7 +884,8 @@ function shouldAdvance(room: RoomState, now: number): boolean {
   const roundSubmissions = normalizedRoom.submissions[roundKey] ?? {};
   const expired =
     now >=
-    normalizedRoom.roundStartedAt + normalizedRoom.settings.roundDurationSec * 1000 + SUBMISSION_GRACE_MS;
+    getRoundDeadlineAt(normalizedRoom.roundStartedAt, normalizedRoom.settings.roundDurationSec) +
+      SUBMISSION_GRACE_MS;
 
   if (normalizedRoom.settings.gameMode === "team" && normalizedRoom.settings.teamMode === "shared") {
     const connectedTeamIds = Array.from(

@@ -1,5 +1,47 @@
 {
   "rules": {
+    "roomPointers": {
+      "$roomCode": {
+        ".read": "auth != null",
+        "$playerId": {
+          ".write": "auth != null && auth.uid == $playerId && (!newData.exists() || root.child('rooms').child($roomCode).child('players').child($playerId).exists())",
+          ".validate": "!newData.exists() || (newData.hasChildren(['playerId', 'teamId', 'roundIndex', 'x', 'y', 'active', 'dragging', 'selectionStartX', 'selectionStartY', 'updatedAt']) && newData.child('playerId').val() == $playerId && newData.child('teamId').val() == root.child('rooms').child($roomCode).child('players').child($playerId).child('teamId').val())",
+          "playerId": {
+            ".validate": "newData.isString() && newData.val() == $playerId"
+          },
+          "teamId": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+          },
+          "roundIndex": {
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "x": {
+            ".validate": "newData.isNumber()"
+          },
+          "y": {
+            ".validate": "newData.isNumber()"
+          },
+          "active": {
+            ".validate": "newData.isBoolean()"
+          },
+          "dragging": {
+            ".validate": "newData.isBoolean()"
+          },
+          "selectionStartX": {
+            ".validate": "newData.isNumber()"
+          },
+          "selectionStartY": {
+            ".validate": "newData.isNumber()"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
     "rooms": {
       "$roomCode": {
         ".read": "auth != null",

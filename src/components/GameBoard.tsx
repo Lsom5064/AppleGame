@@ -16,6 +16,7 @@ interface GameBoardProps {
   locked: boolean;
   lightColors: boolean;
   score: number;
+  countdownMs: number;
   timeLeftMs: number;
   roundDurationSec: number;
   selectionRect: SelectionRect | null;
@@ -42,6 +43,7 @@ export function GameBoard({
   locked,
   lightColors,
   score,
+  countdownMs,
   timeLeftMs,
   roundDurationSec,
   selectionRect,
@@ -53,7 +55,9 @@ export function GameBoard({
   onPointerLeave
 }: GameBoardProps) {
   const timeRatio = clamp(timeLeftMs / (roundDurationSec * 1000), 0, 1);
-  const visibleApples = apples.filter((apple) => !apple.removed);
+  const isCountingDown = countdownMs > 0;
+  const countdownValue = Math.max(1, Math.ceil(countdownMs / 1000));
+  const visibleApples = isCountingDown ? [] : apples.filter((apple) => !apple.removed);
   const shellStyle = {
     "--board-width": BOARD_WIDTH,
     "--board-height": BOARD_HEIGHT,
@@ -117,7 +121,7 @@ export function GameBoard({
           );
         })}
 
-        {selectionRect ? (
+        {selectionRect && !isCountingDown ? (
           <div
             className={styles.selection}
             style={{
@@ -129,41 +133,50 @@ export function GameBoard({
           />
         ) : null}
 
-        {teamPointers.map((pointer, index) => {
-          const hue = (index * 79 + 18) % 360;
+        {!isCountingDown
+          ? teamPointers.map((pointer, index) => {
+              const hue = (index * 79 + 18) % 360;
 
-          return (
-            <Fragment key={pointer.playerId}>
-              {pointer.selectionRect ? (
-                <div
-                  className={`${styles.selection} ${styles.teammateSelection}`}
-                  style={
-                    {
-                      left: pointer.selectionRect.left,
-                      top: pointer.selectionRect.top,
-                      width: pointer.selectionRect.width,
-                      height: pointer.selectionRect.height,
-                      "--pointer-hue": hue
-                    } as CSSProperties
-                  }
-                />
-              ) : null}
-              <div
-                className={styles.pointer}
-                style={
-                  {
-                    left: pointer.x,
-                    top: pointer.y,
-                    "--pointer-hue": hue
-                  } as CSSProperties
-                }
-              >
-                <span className={styles.pointerDot} />
-                <span className={styles.pointerLabel}>{pointer.nickname}</span>
-              </div>
-            </Fragment>
-          );
-        })}
+              return (
+                <Fragment key={pointer.playerId}>
+                  {pointer.selectionRect ? (
+                    <div
+                      className={`${styles.selection} ${styles.teammateSelection}`}
+                      style={
+                        {
+                          left: pointer.selectionRect.left,
+                          top: pointer.selectionRect.top,
+                          width: pointer.selectionRect.width,
+                          height: pointer.selectionRect.height,
+                          "--pointer-hue": hue
+                        } as CSSProperties
+                      }
+                    />
+                  ) : null}
+                  <div
+                    className={styles.pointer}
+                    style={
+                      {
+                        left: pointer.x,
+                        top: pointer.y,
+                        "--pointer-hue": hue
+                      } as CSSProperties
+                    }
+                  >
+                    <span className={styles.pointerDot} />
+                    <span className={styles.pointerLabel}>{pointer.nickname}</span>
+                  </div>
+                </Fragment>
+              );
+            })
+          : null}
+
+        {isCountingDown ? (
+          <div className={styles.countdownOverlay}>
+            <span className={styles.countdownLabel}>READY</span>
+            <strong className={styles.countdownValue}>{countdownValue}</strong>
+          </div>
+        ) : null}
 
       </div>
 

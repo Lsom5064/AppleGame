@@ -64,6 +64,7 @@ interface RealtimeService {
   updateTeamPointer(
     roomCode: string,
     playerId: string,
+    teamId: string,
     roundIndex: number,
     x: number,
     y: number,
@@ -79,6 +80,14 @@ interface RealtimeService {
 
 function getRoomPath(roomCode: string): string {
   return `rooms/${roomCode}`;
+}
+
+function getRoomPointersPath(roomCode: string): string {
+  return `roomPointers/${roomCode}`;
+}
+
+function getLegacyRoomPointerPath(roomCode: string, playerId: string): string {
+  return `${getRoomPath(roomCode)}/teamPointers/${playerId}`;
 }
 
 function requireRoom(room: RoomState | null): RoomState {
@@ -176,6 +185,28 @@ function createFirebaseService(): RealtimeService {
   const now = () => getRealtimeNow();
   initializeFirebaseClock(database);
 
+  async function clearFirebasePointer(roomCode: string, playerId: string): Promise<void> {
+    await Promise.allSettled([
+      set(ref(database, `${getRoomPointersPath(roomCode)}/${playerId}`), null),
+      set(ref(database, getLegacyRoomPointerPath(roomCode, playerId)), null)
+    ]);
+  }
+
+  async function clearFirebaseRoomPointers(roomCode: string): Promise<void> {
+    await Promise.allSettled([
+      set(ref(database, getRoomPointersPath(roomCode)), null),
+      set(ref(database, `${getRoomPath(roomCode)}/teamPointers`), {})
+    ]);
+  }
+
+  async function setFirebasePointer(roomCode: string, playerId: string, pointer: RoomState["teamPointers"][string]) {
+    try {
+      await set(ref(database, `${getRoomPointersPath(roomCode)}/${playerId}`), pointer);
+    } catch {
+      await set(ref(database, getLegacyRoomPointerPath(roomCode, playerId)), pointer);
+    }
+  }
+
   return {
     providerName: "firebase",
     async createRoom(nickname, playerId, options) {
@@ -194,10 +225,45 @@ function createFirebaseService(): RealtimeService {
     },
     subscribeToRoom(roomCode, callback) {
       const roomRef = ref(database, getRoomPath(roomCode));
-      return onValue(roomRef, (snapshot) => {
+      const pointersRef = ref(database, getRoomPointersPath(roomCode));
+      let currentRoom: RoomState | null | undefined;
+      let currentPointers: RoomState["teamPointers"] = {};
+
+      const emit = () => {
+        if (currentRoom === undefined) {
+          return;
+        }
+
+        if (currentRoom === null) {
+          callback(null);
+          return;
+        }
+
+        callback(
+          normalizeRoomState({
+            ...currentRoom,
+            teamPointers: {
+              ...(currentRoom.teamPointers ?? {}),
+              ...currentPointers
+            }
+          })
+        );
+      };
+
+      const unsubscribeRoom = onValue(roomRef, (snapshot) => {
         const nextRoom = (snapshot.val() as RoomState | null) ?? null;
-        callback(nextRoom ? normalizeRoomState(nextRoom) : null);
+        currentRoom = nextRoom;
+        emit();
       });
+      const unsubscribePointers = onValue(pointersRef, (snapshot) => {
+        currentPointers = (snapshot.val() as RoomState["teamPointers"] | null) ?? {};
+        emit();
+      });
+
+      return () => {
+        unsubscribeRoom();
+        unsubscribePointers();
+      };
     },
     subscribeToRoomDirectory(callback) {
       callback({ status: "loading", rooms: [] });
@@ -222,6 +288,7 @@ function createFirebaseService(): RealtimeService {
     },
     async startGame(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => startRoomGame(room, playerId, now()));
+      await clearFirebaseRoomPointers(roomCode);
     },
     async startNextRound(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => startNextRound(room, playerId, now()));
@@ -261,9 +328,9 @@ function createFirebaseService(): RealtimeService {
       );
       const nextBoard = result.snapshot.val() as RoomState["sharedTeamBoards"][string][string] | null;
 
-      await update(ref(database, getRoomPath(roomCode)), {
-        [`players/${playerId}/connected`]: true,
-        [`players/${playerId}/lastSeenAt`]: timestamp
+      await update(ref(database, `${getRoomPath(roomCode)}/players/${playerId}`), {
+        connected: true,
+        lastSeenAt: timestamp
       });
 
       if (nextBoard && nextBoard.removedAppleIds.length >= APPLE_COUNT && nextBoard.submittedAt === null) {
@@ -273,39 +340,45 @@ function createFirebaseService(): RealtimeService {
       }
     },
     async updatePresence(roomCode, playerId, connected) {
-      await runRoomTransaction(database, roomCode, (room) =>
-        updatePlayerPresence(room, playerId, connected, now())
-      );
-    },
-    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active, dragging, selectionStartX, selectionStartY) {
-      const roomRef = ref(database, getRoomPath(roomCode));
-      const snapshot = await get(roomRef);
-      const room = requireRoom((snapshot.val() as RoomState | null) ?? null);
-      const timestamp = now();
-      const nextRoom = active
-        ? updateTeamPointer(
-            room,
-            playerId,
-            roundIndex,
-            x,
-            y,
-            active,
-            timestamp,
-            dragging,
-            selectionStartX,
-            selectionStartY
-          )
-        : clearTeamPointer(room, playerId);
-
-      if (!nextRoom.players[playerId]) {
-        return;
-      }
-
-      await update(ref(database, getRoomPath(roomCode)), {
-        [`teamPointers/${playerId}`]: nextRoom.teamPointers[playerId] ?? null,
-        [`players/${playerId}/connected`]: true,
-        [`players/${playerId}/lastSeenAt`]: timestamp
+      await update(ref(database, `${getRoomPath(roomCode)}/players/${playerId}`), {
+        connected,
+        lastSeenAt: now()
       });
+
+      if (!connected) {
+        await clearFirebasePointer(roomCode, playerId);
+      }
+    },
+    async updateTeamPointer(
+      roomCode,
+      playerId,
+      teamId,
+      roundIndex,
+      x,
+      y,
+      active,
+      dragging,
+      selectionStartX,
+      selectionStartY
+    ) {
+      const timestamp = now();
+
+      if (active) {
+        await setFirebasePointer(roomCode, playerId, {
+          playerId,
+          teamId,
+          roundIndex,
+          x,
+          y,
+          active,
+          dragging: dragging ?? false,
+          selectionStartX: selectionStartX ?? x,
+          selectionStartY: selectionStartY ?? y,
+          updatedAt: timestamp
+        });
+      } else {
+        await clearFirebasePointer(roomCode, playerId);
+      }
     },
     async sendChatMessage(roomCode, playerId, text) {
       await runRoomTransaction(database, roomCode, (room) => addRoomChatMessage(room, playerId, text, now()));
@@ -315,6 +388,7 @@ function createFirebaseService(): RealtimeService {
     },
     async leaveRoom(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => leaveRoom(room, playerId));
+      await clearFirebasePointer(roomCode, playerId);
     }
   };
 }
@@ -476,7 +550,18 @@ function createLocalService(): RealtimeService {
         updatePlayerPresence(requireRoom(room), playerId, connected, Date.now())
       );
     },
-    async updateTeamPointer(roomCode, playerId, roundIndex, x, y, active, dragging, selectionStartX, selectionStartY) {
+    async updateTeamPointer(
+      roomCode,
+      playerId,
+      _teamId,
+      roundIndex,
+      x,
+      y,
+      active,
+      dragging,
+      selectionStartX,
+      selectionStartY
+    ) {
       withRoom(roomCode, (room) => {
         const currentRoom = requireRoom(room);
         return active

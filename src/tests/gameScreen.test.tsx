@@ -41,7 +41,7 @@ function createRoom(overrides: Partial<RoomState>): RoomState {
     chatMessages: [],
     nextRoundVotes: {},
     currentRoundIndex: 0,
-    roundStartedAt: 1000,
+    roundStartedAt: 0,
     players: {
       host: {
         ...player,
@@ -224,6 +224,54 @@ describe("GameScreen round transitions", () => {
     expect(onSubmitRound).not.toHaveBeenCalled();
     expect(onForceProgress).not.toHaveBeenCalled();
     expect(container.textContent).not.toContain("3라운드 시작");
+  });
+
+  it("shows a synchronized countdown before apples appear", async () => {
+    const apples = generateApples("ROOM12-seed:0");
+    const room = createRoom({
+      roundStartedAt: 3000,
+      settings: {
+        roundCount: 3,
+        leaderboardMode: "sum",
+        roundDurationSec: 120,
+        gameMode: "solo",
+        teamMode: "individual",
+        teamCount: 2
+      },
+      submissions: {},
+      players: {
+        host: {
+          ...player,
+          roundScores: {}
+        }
+      }
+    });
+
+    await act(async () => {
+      root.render(
+        <GameScreen
+          room={room}
+          player={room.players.host}
+          onLeaveRoom={() => {}}
+          onVoteNextRound={() => Promise.resolve()}
+          onSendChatMessage={() => Promise.resolve()}
+          onSubmitRound={() => Promise.resolve()}
+          onSubmitSharedSelection={() => Promise.resolve()}
+          onUpdateTeamPointer={() => Promise.resolve()}
+          onForceProgress={() => Promise.resolve()}
+        />
+      );
+    });
+
+    expect(container.textContent).toContain("READY");
+    expect(container.querySelectorAll("img[alt='']")).toHaveLength(0);
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(container.textContent).not.toContain("READY");
+    expect(container.querySelectorAll("img[alt='']")).toHaveLength(apples.length);
   });
 
   it("renders shared-team board progress plus teammate pointer and drag selection", async () => {
@@ -446,8 +494,9 @@ describe("GameScreen round transitions", () => {
     });
 
     expect(onUpdateTeamPointer).toHaveBeenCalled();
-    expect(onUpdateTeamPointer.mock.calls[0]).toEqual([0, 120, 140, true, true, 120, 140]);
+    expect(onUpdateTeamPointer.mock.calls[0]).toEqual(["team-1", 0, 120, 140, true, true, 120, 140]);
     expect(onUpdateTeamPointer.mock.calls[onUpdateTeamPointer.mock.calls.length - 1]).toEqual([
+      "team-1",
       0,
       180,
       210,

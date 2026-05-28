@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ROUND_START_COUNTDOWN_MS } from "../constants";
 import type { RoomState } from "../types";
 import {
   addRoomChatMessage,
@@ -59,6 +60,14 @@ function createSharedModeRoom(roundCount: 1 | 3 | 5 = 1): RoomState {
   );
 
   return startRoomGame(teamSetup, "host", 2000);
+}
+
+function afterRoundTimeout(room: RoomState): number {
+  if (room.roundStartedAt === null) {
+    throw new Error("테스트 방이 플레이 중이 아닙니다.");
+  }
+
+  return room.roundStartedAt + ROUND_START_COUNTDOWN_MS + room.settings.roundDurationSec * 1000 + 2000;
 }
 
 describe("roomMutations", () => {
@@ -493,10 +502,7 @@ describe("roomMutations", () => {
     );
     const afterReconnect = joinRoom(afterFourthDuplicate, "guest", "Guest Reloaded", 2400);
     const afterChat = addRoomChatMessage(afterReconnect, "host", "다음 라운드 준비", 2450);
-    const resolved = forceRoomProgress(
-      afterChat,
-      2000 + started.settings.roundDurationSec * 1000 + 2000
-    );
+    const resolved = forceRoomProgress(afterChat, afterRoundTimeout(started));
 
     expect(resolved.phase).toBe("finished");
     expect(resolved.players.guest.nickname).toBe("Guest Reloaded");
@@ -563,7 +569,7 @@ describe("roomMutations", () => {
       null,
       2300
     );
-    const resolved = forceRoomProgress(progressed, 2000 + started.settings.roundDurationSec * 1000 + 2000);
+    const resolved = forceRoomProgress(progressed, afterRoundTimeout(started));
 
     expect(resolved.phase).toBe("finished");
     expect(resolved.players.host.roundScores["0"]).toBe(3);
@@ -615,10 +621,7 @@ describe("roomMutations", () => {
       null,
       2300
     );
-    const waiting = forceRoomProgress(
-      progressed,
-      2000 + started.settings.roundDurationSec * 1000 + 2000
-    );
+    const waiting = forceRoomProgress(progressed, afterRoundTimeout(started));
     const hostVoted = voteForNextRound(waiting, "host", 125000);
     const guestVoted = voteForNextRound(hostVoted, "guest", 125010);
     const thirdVoted = voteForNextRound(guestVoted, "third", 125020);
@@ -655,10 +658,7 @@ describe("roomMutations", () => {
       null,
       2300
     );
-    const waiting = forceRoomProgress(
-      progressed,
-      2000 + started.settings.roundDurationSec * 1000 + 2000
-    );
+    const waiting = forceRoomProgress(progressed, afterRoundTimeout(started));
     const withOfflineThird = updatePlayerPresence(waiting, "third", false, 124000);
     const withOfflineFourth = updatePlayerPresence(withOfflineThird, "fourth", false, 124100);
     const hostVoted = voteForNextRound(withOfflineFourth, "host", 125000);
@@ -799,7 +799,7 @@ describe("roomMutations", () => {
     });
     const started = startRoomGame(configured, "host", 2000);
     const afterHost = submitRoundScore(started, "host", 0, 8, null, 2100);
-    const resolved = forceRoomProgress(afterHost, 2000 + started.settings.roundDurationSec * 1000 + 2000);
+    const resolved = forceRoomProgress(afterHost, afterRoundTimeout(started));
 
     expect(resolved.phase).toBe("finished");
     expect(resolved.players.host.roundScores["0"]).toBe(8);
@@ -890,7 +890,11 @@ describe("roomMutations", () => {
     });
     const started = startRoomGame(configured, "host", 2000);
     const finished = submitRoundScore(started, "host", 0, 8, null, 2100);
-    const restarted = startRoomGame(forceRoomProgress(finished, 2000 + started.settings.roundDurationSec * 1000 + 2000), "host", 9000);
+    const restarted = startRoomGame(
+      forceRoomProgress(finished, afterRoundTimeout(started)),
+      "host",
+      9000
+    );
 
     expect(restarted.phase).toBe("playing");
     expect(restarted.currentRoundIndex).toBe(0);

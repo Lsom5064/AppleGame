@@ -15,6 +15,7 @@ export const APPLE_SPACING_X = 40;
 export const APPLE_SPACING_Y = 55;
 export const APPLE_PADDING = 26;
 export const ROUND_DURATION_DEFAULT = 120;
+export const ROUND_START_COUNTDOWN_MS = 3000;
 export const SUBMISSION_GRACE_MS = 1500;
 export const POINTER_STALE_MS = 2000;
 export const PRESENCE_HEARTBEAT_MS = 10000;
