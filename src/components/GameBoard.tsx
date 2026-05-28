@@ -1,5 +1,12 @@
 import { Fragment, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
-import { BOARD_HEIGHT, BOARD_WIDTH } from "../constants";
+import {
+  BOARD_HEIGHT,
+  BOARD_WIDTH,
+  PLAYFIELD_INSET_BOTTOM,
+  PLAYFIELD_INSET_LEFT,
+  PLAYFIELD_INSET_RIGHT,
+  PLAYFIELD_INSET_TOP
+} from "../constants";
 import type { Apple, SelectionRect } from "../types";
 import appleImage from "../../apple.png";
 import styles from "./GameBoard.module.css";
@@ -49,7 +56,11 @@ export function GameBoard({
   const visibleApples = apples.filter((apple) => !apple.removed);
   const shellStyle = {
     "--board-width": BOARD_WIDTH,
-    "--board-height": BOARD_HEIGHT
+    "--board-height": BOARD_HEIGHT,
+    "--playfield-inset-left": `${PLAYFIELD_INSET_LEFT}px`,
+    "--playfield-inset-top": `${PLAYFIELD_INSET_TOP}px`,
+    "--playfield-inset-right": `${PLAYFIELD_INSET_RIGHT}px`,
+    "--playfield-inset-bottom": `${PLAYFIELD_INSET_BOTTOM}px`
   } as CSSProperties;
 
   return (

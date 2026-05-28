@@ -8,7 +8,11 @@ import {
   APPLE_START_Y,
   APPLE_WIDTH,
   BOARD_GRID_COLUMNS,
-  BOARD_GRID_ROWS
+  BOARD_GRID_ROWS,
+  BOARD_WIDTH,
+  PLAYFIELD_INSET_LEFT,
+  PLAYFIELD_INSET_RIGHT,
+  PLAYFIELD_SIDE_MARGIN
 } from "../constants";
 import { generateApples, getBoardSlots, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
 
@@ -70,6 +74,17 @@ describe("generateApples", () => {
 
   it("keeps vertical row spacing at or above the apple height to avoid row overlap", () => {
     expect(APPLE_SPACING_Y).toBeGreaterThanOrEqual(APPLE_HEIGHT);
+  });
+
+  it("keeps the apple grid horizontally aligned with the configured playfield margin", () => {
+    const leftGap = APPLE_START_X - APPLE_WIDTH / 2 - PLAYFIELD_INSET_LEFT;
+    const rightGap =
+      BOARD_WIDTH -
+      PLAYFIELD_INSET_RIGHT -
+      (APPLE_START_X + (BOARD_GRID_COLUMNS - 1) * APPLE_SPACING_X + APPLE_WIDTH / 2);
+
+    expect(leftGap).toBe(PLAYFIELD_SIDE_MARGIN);
+    expect(rightGap).toBe(PLAYFIELD_SIDE_MARGIN);
   });
 
   it("keeps the total board sum aligned to 10 without creating a single 10 apple", () => {

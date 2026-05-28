@@ -115,6 +115,13 @@
   gap: 14px;
 }
 
+.contentArea {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  gap: 14px;
+  align-items: start;
+}
+
 .panel {
   display: grid;
   gap: 12px;
@@ -296,6 +303,7 @@
 }
 
 @media (max-width: 920px) {
+  .contentArea,
   .grid {
     grid-template-columns: minmax(0, 1fr);
   }

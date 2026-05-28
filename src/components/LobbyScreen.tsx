@@ -15,7 +15,7 @@ interface LobbyScreenProps {
     >
   ) => void;
   onRandomizeTeams: () => void;
-  onAssignPlayerTeam: (targetPlayerId: string, teamId: string | null) => void;
+  onAssignPlayerTeam: (targetPlayerId: string, teamId: string) => void;
   onStartGame: () => void;
 }
 
@@ -73,47 +73,45 @@ export function LobbyScreen({
         </div>
       </div>
 
-      <div className={styles.grid}>
-        <section className={styles.panel}>
-          <h2 className={styles.panelTitle}>참가자</h2>
-          <ul className={styles.list}>
-            {players.map((member) => (
-              <li key={member.id} className={styles.playerRow}>
-                <div className={styles.playerMeta}>
-                  <span>{member.nickname}</span>
-                  {member.isHost ? <span className={styles.badge}>방장</span> : null}
-                  {!isPlayerConnected(member) ? <span className={styles.offlineBadge}>오프라인</span> : null}
-                </div>
+      <div className={styles.contentArea}>
+        <div className={styles.grid}>
+          <section className={styles.panel}>
+            <h2 className={styles.panelTitle}>참가자</h2>
+            <ul className={styles.list}>
+              {players.map((member) => (
+                <li key={member.id} className={styles.playerRow}>
+                  <div className={styles.playerMeta}>
+                    <span>{member.nickname}</span>
+                    {member.isHost ? <span className={styles.badge}>방장</span> : null}
+                    {!isPlayerConnected(member) ? <span className={styles.offlineBadge}>오프라인</span> : null}
+                  </div>
 
-                {isTeamMode ? (
-                  isHost ? (
-                    <label className={styles.teamSelectWrap}>
-                      <span className={styles.teamLabel}>팀</span>
-                      <select
-                        className={styles.teamSelect}
-                        value={member.teamId ?? ""}
-                        onChange={(event) =>
-                          onAssignPlayerTeam(member.id, event.target.value ? event.target.value : null)
-                        }
-                      >
-                        <option value="">미배정</option>
-                        {room.teams.map((team) => (
-                          <option key={team.id} value={team.id}>
-                            {team.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  ) : (
-                    <span className={styles.teamBadge}>{getTeamName(room.teams, member.teamId)}</span>
-                  )
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </section>
+                  {isTeamMode ? (
+                    isHost ? (
+                      <label className={styles.teamSelectWrap}>
+                        <span className={styles.teamLabel}>팀</span>
+                        <select
+                          className={styles.teamSelect}
+                          value={member.teamId ?? room.teams[0]?.id ?? ""}
+                          onChange={(event) => onAssignPlayerTeam(member.id, event.target.value)}
+                        >
+                          {room.teams.map((team) => (
+                            <option key={team.id} value={team.id}>
+                              {team.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ) : (
+                      <span className={styles.teamBadge}>{getTeamName(room.teams, member.teamId)}</span>
+                    )
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </section>
 
-        <section className={styles.panel}>
+          <section className={styles.panel}>
           <h2 className={styles.panelTitle}>게임 모드</h2>
           <div className={styles.settings}>
             <div className={styles.settingBlock}>
@@ -248,7 +246,7 @@ export function LobbyScreen({
                       랜덤으로 팀 나누기
                     </button>
                     <p className={styles.hint}>
-                      방장은 참가자 목록에서 직접 팀을 바꾸거나 랜덤 배정을 사용할 수 있습니다.
+                      팀전에서는 모든 참가자가 항상 팀에 배정됩니다. 방장은 참가자 목록에서 팀만 바꿀 수 있습니다.
                     </p>
                   </div>
                 </div>
@@ -273,16 +271,17 @@ export function LobbyScreen({
               {isHost ? "방장이 모드를 정하고 시작합니다." : "방장이 모드를 정할 때까지 대기합니다."}
             </p>
           </div>
-        </section>
-      </div>
+          </section>
+        </div>
 
-      <div className={styles.chatWrap}>
-        <RoomChat
-          player={player}
-          messages={room.chatMessages}
-          title="대기실 채팅"
-          onSendMessage={onSendChatMessage}
-        />
+        <div className={styles.chatWrap}>
+          <RoomChat
+            player={player}
+            messages={room.chatMessages}
+            title="대기실 채팅"
+            onSendMessage={onSendChatMessage}
+          />
+        </div>
       </div>
     </div>
   );

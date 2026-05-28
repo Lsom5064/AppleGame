@@ -37,7 +37,7 @@ interface RealtimeService {
     >
   ): Promise<void>;
   randomizeTeams(roomCode: string, playerId: string): Promise<void>;
-  assignPlayerTeam(roomCode: string, playerId: string, targetPlayerId: string, teamId: string | null): Promise<void>;
+  assignPlayerTeam(roomCode: string, playerId: string, targetPlayerId: string, teamId: string): Promise<void>;
   startGame(roomCode: string, playerId: string): Promise<void>;
   startNextRound(roomCode: string, playerId: string): Promise<void>;
   voteForNextRound(roomCode: string, playerId: string): Promise<void>;

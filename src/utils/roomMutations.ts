@@ -567,7 +567,7 @@ export function assignRoomPlayerTeam(
   room: RoomState,
   playerId: string,
   targetPlayerId: string,
-  teamId: string | null
+  teamId: string
 ): RoomState {
   const normalizedRoom = normalizeRoomState(room);
 
@@ -587,7 +587,7 @@ export function assignRoomPlayerTeam(
     throw new Error("플레이어 정보를 찾을 수 없습니다.");
   }
 
-  if (teamId !== null && !isValidTeamId(normalizedRoom.teams, teamId)) {
+  if (!isValidTeamId(normalizedRoom.teams, teamId)) {
     throw new Error("유효하지 않은 팀입니다.");
   }
 

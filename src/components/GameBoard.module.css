@@ -24,7 +24,11 @@
 
 .playfield {
   position: absolute;
-  inset: 42px 94px 42px 42px;
+  inset:
+    var(--playfield-inset-top)
+    var(--playfield-inset-right)
+    var(--playfield-inset-bottom)
+    var(--playfield-inset-left);
   border-radius: 14px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0)) top / 100% 28% no-repeat,

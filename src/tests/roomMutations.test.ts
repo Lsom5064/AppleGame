@@ -235,6 +235,17 @@ describe("roomMutations", () => {
     expect(assigned.players.guest.teamId).toBe("team-3");
   });
 
+  it("rejects manual assignment to an empty team id", () => {
+    const created = createInitialRoom("ROOM12", "host", "Host", 1000);
+    const joined = joinRoom(created, "guest", "Guest", 1500);
+    const teamRoom = updateRoomSettings(joined, "host", {
+      gameMode: "team",
+      teamCount: 3
+    });
+
+    expect(() => assignRoomPlayerTeam(teamRoom, "host", "guest", "" as never)).toThrow("유효하지 않은 팀입니다.");
+  });
+
   it("auto-fills missing team assignments before starting an individual team game", () => {
     const created = createInitialRoom("ROOM12", "host", "Host", 1000);
     const withGuest = joinRoom(created, "guest", "Guest", 1500);
