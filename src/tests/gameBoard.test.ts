@@ -68,6 +68,10 @@ describe("generateApples", () => {
     });
   });
 
+  it("keeps vertical row spacing at or above the apple height to avoid row overlap", () => {
+    expect(APPLE_SPACING_Y).toBeGreaterThanOrEqual(APPLE_HEIGHT);
+  });
+
   it("keeps the total board sum aligned to 10 without creating a single 10 apple", () => {
     const apples = generateApples("room-seed:4");
     const total = apples.reduce((sum, apple) => sum + apple.value, 0);
@@ -76,25 +80,25 @@ describe("generateApples", () => {
     expect(apples.some((apple) => apple.value === 10)).toBe(false);
   });
 
-  it("selects an apple when the drag rect overlaps its visible bounds", () => {
+  it("selects an apple when the drag rect contains its center point", () => {
     const [apple] = generateApples("room-seed:5");
     const rect = normalizeSelectionRect(
-      apple.x - apple.width / 2 - 2,
-      apple.y - apple.height / 2 - 2,
-      apple.x - apple.width / 2 + 4,
-      apple.y + 6
+      apple.x - 4,
+      apple.y - 4,
+      apple.x + 4,
+      apple.y + 4
     );
 
     expect(isAppleInsideRect(apple, rect)).toBe(true);
   });
 
-  it("does not select an apple when the drag rect stays completely outside its bounds", () => {
+  it("does not select an apple when the drag rect overlaps its edge but misses the center point", () => {
     const [apple] = generateApples("room-seed:6");
     const rect = normalizeSelectionRect(
-      apple.x + apple.width / 2 + 2,
-      apple.y + apple.height / 2 + 2,
-      apple.x + apple.width / 2 + 16,
-      apple.y + apple.height / 2 + 16
+      apple.x - apple.width / 2 - 2,
+      apple.y - apple.height / 2 - 2,
+      apple.x - apple.width / 2 + 8,
+      apple.y + 8
     );
 
     expect(isAppleInsideRect(apple, rect)).toBe(false);

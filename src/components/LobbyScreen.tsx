@@ -50,8 +50,16 @@ export function LobbyScreen({
     <div className={styles.layout}>
       <div className={styles.header}>
         <div className={styles.headerCopy}>
-          <h1 className={styles.title}>Room {room.code}</h1>
-          <p className={styles.description}>참가자 {players.length}명 / 현재 접속 {connectedCount}명</p>
+          <p className={styles.eyebrow}>Lobby</p>
+          <h1 className={styles.title}>{room.name}</h1>
+          <p className={styles.description}>
+            Room {room.code} · 참가자 {players.length}명 · 현재 접속 {connectedCount}명
+          </p>
+          <div className={styles.summaryRow}>
+            <span className={styles.summaryChip}>{getGameModeLabel(room)}</span>
+            <span className={styles.summaryChip}>{room.settings.roundCount}판</span>
+            <span className={styles.summaryChip}>{getLeaderboardModeLabel(room.settings.leaderboardMode)}</span>
+          </div>
         </div>
         <div className={styles.buttonRow}>
           <button className={styles.ghostButton} type="button" onClick={onLeaveRoom}>
@@ -103,7 +111,9 @@ export function LobbyScreen({
               </li>
             ))}
           </ul>
+        </section>
 
+        <section className={styles.panel}>
           <h2 className={styles.panelTitle}>게임 모드</h2>
           <div className={styles.settings}>
             <div className={styles.settingBlock}>
@@ -266,12 +276,14 @@ export function LobbyScreen({
         </section>
       </div>
 
-      <RoomChat
-        player={player}
-        messages={room.chatMessages}
-        title="대기실 채팅"
-        onSendMessage={onSendChatMessage}
-      />
+      <div className={styles.chatWrap}>
+        <RoomChat
+          player={player}
+          messages={room.chatMessages}
+          title="대기실 채팅"
+          onSendMessage={onSendChatMessage}
+        />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 .layout {
   display: grid;
-  gap: 8px;
+  gap: 14px;
 }
 
 .header {
@@ -8,79 +8,135 @@
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 247, 227, 0.95)),
+    linear-gradient(145deg, rgba(173, 121, 53, 0.14), rgba(255, 255, 255, 0));
+  border: 1px solid rgba(197, 164, 118, 0.38);
+  box-shadow: 0 16px 34px rgba(93, 63, 31, 0.1);
 }
 
 .headerCopy {
   display: grid;
-  gap: 2px;
+  gap: 4px;
+}
+
+.eyebrow,
+.description,
+.rule,
+.hint {
+  margin: 0;
+}
+
+.eyebrow {
+  color: #8b6b41;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
 }
 
 .title {
   margin: 0;
-  font-size: 0.94rem;
   color: #2e241b;
+  font-size: 1.3rem;
 }
 
 .description {
-  margin: 0;
-  color: #6a5a49;
+  color: #6d5b45;
+  font-size: 0.82rem;
+}
+
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.summaryChip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 252, 244, 0.92);
+  color: #6c4c25;
   font-size: 0.76rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(192, 155, 104, 0.28);
 }
 
 .buttonRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .button,
-.ghostButton {
-  padding: 6px 8px;
-  border-radius: 0;
+.ghostButton,
+.secondaryButton {
+  border: 0;
+  border-radius: 999px;
   font: inherit;
-  font-weight: 400;
+  font-weight: 800;
   cursor: pointer;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    opacity 140ms ease;
+}
+
+.button:hover,
+.ghostButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-1px);
 }
 
 .button {
-  border: 1px solid #999;
-  background: #f6f6f6;
-  color: #222;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #ffe992 0%, #f0a91c 100%);
+  color: #4c2f00;
+  box-shadow:
+    inset 0 0 0 1px rgba(159, 104, 7, 0.18),
+    0 12px 24px rgba(177, 123, 22, 0.22);
 }
 
 .ghostButton {
-  border: 1px solid #999;
-  background: #f6f6f6;
-  color: #222;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #fff8ee 0%, #f0debd 100%);
+  color: #49321e;
+  box-shadow:
+    inset 0 0 0 1px rgba(165, 125, 74, 0.35),
+    0 8px 18px rgba(96, 67, 36, 0.08);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 14px;
 }
 
 .panel {
-  padding: 8px 0 0;
-  border: 0;
-  background: transparent;
-  border-top: 1px solid #e4dccd;
+  display: grid;
+  gap: 12px;
+  padding: 18px 16px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 245, 220, 0.92)),
+    linear-gradient(140deg, rgba(177, 125, 47, 0.1), rgba(255, 255, 255, 0));
+  border: 1px solid rgba(199, 167, 122, 0.32);
+  box-shadow: 0 16px 34px rgba(93, 63, 31, 0.11);
 }
 
 .panelTitle {
-  margin: 0 0 6px;
-  font-size: 0.96rem;
+  margin: 0;
+  font-size: 1rem;
   color: #2a1d14;
-}
-
-.panelTitle + .settings {
-  margin-top: 10px;
 }
 
 .list {
   display: grid;
-  gap: 6px;
-  margin: 0 0 12px;
+  gap: 8px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -90,73 +146,92 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 4px 0;
-  border-bottom: 1px solid #ece4d4;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fffdf8 0%, #fff4de 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(222, 205, 178, 0.76),
+    0 8px 18px rgba(103, 77, 45, 0.05);
 }
 
 .playerMeta {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  color: #3e3126;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.badge,
+.offlineBadge,
+.teamBadge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .badge {
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #444;
-  font-size: 0.72rem;
-  font-weight: 400;
+  background: rgba(255, 230, 150, 0.7);
+  color: #7b4e12;
 }
 
 .offlineBadge {
+  background: rgba(255, 221, 214, 0.9);
   color: #9c4d3f;
-  font-size: 0.72rem;
 }
 
 .teamBadge {
-  color: #5f4d37;
-  font-size: 0.76rem;
+  background: rgba(236, 246, 213, 0.88);
+  color: #52723a;
 }
 
 .teamSelectWrap {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
-.teamLabel {
+.teamLabel,
+.hint {
   color: #6a5a49;
-  font-size: 0.74rem;
+  font-size: 0.76rem;
 }
 
 .teamSelect {
-  min-width: 84px;
-  padding: 4px 6px;
-  border: 1px solid #cdbda3;
-  background: #fffdf8;
+  min-width: 96px;
+  padding: 6px 10px;
+  border: 1px solid rgba(182, 150, 107, 0.48);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
   color: #3f3127;
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
 }
 
 .settings {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .settingBlock {
   display: grid;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid #ece4d4;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(226, 209, 184, 0.72);
+}
+
+.settingBlock:last-of-type {
+  border-bottom: 0;
 }
 
 .settingLabel {
   margin: 0;
   color: #3f3127;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 .optionRow,
@@ -174,9 +249,9 @@
 .option {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: #4b2e23;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
 }
 
 .option input {
@@ -184,33 +259,65 @@
 }
 
 .secondaryButton {
-  padding: 6px 8px;
-  border: 1px solid #c29d48;
-  background: #fff6db;
+  padding: 9px 12px;
+  background: linear-gradient(180deg, #fff6db 0%, #f3d690 100%);
   color: #65480d;
-  font: inherit;
-  cursor: pointer;
+  box-shadow:
+    inset 0 0 0 1px rgba(174, 137, 66, 0.22),
+    0 10px 20px rgba(170, 130, 53, 0.12);
 }
 
-.secondaryButton:disabled {
+.secondaryButton:disabled,
+.button:disabled,
+.ghostButton:disabled {
   opacity: 0.6;
+  transform: none;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .rule {
-  margin: 0;
   color: #4b2e23;
   font-size: 0.8rem;
+  line-height: 1.5;
 }
 
 .hint {
-  margin: 0;
-  color: #6a5a49;
-  font-size: 0.76rem;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .teamActionRow {
   display: grid;
   gap: 8px;
+}
+
+.chatWrap {
+  min-width: 0;
+}
+
+@media (max-width: 920px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .layout {
+    gap: 12px;
+  }
+
+  .header,
+  .panel {
+    padding: 14px 12px;
+  }
+
+  .playerRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .teamSelectWrap {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
