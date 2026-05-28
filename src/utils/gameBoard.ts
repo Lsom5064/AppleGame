@@ -93,10 +93,17 @@ export function normalizeSelectionRect(
 }
 
 export function isAppleInsideRect(apple: Apple, rect: SelectionRect): boolean {
+  const appleLeft = apple.x - apple.width / 2;
+  const appleRight = apple.x + apple.width / 2;
+  const appleTop = apple.y - apple.height / 2;
+  const appleBottom = apple.y + apple.height / 2;
+  const rectRight = rect.left + rect.width;
+  const rectBottom = rect.top + rect.height;
+
   return (
-    apple.x > rect.left &&
-    apple.x < rect.left + rect.width &&
-    apple.y > rect.top &&
-    apple.y < rect.top + rect.height
+    appleLeft <= rectRight &&
+    appleRight >= rect.left &&
+    appleTop <= rectBottom &&
+    appleBottom >= rect.top
   );
 }

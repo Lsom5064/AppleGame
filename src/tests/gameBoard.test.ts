@@ -10,7 +10,7 @@ import {
   BOARD_GRID_COLUMNS,
   BOARD_GRID_ROWS
 } from "../constants";
-import { generateApples, getBoardSlots } from "../utils/gameBoard";
+import { generateApples, getBoardSlots, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
 
 describe("generateApples", () => {
   it("returns a deterministic board for the same seed", () => {
@@ -74,5 +74,29 @@ describe("generateApples", () => {
 
     expect(total % 10).toBe(0);
     expect(apples.some((apple) => apple.value === 10)).toBe(false);
+  });
+
+  it("selects an apple when the drag rect overlaps its visible bounds", () => {
+    const [apple] = generateApples("room-seed:5");
+    const rect = normalizeSelectionRect(
+      apple.x - apple.width / 2 - 2,
+      apple.y - apple.height / 2 - 2,
+      apple.x - apple.width / 2 + 4,
+      apple.y + 6
+    );
+
+    expect(isAppleInsideRect(apple, rect)).toBe(true);
+  });
+
+  it("does not select an apple when the drag rect stays completely outside its bounds", () => {
+    const [apple] = generateApples("room-seed:6");
+    const rect = normalizeSelectionRect(
+      apple.x + apple.width / 2 + 2,
+      apple.y + apple.height / 2 + 2,
+      apple.x + apple.width / 2 + 16,
+      apple.y + apple.height / 2 + 16
+    );
+
+    expect(isAppleInsideRect(apple, rect)).toBe(false);
   });
 });
