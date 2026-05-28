@@ -1,7 +1,7 @@
 export const BOARD_GRID_COLUMNS = 17;
 export const BOARD_GRID_ROWS = 10;
 export const APPLE_COUNT = BOARD_GRID_COLUMNS * BOARD_GRID_ROWS;
-export const APPLE_START_X = 93;
+export const APPLE_START_X = 3;
 export const APPLE_START_Y = 112;
 export const APPLE_SPACING_X = 40;
 export const APPLE_SPACING_Y = 45;
