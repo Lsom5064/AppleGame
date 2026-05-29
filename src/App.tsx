@@ -9,10 +9,12 @@ import { ensureFirebaseIdentity } from "./lib/firebase";
 import { realtimeService } from "./services/realtimeService";
 import styles from "./styles/App.module.css";
 import type { PlayerState, RoomDirectoryState, RoomState, SessionState } from "./types";
+import { gameAudio } from "./utils/audio";
 import { clearStoredSession, getOrCreateClientId, loadStoredSession, storeSession } from "./utils/client";
 
 const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
 const THEME_STORAGE_KEY = "apple-sum-theme";
+const SOUND_STORAGE_KEY = "apple-sum-sound";
 type IdentityStatus = "loading" | "ready" | "error";
 type ThemeMode = "default" | "office";
 
@@ -20,6 +22,9 @@ export default function App() {
   const [nickname, setNickname] = useState(() => window.localStorage.getItem(NICKNAME_STORAGE_KEY) ?? "");
   const [theme, setTheme] = useState<ThemeMode>(() =>
     window.localStorage.getItem(THEME_STORAGE_KEY) === "office" ? "office" : "default"
+  );
+  const [soundEnabled, setSoundEnabled] = useState(
+    () => window.localStorage.getItem(SOUND_STORAGE_KEY) === "on"
   );
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
@@ -58,6 +63,20 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SOUND_STORAGE_KEY, soundEnabled ? "on" : "off");
+    void gameAudio
+      .setEnabled(soundEnabled)
+      .then(() => {
+        gameAudio.setBgmPlaying(soundEnabled);
+      })
+      .catch(() => {});
+
+    return () => {
+      gameAudio.setBgmPlaying(false);
+    };
+  }, [soundEnabled]);
 
   useEffect(() => {
     let cancelled = false;
@@ -301,10 +320,41 @@ export default function App() {
     });
   }
 
+  function handleSoundToggle(): void {
+    setSoundEnabled((current) => {
+      const nextEnabled = !current;
+      void gameAudio
+        .setEnabled(nextEnabled)
+        .then(() => {
+          gameAudio.setBgmPlaying(nextEnabled);
+        })
+        .catch(() => {});
+      return nextEnabled;
+    });
+  }
+
+  const topControls = (
+    <div className={styles.themeBar}>
+      <span className={styles.themeLabel}>테마</span>
+      <button
+        className={styles.themeToggle}
+        type="button"
+        onClick={() => setTheme((current) => (current === "office" ? "default" : "office"))}
+      >
+        {theme === "office" ? "엑셀" : "기본"}
+      </button>
+      <span className={styles.themeLabel}>사운드</span>
+      <button className={styles.themeToggle} type="button" onClick={handleSoundToggle}>
+        {soundEnabled ? "켜짐" : "꺼짐"}
+      </button>
+    </div>
+  );
+
   if (session && !hasResolvedRoom) {
     return (
-      <main className={styles.app}>
+      <main className={styles.app} data-theme={theme}>
         <div className={styles.frame} style={frameStyle}>
+          {topControls}
           <div className={styles.loading}>방 정보를 불러오는 중입니다.</div>
         </div>
       </main>
@@ -315,16 +365,7 @@ export default function App() {
     return (
       <main className={styles.app} data-theme={theme}>
         <div className={styles.frame} style={frameStyle}>
-          <div className={styles.themeBar}>
-            <span className={styles.themeLabel}>테마</span>
-            <button
-              className={styles.themeToggle}
-              type="button"
-              onClick={() => setTheme((current) => (current === "office" ? "default" : "office"))}
-            >
-              {theme === "office" ? "엑셀" : "기본"}
-            </button>
-          </div>
+          {topControls}
           <div className={styles.loading}>
             {realtimeService.providerName === "firebase"
               ? "Firebase 세션을 준비하는 중입니다."
@@ -338,16 +379,7 @@ export default function App() {
   return (
     <main className={styles.app} data-theme={theme}>
       <div className={styles.frame} style={frameStyle}>
-        <div className={styles.themeBar}>
-          <span className={styles.themeLabel}>테마</span>
-          <button
-            className={styles.themeToggle}
-            type="button"
-            onClick={() => setTheme((current) => (current === "office" ? "default" : "office"))}
-          >
-            {theme === "office" ? "엑셀" : "기본"}
-          </button>
-        </div>
+        {topControls}
 
         {error ? <div className={styles.error}>{error}</div> : null}
 

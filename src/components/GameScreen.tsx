@@ -3,6 +3,7 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import { BOARD_HEIGHT, BOARD_WIDTH, POINTER_STALE_MS } from "../constants";
 import type { Apple, PlayerState, RoomState, SelectionRect } from "../types";
 import { generateApples, isAppleInsideRect, normalizeSelectionRect } from "../utils/gameBoard";
+import { gameAudio } from "../utils/audio";
 import { getConnectedPlayerIds, isPlayerConnected } from "../utils/presence";
 import { getRealtimeNow } from "../utils/realtimeClock";
 import { getRoundCountdownMs, getRoundElapsedPlayMs, getRoundTimeLeftMs } from "../utils/roundTiming";
@@ -329,6 +330,8 @@ export function GameScreen({
       return;
     }
 
+    gameAudio.playAppleClear();
+
     let nextDirection = dropDirectionRef.current;
     const selectedIds = new Set(newRemovedIds);
 
@@ -639,6 +642,7 @@ export function GameScreen({
           nextClearTimeMs
         );
       } else {
+        gameAudio.playAppleClear();
         let nextDirection = dropDirectionRef.current;
 
         setApples((current) =>
