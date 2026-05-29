@@ -15,8 +15,14 @@ import { clearStoredSession, getOrCreateClientId, loadStoredSession, storeSessio
 const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
 const THEME_STORAGE_KEY = "apple-sum-theme";
 const SOUND_STORAGE_KEY = "apple-sum-sound";
+const SOUND_VOLUME_STORAGE_KEY = "apple-sum-sound-volume";
 type IdentityStatus = "loading" | "ready" | "error";
 type ThemeMode = "default" | "office";
+
+function getStoredSoundVolume(): number {
+  const storedVolume = Number(window.localStorage.getItem(SOUND_VOLUME_STORAGE_KEY));
+  return Number.isFinite(storedVolume) ? Math.min(100, Math.max(0, storedVolume)) : 32;
+}
 
 export default function App() {
   const [nickname, setNickname] = useState(() => window.localStorage.getItem(NICKNAME_STORAGE_KEY) ?? "");
@@ -26,6 +32,7 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState(
     () => window.localStorage.getItem(SOUND_STORAGE_KEY) === "on"
   );
+  const [soundVolume, setSoundVolume] = useState(getStoredSoundVolume);
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
   const [createRoomName, setCreateRoomName] = useState("");
@@ -66,6 +73,7 @@ export default function App() {
 
   useEffect(() => {
     window.localStorage.setItem(SOUND_STORAGE_KEY, soundEnabled ? "on" : "off");
+    gameAudio.setVolume(soundVolume / 100);
     void gameAudio
       .setEnabled(soundEnabled)
       .then(() => {
@@ -76,7 +84,12 @@ export default function App() {
     return () => {
       gameAudio.setBgmPlaying(false);
     };
-  }, [soundEnabled]);
+  }, [soundEnabled, soundVolume]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SOUND_VOLUME_STORAGE_KEY, String(soundVolume));
+    gameAudio.setVolume(soundVolume / 100);
+  }, [soundVolume]);
 
   useEffect(() => {
     let cancelled = false;
@@ -347,6 +360,18 @@ export default function App() {
       <button className={styles.themeToggle} type="button" onClick={handleSoundToggle}>
         {soundEnabled ? "켜짐" : "꺼짐"}
       </button>
+      <label className={styles.volumeControl}>
+        <span className={styles.themeLabel}>볼륨 {soundVolume}%</span>
+        <input
+          className={styles.volumeSlider}
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          value={soundVolume}
+          onChange={(event) => setSoundVolume(Number(event.target.value))}
+        />
+      </label>
     </div>
   );
 

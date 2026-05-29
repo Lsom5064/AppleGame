@@ -12,6 +12,7 @@ class GameAudioEngine {
   private bgmTimer: number | null = null;
   private bgmStep = 0;
   private nextBgmNoteAt = 0;
+  private volume = 0.32;
 
   async setEnabled(enabled: boolean): Promise<void> {
     this.enabled = enabled;
@@ -32,6 +33,14 @@ class GameAudioEngine {
 
     if (this.bgmRequested) {
       this.startBgm();
+    }
+  }
+
+  setVolume(volume: number): void {
+    this.volume = Math.min(1, Math.max(0, volume));
+
+    if (this.masterGain) {
+      this.masterGain.gain.setTargetAtTime(this.volume, this.context?.currentTime ?? 0, 0.015);
     }
   }
 
@@ -93,7 +102,7 @@ class GameAudioEngine {
 
       this.context = new AudioContextConstructor();
       this.masterGain = this.context.createGain();
-      this.masterGain.gain.value = 0.32;
+      this.masterGain.gain.value = this.volume;
       this.masterGain.connect(this.context.destination);
     }
 

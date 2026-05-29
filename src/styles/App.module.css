@@ -27,6 +27,7 @@
 
 .themeBar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
   gap: 8px;
@@ -50,6 +51,18 @@
   font-weight: 900;
   cursor: pointer;
   box-shadow: 2px 2px 0 rgba(23, 33, 43, 0.12);
+}
+
+.volumeControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.volumeSlider {
+  width: 112px;
+  accent-color: var(--leaf);
+  cursor: pointer;
 }
 
 .status {
@@ -88,5 +101,9 @@
 
   .frame {
     padding: 8px;
+  }
+
+  .themeBar {
+    justify-content: flex-start;
   }
 }
