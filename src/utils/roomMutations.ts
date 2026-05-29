@@ -927,6 +927,42 @@ export function startRoomGame(room: RoomState, playerId: string, now: number): R
     : startedRoom;
 }
 
+export function returnRoomToLobby(room: RoomState, playerId: string, now: number): RoomState {
+  const normalizedRoom = normalizeRoomState(room);
+
+  if (normalizedRoom.hostId !== playerId) {
+    throw new Error("방장만 로비로 돌아갈 수 있습니다.");
+  }
+
+  if (normalizedRoom.phase !== "finished") {
+    throw new Error("게임 종료 후에만 로비로 돌아갈 수 있습니다.");
+  }
+
+  const nextRoom: RoomState = {
+    ...normalizedRoom,
+    phase: "lobby",
+    currentRoundIndex: 0,
+    roundStartedAt: null,
+    sharedTeamBoards: {},
+    teamPointers: {},
+    liveScores: {},
+    submissions: {},
+    nextRoundVotes: {},
+    players: Object.fromEntries(
+      Object.entries(normalizedRoom.players).map(([id, member]) => [
+        id,
+        {
+          ...member,
+          roundScores: {}
+        }
+      ])
+    )
+  };
+
+  touchPlayer(nextRoom, playerId, now);
+  return nextRoom.settings.gameMode === "team" ? ensureTeamAssignments(nextRoom) : nextRoom;
+}
+
 function shouldAdvance(room: RoomState, now: number): boolean {
   const normalizedRoom = normalizeRoomState(room);
 

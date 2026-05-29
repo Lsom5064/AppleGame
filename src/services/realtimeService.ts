@@ -18,6 +18,7 @@ import {
   leaveRoom,
   normalizeRoomState,
   randomizeRoomTeams,
+  returnRoomToLobby,
   startNextRound,
   startRoomGame,
   submitCompletedSharedTeamBoard,
@@ -45,6 +46,7 @@ interface RealtimeService {
   randomizeTeams(roomCode: string, playerId: string): Promise<void>;
   assignPlayerTeam(roomCode: string, playerId: string, targetPlayerId: string, teamId: string): Promise<void>;
   startGame(roomCode: string, playerId: string): Promise<void>;
+  returnToLobby(roomCode: string, playerId: string): Promise<void>;
   startNextRound(roomCode: string, playerId: string): Promise<void>;
   voteForNextRound(roomCode: string, playerId: string): Promise<void>;
   submitRoundScore(
@@ -290,6 +292,10 @@ function createFirebaseService(): RealtimeService {
     },
     async startGame(roomCode, playerId) {
       await runRoomTransaction(database, roomCode, (room) => startRoomGame(room, playerId, now()));
+      await clearFirebaseRoomPointers(roomCode);
+    },
+    async returnToLobby(roomCode, playerId) {
+      await runRoomTransaction(database, roomCode, (room) => returnRoomToLobby(room, playerId, now()));
       await clearFirebaseRoomPointers(roomCode);
     },
     async startNextRound(roomCode, playerId) {
@@ -540,6 +546,9 @@ function createLocalService(): RealtimeService {
     },
     async startGame(roomCode, playerId) {
       withRoom(roomCode, (room) => startRoomGame(requireRoom(room), playerId, Date.now()));
+    },
+    async returnToLobby(roomCode, playerId) {
+      withRoom(roomCode, (room) => returnRoomToLobby(requireRoom(room), playerId, Date.now()));
     },
     async startNextRound(roomCode, playerId) {
       withRoom(roomCode, (room) => startNextRound(requireRoom(room), playerId, Date.now()));

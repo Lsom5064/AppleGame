@@ -11,6 +11,7 @@ interface LeaderboardScreenProps {
   onLeaveRoom: () => void;
   onSendChatMessage: (text: string) => Promise<void>;
   onRestartGame: () => Promise<void>;
+  onReturnToLobby: () => Promise<void>;
 }
 
 function formatClearTime(clearTimeMs: number | null): string {
@@ -48,7 +49,8 @@ export function LeaderboardScreen({
   player,
   onLeaveRoom,
   onSendChatMessage,
-  onRestartGame
+  onRestartGame,
+  onReturnToLobby
 }: LeaderboardScreenProps) {
   const leaderboard = buildLeaderboard(room);
   const teamLeaderboard = buildTeamLeaderboard(room);
@@ -64,11 +66,16 @@ export function LeaderboardScreen({
         </div>
         <div className={styles.actions}>
           {player.isHost ? (
-            <button className={styles.primaryButton} type="button" onClick={() => void onRestartGame()}>
-              재시작
-            </button>
+            <>
+              <button className={styles.primaryButton} type="button" onClick={() => void onRestartGame()}>
+                재시작
+              </button>
+              <button className={styles.button} type="button" onClick={() => void onReturnToLobby()}>
+                로비로 돌아가기
+              </button>
+            </>
           ) : (
-            <p className={styles.notice}>방장이 재시작하면 새 게임이 시작됩니다.</p>
+            <p className={styles.notice}>방장이 재시작하거나 로비로 돌아가면 함께 이동합니다.</p>
           )}
           <button className={styles.button} type="button" onClick={onLeaveRoom}>
             홈으로 나가기

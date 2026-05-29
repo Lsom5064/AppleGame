@@ -13,6 +13,7 @@ import {
   leaveRoom,
   normalizeRoomState,
   randomizeRoomTeams,
+  returnRoomToLobby,
   startRoomGame,
   submitRoundScore,
   updatePlayerPresence,
@@ -903,6 +904,34 @@ describe("roomMutations", () => {
     expect(restarted.nextRoundVotes).toEqual({});
     expect(restarted.players.host.roundScores).toEqual({});
     expect(restarted.players.guest.roundScores).toEqual({});
+  });
+
+  it("allows the host to return a finished game to the lobby without recreating the room", () => {
+    const created = createInitialRoom("ROOM12", "host", "Host", 1000);
+    const joined = joinRoom(created, "guest", "Guest", 1500);
+    const configured = updateRoomSettings(joined, "host", {
+      roundCount: 1,
+      gameMode: "team",
+      teamMode: "individual",
+      teamCount: 2
+    });
+    const started = startRoomGame(configured, "host", 2000);
+    const finished = forceRoomProgress(
+      submitRoundScore(started, "host", 0, 8, null, 2100),
+      afterRoundTimeout(started)
+    );
+    const lobby = returnRoomToLobby(finished, "host", 9000);
+
+    expect(lobby.phase).toBe("lobby");
+    expect(lobby.settings).toEqual(finished.settings);
+    expect(lobby.players.host.roundScores).toEqual({});
+    expect(lobby.players.guest.roundScores).toEqual({});
+    expect(lobby.submissions).toEqual({});
+    expect(lobby.liveScores).toEqual({});
+    expect(lobby.sharedTeamBoards).toEqual({});
+    expect(lobby.nextRoundVotes).toEqual({});
+    expect(lobby.players.host.teamId).toBe("team-1");
+    expect(lobby.players.guest.teamId).toBe("team-2");
   });
 
   it("transfers host ownership to the earliest remaining player when the host leaves", () => {

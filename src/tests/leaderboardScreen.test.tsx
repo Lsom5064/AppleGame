@@ -104,11 +104,13 @@ describe("LeaderboardScreen", () => {
           onLeaveRoom={() => {}}
           onSendChatMessage={() => Promise.resolve()}
           onRestartGame={() => Promise.resolve()}
+          onReturnToLobby={() => Promise.resolve()}
         />
       );
     });
 
     expect(container.textContent).toContain("결과 / 개인전 / 3판 합계");
+    expect(container.textContent).toContain("로비로 돌아가기");
     expect(container.textContent).not.toContain("5-");
     expect(container.textContent).not.toContain("7-");
   });
