@@ -83,6 +83,7 @@ export interface RoomState {
   teams: TeamState[];
   sharedTeamBoards: Record<string, Record<string, SharedTeamBoardState>>;
   teamPointers: Record<string, TeamPointerState>;
+  liveScores: Record<string, Record<string, number>>;
   submissions: Record<string, Record<string, RoundSubmission>>;
   nextRoundVotes: Record<string, boolean>;
   chatMessages: RoomChatMessage[];

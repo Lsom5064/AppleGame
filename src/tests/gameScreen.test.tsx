@@ -54,6 +54,7 @@ function createRoom(overrides: Partial<RoomState>): RoomState {
     ],
     sharedTeamBoards: {},
     teamPointers: {},
+    liveScores: {},
     submissions: {
       "0": {
         host: {
@@ -168,6 +169,7 @@ describe("GameScreen round transitions", () => {
             onVoteNextRound={() => Promise.resolve()}
             onSendChatMessage={() => Promise.resolve()}
             onSubmitRound={onSubmitRound}
+            onUpdateLiveScore={() => Promise.resolve()}
             onSubmitSharedSelection={() => Promise.resolve()}
             onUpdateTeamPointer={() => Promise.resolve()}
             onForceProgress={onForceProgress}
@@ -256,6 +258,7 @@ describe("GameScreen round transitions", () => {
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
           onSubmitRound={() => Promise.resolve()}
+          onUpdateLiveScore={() => Promise.resolve()}
           onSubmitSharedSelection={() => Promise.resolve()}
           onUpdateTeamPointer={() => Promise.resolve()}
           onForceProgress={() => Promise.resolve()}
@@ -337,6 +340,7 @@ describe("GameScreen round transitions", () => {
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
           onSubmitRound={() => Promise.resolve()}
+          onUpdateLiveScore={() => Promise.resolve()}
           onSubmitSharedSelection={() => Promise.resolve()}
           onUpdateTeamPointer={() => Promise.resolve()}
           onForceProgress={() => Promise.resolve()}
@@ -405,6 +409,7 @@ describe("GameScreen round transitions", () => {
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
           onSubmitRound={() => Promise.resolve()}
+          onUpdateLiveScore={() => Promise.resolve()}
           onSubmitSharedSelection={() => Promise.resolve()}
           onUpdateTeamPointer={() => Promise.resolve()}
           onForceProgress={() => Promise.resolve()}
@@ -443,6 +448,7 @@ describe("GameScreen round transitions", () => {
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
           onSubmitRound={() => Promise.resolve()}
+          onUpdateLiveScore={() => Promise.resolve()}
           onSubmitSharedSelection={() => Promise.resolve()}
           onUpdateTeamPointer={onUpdateTeamPointer}
           onForceProgress={() => Promise.resolve()}
@@ -539,6 +545,7 @@ describe("GameScreen round transitions", () => {
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
           onSubmitRound={() => Promise.resolve()}
+          onUpdateLiveScore={() => Promise.resolve()}
           onSubmitSharedSelection={() => Promise.resolve()}
           onUpdateTeamPointer={() => Promise.resolve()}
           onForceProgress={onForceProgress}

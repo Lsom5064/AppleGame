@@ -187,6 +187,22 @@ function normalizeTeamPointers(
   );
 }
 
+function normalizeLiveScores(
+  liveScores: RoomState["liveScores"] | undefined,
+  players: Record<string, PlayerState>
+): RoomState["liveScores"] {
+  return Object.fromEntries(
+    Object.entries(liveScores ?? {}).map(([roundKey, roundEntries]) => [
+      roundKey,
+      Object.fromEntries(
+        Object.entries(roundEntries ?? {}).filter(
+          ([playerId, score]) => Boolean(players[playerId]) && Number.isFinite(score) && score >= 0
+        )
+      )
+    ])
+  );
+}
+
 function ensureRoundSharedBoards(room: RoomState, roundIndex: number): RoomState {
   const nextRoom = cloneRoom(room);
   const roundKey = String(roundIndex);
@@ -340,6 +356,7 @@ export function normalizeRoomState(room: RoomState): RoomState {
   );
   const sharedTeamBoards = normalizeSharedBoards(room.sharedTeamBoards, teams);
   const teamPointers = normalizeTeamPointers(room.teamPointers, players, teams);
+  const liveScores = normalizeLiveScores(room.liveScores, players);
 
   return {
     ...room,
@@ -361,6 +378,7 @@ export function normalizeRoomState(room: RoomState): RoomState {
     teams,
     sharedTeamBoards,
     teamPointers,
+    liveScores,
     submissions: Object.fromEntries(
       Object.entries(room.submissions ?? {}).map(([roundKey, roundEntries]) => [
         roundKey,
@@ -420,6 +438,12 @@ function cloneRoom(room: RoomState): RoomState {
     ),
     teamPointers: Object.fromEntries(
       Object.entries(normalizedRoom.teamPointers).map(([playerId, pointer]) => [playerId, { ...pointer }])
+    ),
+    liveScores: Object.fromEntries(
+      Object.entries(normalizedRoom.liveScores).map(([roundKey, roundEntries]) => [
+        roundKey,
+        { ...roundEntries }
+      ])
     ),
     submissions: Object.fromEntries(
       Object.entries(normalizedRoom.submissions).map(([roundKey, roundEntries]) => [
@@ -481,6 +505,7 @@ export function createInitialRoom(
     teams: createTeams(settings.teamCount),
     sharedTeamBoards: {},
     teamPointers: {},
+    liveScores: {},
     submissions: {},
     nextRoundVotes: {},
     chatMessages: []
@@ -770,6 +795,35 @@ export function clearTeamPointer(room: RoomState, playerId: string): RoomState {
   return nextRoom;
 }
 
+export function updateLiveRoundScore(
+  room: RoomState,
+  playerId: string,
+  roundIndex: number,
+  score: number,
+  now: number
+): RoomState {
+  const normalizedRoom = normalizeRoomState(room);
+
+  if (normalizedRoom.phase !== "playing" || normalizedRoom.currentRoundIndex !== roundIndex) {
+    return room;
+  }
+
+  if (!normalizedRoom.players[playerId]) {
+    return room;
+  }
+
+  if (normalizedRoom.settings.gameMode === "team" && normalizedRoom.settings.teamMode === "shared") {
+    return room;
+  }
+
+  const nextRoom = cloneRoom(normalizedRoom);
+  const roundKey = String(roundIndex);
+  touchPlayer(nextRoom, playerId, now);
+  nextRoom.liveScores[roundKey] ??= {};
+  nextRoom.liveScores[roundKey][playerId] = Math.max(0, Math.floor(score));
+  return nextRoom;
+}
+
 export function applySharedTeamSelection(
   room: RoomState,
   playerId: string,
@@ -854,6 +908,7 @@ export function startRoomGame(room: RoomState, playerId: string, now: number): R
     roundStartedAt: now,
     sharedTeamBoards: {},
     teamPointers: {},
+    liveScores: {},
     submissions: {},
     nextRoundVotes: {},
     players: Object.fromEntries(
@@ -933,13 +988,15 @@ export function forceRoomProgress(room: RoomState, now: number): RoomState {
       player.teamId !== null && nextRoom.settings.gameMode === "team" && nextRoom.settings.teamMode === "shared"
         ? nextRoom.sharedTeamBoards[roundKey]?.[player.teamId]
         : null;
+    const liveScore = nextRoom.liveScores[roundKey]?.[player.id] ?? 0;
+    const finalScore = teamBoard?.score ?? liveScore;
 
     roundSubmissions[player.id] = {
-      score: teamBoard?.score ?? 0,
+      score: finalScore,
       finishedAt: now,
       clearTimeMs: teamBoard?.clearTimeMs ?? null
     };
-    player.roundScores[roundKey] = teamBoard?.score ?? 0;
+    player.roundScores[roundKey] = finalScore;
   }
 
   nextRoom.submissions[roundKey] = roundSubmissions;
@@ -1062,6 +1119,8 @@ export function submitRoundScore(
     clearTimeMs
   };
   nextRoom.players[playerId].roundScores[roundKey] = score;
+  nextRoom.liveScores[roundKey] ??= {};
+  nextRoom.liveScores[roundKey][playerId] = score;
 
   return forceRoomProgress(nextRoom, now);
 }
@@ -1076,6 +1135,10 @@ export function leaveRoom(room: RoomState, playerId: string): RoomState | null {
   const nextRoom = cloneRoom(normalizedRoom);
   delete nextRoom.players[playerId];
   delete nextRoom.teamPointers[playerId];
+  delete nextRoom.nextRoundVotes[playerId];
+  for (const roundEntries of Object.values(nextRoom.liveScores)) {
+    delete roundEntries[playerId];
+  }
 
   if (Object.keys(nextRoom.players).length === 0) {
     return null;

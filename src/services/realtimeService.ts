@@ -22,6 +22,7 @@ import {
   startRoomGame,
   submitCompletedSharedTeamBoard,
   submitRoundScore,
+  updateLiveRoundScore,
   updatePlayerPresence,
   updateTeamPointer,
   updateRoomSettings,
@@ -53,6 +54,7 @@ interface RealtimeService {
     score: number,
     clearTimeMs: number | null
   ): Promise<void>;
+  updateLiveScore(roomCode: string, playerId: string, roundIndex: number, score: number): Promise<void>;
   submitSharedSelection(
     roomCode: string,
     playerId: string,
@@ -301,6 +303,16 @@ function createFirebaseService(): RealtimeService {
         submitRoundScore(room, playerId, roundIndex, score, clearTimeMs, now())
       );
     },
+    async updateLiveScore(roomCode, playerId, roundIndex, score) {
+      await update(ref(database, `${getRoomPath(roomCode)}/players/${playerId}`), {
+        connected: true,
+        lastSeenAt: now()
+      });
+      await set(
+        ref(database, `${getRoomPath(roomCode)}/liveScores/${roundIndex}/${playerId}`),
+        Math.max(0, Math.floor(score))
+      );
+    },
     async submitSharedSelection(roomCode, playerId, roundIndex, appleIds, clearTimeMs) {
       const roomRef = ref(database, getRoomPath(roomCode));
       const snapshot = await get(roomRef);
@@ -538,6 +550,11 @@ function createLocalService(): RealtimeService {
     async submitRoundScore(roomCode, playerId, roundIndex, score, clearTimeMs) {
       withRoom(roomCode, (room) =>
         submitRoundScore(requireRoom(room), playerId, roundIndex, score, clearTimeMs, Date.now())
+      );
+    },
+    async updateLiveScore(roomCode, playerId, roundIndex, score) {
+      withRoom(roomCode, (room) =>
+        updateLiveRoundScore(requireRoom(room), playerId, roundIndex, score, Date.now())
       );
     },
     async submitSharedSelection(roomCode, playerId, roundIndex, appleIds, clearTimeMs) {

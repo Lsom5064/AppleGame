@@ -164,6 +164,15 @@ function waitForValue(targetRef, predicate, timeoutMs = 8000) {
   });
 }
 
+async function runStep(label, action) {
+  try {
+    return await action();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${label}: ${message}`);
+  }
+}
+
 async function setPointerWithFallback(db, roomCode, playerId, pointer) {
   try {
     await set(ref(db, `roomPointers/${roomCode}/${playerId}`), pointer);
@@ -206,6 +215,10 @@ async function main() {
   const roomCode = `T${Date.now().toString(36).slice(-5).toUpperCase()}`;
   const seed = `${roomCode}-smoke`;
   const now = Date.now();
+
+  // Match the frontend create-room path, which reads /rooms before choosing a code.
+  await get(ref(clients[0].db, "rooms"));
+
   const players = {
     [clients[0].uid]: {
       id: clients[0].uid,
@@ -293,6 +306,7 @@ async function main() {
       }
     },
     teamPointers: {},
+    liveScores: {},
     submissions: {},
     nextRoundVotes: {},
     chatMessages: []
@@ -306,6 +320,7 @@ async function main() {
 
   try {
     await set(roomRef, room);
+    await set(ref(hostDb, `rooms/${roomCode}/liveScores/0/${clients[0].uid}`), 2);
 
     pointerPath = await setPointerWithFallback(hostDb, roomCode, clients[0].uid, {
       playerId: clients[0].uid,
@@ -351,6 +366,73 @@ async function main() {
 
     if (teamTwoBoard.removedAppleIds.length !== teamTwoSelection.length) {
       throw new Error("2팀 보드 제거 상태가 동기화되지 않았습니다.");
+    }
+
+    const roomSnapshot = await get(roomRef);
+    const finishedRoom = roomSnapshot.val();
+    const leavingPlayerId = clients[1].uid;
+    const leaveCheckTime = Date.now();
+
+    finishedRoom.phase = "finished";
+    finishedRoom.roundStartedAt = null;
+    finishedRoom.submissions = {
+      "0": {
+        [clients[0].uid]: {
+          score: teamOneBoard.score,
+          finishedAt: leaveCheckTime,
+          clearTimeMs: null
+        },
+        [leavingPlayerId]: {
+          score: teamOneBoard.score,
+          finishedAt: leaveCheckTime,
+          clearTimeMs: null
+        }
+      }
+    };
+    finishedRoom.nextRoundVotes = {
+      [leavingPlayerId]: true
+    };
+    finishedRoom.chatMessages = [
+      {
+        id: `${leavingPlayerId}:${leaveCheckTime}:0`,
+        playerId: leavingPlayerId,
+        nickname: "SmokeMate",
+        text: "leave check",
+        createdAt: leaveCheckTime
+      }
+    ];
+
+    await runStep("finished-room setup", () => set(roomRef, finishedRoom));
+
+    const roomAfterLeave = {
+      ...finishedRoom,
+      players: { ...finishedRoom.players },
+      teamPointers: { ...(finishedRoom.teamPointers ?? {}) },
+      liveScores: {
+        "0": {
+          [clients[0].uid]: 2
+        }
+      },
+      nextRoundVotes: {}
+    };
+    delete roomAfterLeave.players[leavingPlayerId];
+    delete roomAfterLeave.teamPointers[leavingPlayerId];
+
+    await runStep("finished-room leave", () => set(roomRef, roomAfterLeave));
+
+    const leaveSnapshot = await get(roomRef);
+    const leaveResult = leaveSnapshot.val();
+
+    if (leaveResult.players[leavingPlayerId]) {
+      throw new Error("게임 종료 후 나간 플레이어가 players에 남아 있습니다.");
+    }
+
+    if (!leaveResult.submissions?.["0"]?.[leavingPlayerId]) {
+      throw new Error("나간 플레이어의 과거 점수 기록이 삭제되었습니다.");
+    }
+
+    if (leaveResult.chatMessages?.[0]?.playerId !== leavingPlayerId) {
+      throw new Error("나간 플레이어의 기존 채팅 기록이 유지되지 않았습니다.");
     }
 
     console.log(`Firebase shared-board smoke passed for room ${roomCode} using ${pointerPath}.`);

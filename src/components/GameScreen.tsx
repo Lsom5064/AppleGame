@@ -19,6 +19,7 @@ interface GameScreenProps {
   onVoteNextRound: () => Promise<void>;
   onSendChatMessage: (text: string) => Promise<void>;
   onSubmitRound: (roundIndex: number, score: number, clearTimeMs: number | null) => Promise<void>;
+  onUpdateLiveScore: (roundIndex: number, score: number) => Promise<void>;
   onSubmitSharedSelection: (
     roundIndex: number,
     appleIds: string[],
@@ -72,6 +73,7 @@ export function GameScreen({
   onVoteNextRound,
   onSendChatMessage,
   onSubmitRound,
+  onUpdateLiveScore,
   onSubmitSharedSelection,
   onUpdateTeamPointer,
   onForceProgress
@@ -110,6 +112,11 @@ export function GameScreen({
     dragging: boolean;
     selectionStartX: number;
     selectionStartY: number;
+  } | null>(null);
+  const liveScoreSyncRef = useRef<{
+    roundIndex: number;
+    score: number;
+    roundStartedAt: number | null;
   } | null>(null);
 
   const remainingApples = useMemo(
@@ -197,6 +204,12 @@ export function GameScreen({
             return score;
           }
 
+          const liveScore = room.liveScores[String(currentRoundIndex)]?.[member.id];
+
+          if (liveScore !== undefined) {
+            return liveScore;
+          }
+
           return room.submissions[String(currentRoundIndex)]?.[member.id]?.score ?? null;
         });
 
@@ -227,6 +240,7 @@ export function GameScreen({
     room.players,
     room.settings.gameMode,
     room.settings.roundCount,
+    room.liveScores,
     room.sharedTeamBoards,
     room.submissions,
     room.teams,
@@ -382,6 +396,37 @@ export function GameScreen({
 
     return () => window.clearInterval(interval);
   }, [sharedTeamMode]);
+
+  useEffect(() => {
+    if (sharedTeamMode || room.phase !== "playing" || locked) {
+      return;
+    }
+
+    const lastSync = liveScoreSyncRef.current;
+    if (
+      lastSync &&
+      lastSync.roundIndex === room.currentRoundIndex &&
+      lastSync.score === score &&
+      lastSync.roundStartedAt === room.roundStartedAt
+    ) {
+      return;
+    }
+
+    liveScoreSyncRef.current = {
+      roundIndex: room.currentRoundIndex,
+      score,
+      roundStartedAt: room.roundStartedAt
+    };
+    void onUpdateLiveScore(room.currentRoundIndex, score);
+  }, [
+    locked,
+    onUpdateLiveScore,
+    room.currentRoundIndex,
+    room.phase,
+    room.roundStartedAt,
+    score,
+    sharedTeamMode
+  ]);
 
   useEffect(() => {
     if (sharedTeamMode || waitingForNextRound || remainingApples > 0 || locked) {

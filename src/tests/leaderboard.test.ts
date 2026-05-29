@@ -30,6 +30,7 @@ function createTeamRoom(): RoomState {
     ],
     sharedTeamBoards: {},
     teamPointers: {},
+    liveScores: {},
     players: {
       host: {
         id: "host",

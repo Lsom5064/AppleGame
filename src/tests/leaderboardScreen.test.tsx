@@ -51,6 +51,7 @@ function createFinishedRoom(): RoomState {
     ],
     sharedTeamBoards: {},
     teamPointers: {},
+    liveScores: {},
     submissions: {
       "0": {
         host: {

@@ -368,6 +368,9 @@ export default function App() {
             onSubmitRound={(roundIndex, score, clearTimeMs) =>
               realtimeService.submitRoundScore(room.code, player.id, roundIndex, score, clearTimeMs)
             }
+            onUpdateLiveScore={(roundIndex, score) =>
+              realtimeService.updateLiveScore(room.code, player.id, roundIndex, score)
+            }
             onSubmitSharedSelection={(roundIndex, appleIds, clearTimeMs) =>
               realtimeService.submitSharedSelection(room.code, player.id, roundIndex, appleIds, clearTimeMs)
             }
