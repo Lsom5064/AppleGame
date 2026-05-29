@@ -12,7 +12,7 @@
   inset: 0;
   overflow: hidden;
   border-radius: var(--radius);
-  background: #f4c96d;
+  background: var(--board-frame-bg);
   border: 3px solid var(--line);
   box-shadow:
     inset 0 0 0 12px rgba(255, 255, 255, 0.5),
@@ -28,14 +28,14 @@
     var(--playfield-inset-bottom)
     var(--playfield-inset-left);
   border-radius: var(--radius);
-  background: #d8f7bf;
+  background: var(--playfield-bg);
   box-shadow:
     inset 0 0 0 3px #ffffff,
     inset 0 0 0 6px var(--leaf);
 }
 
 .lightColors .playfield {
-  background: #ecf8d8;
+  background: var(--playfield-light-bg);
 }
 
 .scorePanel {

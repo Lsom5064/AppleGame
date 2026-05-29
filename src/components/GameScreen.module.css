@@ -12,9 +12,7 @@
   padding: 14px;
   border: 2px solid var(--line);
   border-radius: var(--radius);
-  background:
-    linear-gradient(135deg, rgba(185, 233, 255, 0.92), rgba(255, 216, 77, 0.82)),
-    repeating-linear-gradient(90deg, rgba(23, 33, 43, 0.05) 0 12px, transparent 12px 24px);
+  background: var(--game-hero-bg);
   box-shadow: var(--shadow-hard);
 }
 
@@ -153,9 +151,7 @@
   padding: 10px;
   border: 2px solid var(--line);
   border-radius: var(--radius);
-  background:
-    linear-gradient(135deg, rgba(189, 246, 210, 0.62), rgba(255, 255, 255, 0.9)),
-    repeating-linear-gradient(-45deg, rgba(23, 33, 43, 0.04) 0 10px, transparent 10px 20px);
+  background: var(--board-card-bg);
   box-shadow: var(--shadow-hard);
 }
 
@@ -192,9 +188,7 @@
   text-align: center;
   min-height: 360px;
   place-content: center;
-  background:
-    linear-gradient(135deg, rgba(255, 216, 77, 0.62), rgba(185, 233, 255, 0.76)),
-    #ffffff;
+  background: var(--waiting-bg);
 }
 
 .waitingTitle {

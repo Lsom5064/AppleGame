@@ -165,6 +165,7 @@ describe("GameScreen round transitions", () => {
             key={`${room.phase}:${room.currentRoundIndex}:${room.roundStartedAt ?? "paused"}:${player.id}`}
             room={room}
             player={player}
+            officeTheme={false}
             onLeaveRoom={() => {}}
             onVoteNextRound={() => Promise.resolve()}
             onSendChatMessage={() => Promise.resolve()}
@@ -254,6 +255,7 @@ describe("GameScreen round transitions", () => {
         <GameScreen
           room={room}
           player={room.players.host}
+          officeTheme={false}
           onLeaveRoom={() => {}}
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
@@ -336,6 +338,7 @@ describe("GameScreen round transitions", () => {
         <GameScreen
           room={room}
           player={room.players.host}
+          officeTheme={false}
           onLeaveRoom={() => {}}
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
@@ -405,6 +408,7 @@ describe("GameScreen round transitions", () => {
             ...room.players.host,
             teamId: null
           }}
+          officeTheme={false}
           onLeaveRoom={() => {}}
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
@@ -444,6 +448,7 @@ describe("GameScreen round transitions", () => {
         <GameScreen
           room={room}
           player={room.players.host}
+          officeTheme={false}
           onLeaveRoom={() => {}}
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}
@@ -541,6 +546,7 @@ describe("GameScreen round transitions", () => {
         <GameScreen
           room={room}
           player={room.players.host}
+          officeTheme={false}
           onLeaveRoom={() => {}}
           onVoteNextRound={() => Promise.resolve()}
           onSendChatMessage={() => Promise.resolve()}

@@ -12,10 +12,15 @@ import type { PlayerState, RoomDirectoryState, RoomState, SessionState } from ".
 import { clearStoredSession, getOrCreateClientId, loadStoredSession, storeSession } from "./utils/client";
 
 const NICKNAME_STORAGE_KEY = "apple-sum-nickname";
+const THEME_STORAGE_KEY = "apple-sum-theme";
 type IdentityStatus = "loading" | "ready" | "error";
+type ThemeMode = "default" | "office";
 
 export default function App() {
   const [nickname, setNickname] = useState(() => window.localStorage.getItem(NICKNAME_STORAGE_KEY) ?? "");
+  const [theme, setTheme] = useState<ThemeMode>(() =>
+    window.localStorage.getItem(THEME_STORAGE_KEY) === "office" ? "office" : "default"
+  );
   const [roomCodeInput, setRoomCodeInput] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
   const [createRoomName, setCreateRoomName] = useState("");
@@ -49,6 +54,10 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem(NICKNAME_STORAGE_KEY, nickname);
   }, [nickname]);
+
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -304,8 +313,18 @@ export default function App() {
 
   if (identityStatus === "loading") {
     return (
-      <main className={styles.app}>
+      <main className={styles.app} data-theme={theme}>
         <div className={styles.frame} style={frameStyle}>
+          <div className={styles.themeBar}>
+            <span className={styles.themeLabel}>테마</span>
+            <button
+              className={styles.themeToggle}
+              type="button"
+              onClick={() => setTheme((current) => (current === "office" ? "default" : "office"))}
+            >
+              {theme === "office" ? "엑셀" : "기본"}
+            </button>
+          </div>
           <div className={styles.loading}>
             {realtimeService.providerName === "firebase"
               ? "Firebase 세션을 준비하는 중입니다."
@@ -317,8 +336,19 @@ export default function App() {
   }
 
   return (
-    <main className={styles.app}>
+    <main className={styles.app} data-theme={theme}>
       <div className={styles.frame} style={frameStyle}>
+        <div className={styles.themeBar}>
+          <span className={styles.themeLabel}>테마</span>
+          <button
+            className={styles.themeToggle}
+            type="button"
+            onClick={() => setTheme((current) => (current === "office" ? "default" : "office"))}
+          >
+            {theme === "office" ? "엑셀" : "기본"}
+          </button>
+        </div>
+
         {error ? <div className={styles.error}>{error}</div> : null}
 
         {!session ? (
@@ -362,6 +392,7 @@ export default function App() {
             key={`${room.phase}:${room.currentRoundIndex}:${room.roundStartedAt ?? "paused"}:${player.id}`}
             room={room}
             player={player}
+            officeTheme={theme === "office"}
             onLeaveRoom={() => void handleLeaveRoom()}
             onVoteNextRound={() => runWithBusy(() => realtimeService.voteForNextRound(room.code, player.id))}
             onSendChatMessage={(text) => realtimeService.sendChatMessage(room.code, player.id, text)}

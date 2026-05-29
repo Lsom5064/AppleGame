@@ -15,6 +15,7 @@ import styles from "./GameScreen.module.css";
 interface GameScreenProps {
   room: RoomState;
   player: PlayerState;
+  officeTheme: boolean;
   onLeaveRoom: () => void;
   onVoteNextRound: () => Promise<void>;
   onSendChatMessage: (text: string) => Promise<void>;
@@ -69,6 +70,7 @@ interface LiveScoreEntry {
 export function GameScreen({
   room,
   player,
+  officeTheme,
   onLeaveRoom,
   onVoteNextRound,
   onSendChatMessage,
@@ -765,6 +767,7 @@ export function GameScreen({
               <div className={styles.boardCard}>
                 <GameBoard
                   apples={apples}
+                  officeTheme={officeTheme}
                   locked={locked}
                   lightColors={lightColors}
                   score={displayedScore}

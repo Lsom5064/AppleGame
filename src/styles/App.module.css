@@ -1,10 +1,7 @@
 .app {
   min-height: 100vh;
   padding: 18px 12px 28px;
-  background:
-    linear-gradient(90deg, rgba(23, 33, 43, 0.035) 1px, transparent 1px),
-    linear-gradient(rgba(23, 33, 43, 0.035) 1px, transparent 1px),
-    linear-gradient(135deg, #e9fbff 0%, #fffaf0 38%, #fff2b8 100%);
+  background: var(--app-bg);
   background-size: 28px 28px, 28px 28px, auto;
   color: var(--ink);
   font-family:
@@ -22,12 +19,37 @@
   padding: 12px;
   border: 2px solid var(--line);
   border-radius: var(--radius);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 250, 240, 0.94)),
-    repeating-linear-gradient(45deg, rgba(232, 68, 58, 0.05) 0 10px, transparent 10px 20px);
+  background: var(--frame-bg);
   box-shadow:
     var(--shadow-hard),
     var(--shadow-soft);
+}
+
+.themeBar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.themeLabel {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.themeToggle {
+  padding: 7px 10px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(23, 33, 43, 0.12);
 }
 
 .status {

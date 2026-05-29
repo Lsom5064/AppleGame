@@ -12,9 +12,7 @@
   padding: 16px;
   border: 2px solid var(--line);
   border-radius: var(--radius);
-  background:
-    linear-gradient(135deg, rgba(255, 216, 77, 0.86), rgba(255, 159, 134, 0.72)),
-    repeating-linear-gradient(90deg, rgba(23, 33, 43, 0.05) 0 12px, transparent 12px 24px);
+  background: var(--leaderboard-hero-bg);
   box-shadow: var(--shadow-hard);
 }
 

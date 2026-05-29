@@ -9,10 +9,12 @@ import {
 } from "../constants";
 import type { Apple, SelectionRect } from "../types";
 import appleImage from "../../apple.png";
+import greenAppleImage from "../../green_apple.png";
 import styles from "./GameBoard.module.css";
 
 interface GameBoardProps {
   apples: Apple[];
+  officeTheme: boolean;
   locked: boolean;
   lightColors: boolean;
   score: number;
@@ -40,6 +42,7 @@ function clamp(value: number, min: number, max: number): number {
 
 export function GameBoard({
   apples,
+  officeTheme,
   locked,
   lightColors,
   score,
@@ -58,6 +61,7 @@ export function GameBoard({
   const isCountingDown = countdownMs > 0;
   const countdownValue = Math.max(1, Math.ceil(countdownMs / 1000));
   const visibleApples = isCountingDown ? [] : apples.filter((apple) => !apple.removed);
+  const currentAppleImage = officeTheme ? greenAppleImage : appleImage;
   const shellStyle = {
     "--board-width": BOARD_WIDTH,
     "--board-height": BOARD_HEIGHT,
@@ -114,7 +118,7 @@ export function GameBoard({
             >
               <span className={styles.appleShadow} />
               <span className={styles.appleBody}>
-                <img alt="" className={styles.appleImage} draggable={false} src={appleImage} />
+                <img alt="" className={styles.appleImage} draggable={false} src={currentAppleImage} />
                 <span className={styles.appleValue}>{apple.value}</span>
               </span>
             </div>
