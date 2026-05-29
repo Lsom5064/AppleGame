@@ -3,6 +3,8 @@ type OscillatorKind = OscillatorType;
 const BGM_STEP_SEC = 0.24;
 const BGM_LOOKAHEAD_MS = 120;
 const BGM_NOTES = [392, 0, 523.25, 0, 493.88, 0, 440, 0, 392, 0, 329.63, 0, 349.23, 0, 392, 0];
+const BGM_VOLUME_MULTIPLIER = 2.4;
+const EFFECT_VOLUME_MULTIPLIER = 2.2;
 
 class GameAudioEngine {
   private context: AudioContext | null = null;
@@ -63,9 +65,9 @@ class GameAudioEngine {
     }
 
     const start = context.currentTime;
-    this.scheduleTone(659.25, start, 0.08, 0.055, "triangle");
-    this.scheduleTone(880, start + 0.055, 0.08, 0.05, "triangle");
-    this.scheduleTone(1174.66, start + 0.11, 0.12, 0.045, "sine");
+    this.scheduleTone(659.25, start, 0.08, 0.055 * EFFECT_VOLUME_MULTIPLIER, "triangle");
+    this.scheduleTone(880, start + 0.055, 0.08, 0.05 * EFFECT_VOLUME_MULTIPLIER, "triangle");
+    this.scheduleTone(1174.66, start + 0.11, 0.12, 0.045 * EFFECT_VOLUME_MULTIPLIER, "sine");
   }
 
   dispose(): void {
@@ -143,10 +145,10 @@ class GameAudioEngine {
       const note = BGM_NOTES[this.bgmStep % BGM_NOTES.length];
 
       if (note > 0) {
-        this.scheduleTone(note, this.nextBgmNoteAt, 0.16, 0.018, "triangle");
+        this.scheduleTone(note, this.nextBgmNoteAt, 0.16, 0.018 * BGM_VOLUME_MULTIPLIER, "triangle");
 
         if (this.bgmStep % 8 === 0) {
-          this.scheduleTone(note / 2, this.nextBgmNoteAt, 0.22, 0.012, "sine");
+          this.scheduleTone(note / 2, this.nextBgmNoteAt, 0.22, 0.012 * BGM_VOLUME_MULTIPLIER, "sine");
         }
       }
 
