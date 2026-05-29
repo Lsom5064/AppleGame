@@ -826,6 +826,7 @@ export function GameScreen({
           </section>
 
           <RoomChat
+            className={styles.gameChat}
             player={player}
             messages={room.chatMessages}
             title={chatTitle}
