@@ -66,9 +66,10 @@ class GameAudioEngine {
     }
 
     const start = context.currentTime;
-    this.scheduleTone(659.25, start, 0.08, 0.055 * EFFECT_VOLUME_MULTIPLIER, "triangle");
-    this.scheduleTone(880, start + 0.055, 0.08, 0.05 * EFFECT_VOLUME_MULTIPLIER, "triangle");
-    this.scheduleTone(1174.66, start + 0.11, 0.12, 0.045 * EFFECT_VOLUME_MULTIPLIER, "sine");
+    this.scheduleTone(1318.51, start, 0.055, 0.05 * EFFECT_VOLUME_MULTIPLIER, "triangle");
+    this.scheduleTone(1975.53, start + 0.035, 0.06, 0.045 * EFFECT_VOLUME_MULTIPLIER, "sine");
+    this.scheduleTone(2637.02, start + 0.075, 0.07, 0.04 * EFFECT_VOLUME_MULTIPLIER, "sine");
+    this.scheduleTone(3135.96, start + 0.125, 0.08, 0.032 * EFFECT_VOLUME_MULTIPLIER, "sine");
   }
 
   dispose(): void {
