@@ -1,19 +1,15 @@
+import bgmUrl from "../../bgm.mp3";
+
 type OscillatorKind = OscillatorType;
 
-const BGM_STEP_SEC = 0.24;
-const BGM_LOOKAHEAD_MS = 120;
-const BGM_NOTES = [392, 0, 523.25, 0, 493.88, 0, 440, 0, 392, 0, 329.63, 0, 349.23, 0, 392, 0];
-const BGM_VOLUME_MULTIPLIER = 2.4;
 const EFFECT_VOLUME_MULTIPLIER = 2.2;
 
 class GameAudioEngine {
   private context: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  private bgmElement: HTMLAudioElement | null = null;
   private enabled = false;
   private bgmRequested = false;
-  private bgmTimer: number | null = null;
-  private bgmStep = 0;
-  private nextBgmNoteAt = 0;
   private volume = 0.32;
 
   async setEnabled(enabled: boolean): Promise<void> {
@@ -25,12 +21,13 @@ class GameAudioEngine {
     }
 
     const context = this.ensureContext();
-    if (!context) {
-      return;
-    }
 
-    if (context.state === "suspended") {
-      await context.resume();
+    if (context?.state === "suspended") {
+      try {
+        await context.resume();
+      } catch {
+        // File-based BGM can still be attempted even if Web Audio remains locked.
+      }
     }
 
     if (this.bgmRequested) {
@@ -43,6 +40,10 @@ class GameAudioEngine {
 
     if (this.masterGain) {
       this.masterGain.gain.setTargetAtTime(this.volume, this.context?.currentTime ?? 0, 0.015);
+    }
+
+    if (this.bgmElement) {
+      this.bgmElement.volume = this.volume;
     }
   }
 
@@ -112,49 +113,38 @@ class GameAudioEngine {
   }
 
   private startBgm(): void {
-    const context = this.getReadyContext();
+    const bgmElement = this.ensureBgmElement();
 
-    if (!context || this.bgmTimer !== null) {
+    if (!bgmElement) {
       return;
     }
 
-    this.nextBgmNoteAt = context.currentTime;
-    this.bgmTimer = window.setInterval(() => this.scheduleBgm(), BGM_LOOKAHEAD_MS);
-    this.scheduleBgm();
+    bgmElement.volume = this.volume;
+
+    if (bgmElement.paused) {
+      void bgmElement.play().catch(() => {});
+    }
   }
 
   private stopBgm(): void {
-    if (this.bgmTimer !== null) {
-      window.clearInterval(this.bgmTimer);
-      this.bgmTimer = null;
+    if (this.bgmElement) {
+      this.bgmElement.pause();
     }
-
-    this.bgmStep = 0;
-    this.nextBgmNoteAt = 0;
   }
 
-  private scheduleBgm(): void {
-    const context = this.getReadyContext();
-
-    if (!context) {
-      this.stopBgm();
-      return;
+  private ensureBgmElement(): HTMLAudioElement | null {
+    if (typeof window === "undefined") {
+      return null;
     }
 
-    while (this.nextBgmNoteAt < context.currentTime + 0.45) {
-      const note = BGM_NOTES[this.bgmStep % BGM_NOTES.length];
-
-      if (note > 0) {
-        this.scheduleTone(note, this.nextBgmNoteAt, 0.16, 0.018 * BGM_VOLUME_MULTIPLIER, "triangle");
-
-        if (this.bgmStep % 8 === 0) {
-          this.scheduleTone(note / 2, this.nextBgmNoteAt, 0.22, 0.012 * BGM_VOLUME_MULTIPLIER, "sine");
-        }
-      }
-
-      this.bgmStep += 1;
-      this.nextBgmNoteAt += BGM_STEP_SEC;
+    if (!this.bgmElement) {
+      this.bgmElement = new Audio(bgmUrl);
+      this.bgmElement.loop = true;
+      this.bgmElement.preload = "auto";
+      this.bgmElement.volume = this.volume;
     }
+
+    return this.bgmElement;
   }
 
   private scheduleTone(
